@@ -13,12 +13,13 @@
     }
 
     body {
-      background-image: url('background.jpg'); 
+      background-image: url('background1.jpg'); /* 初期画像 */
       background-size: cover;
       background-position: center center;
       background-repeat: no-repeat;
       background-attachment: fixed;
       image-rendering: auto;
+      transition: background-image 1s ease-in-out; 
     }
 
     .overlay {
@@ -95,5 +96,20 @@
       <a href="map.html" class="button-link">マップを開く</a>
     </div>
   </div>
+
+  <script>
+    const images = [
+      'background1.jpg',
+      'background2.jpg',
+      'background3.jpg'
+    ];
+
+    let index = 0;
+
+    setInterval(() => {
+      index = (index + 1) % images.length;
+      document.body.style.backgroundImage = `url('${images[index]}')`;
+    }, 5000); // 5秒ごとに切り替え
+  </script>
 </body>
 </html>
