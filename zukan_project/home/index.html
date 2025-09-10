@@ -137,6 +137,7 @@
       letter-spacing: 0.04em;
       border: none;
       outline: none;
+      box-sizing: border-box; /* 追加 */
     }
 
     .button-link::after {
@@ -173,12 +174,13 @@
       .buttons {
         flex-direction: column;
         align-items: center;
-        gap: 24px;
+        gap: 16px; /* 24px→16px */
       }
       .button-link {
-        width: 90vw;
+        width: 80vw; /* 90vw→80vw */
         padding: 1.1em 2em;
         font-size: 1em;
+        box-sizing: border-box; /* 念のため再掲 */
       }
       .logo-circle {
         width: 62px;
@@ -189,8 +191,8 @@
         font-size: 1.7em;
       }
       .overlay {
-        padding-top: 3.5vh;
-        padding-bottom: 3.5vh;
+        padding-top: 2vh; /* 3.5vh→2vh */
+        padding-bottom: 2vh; /* 3.5vh→2vh */
       }
     }
 
@@ -210,6 +212,9 @@
 <body>
   <div id="background"></div>
   <div class="overlay">
+    <div class="logo-circle">
+      <span class="logo-icon">SZ</span>
+    </div>
     <h1>しばた図鑑</h1>
     <div class="subtitle">しばたの自然と文化を楽しむWebアプリ</div>
     <div class="buttons">
