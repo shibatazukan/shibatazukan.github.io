@@ -83,43 +83,82 @@
       opacity: 1;
       pointer-events: auto;
     }
+    .title-bg {
+      display: inline-block;
+      position: relative;
+      padding: 0.2em 1.2em;
+      border-radius: 1.5em;
+      background: linear-gradient(120deg, rgba(255,255,255,0.74) 0%, rgba(255,255,255,0.21) 100%);
+      box-shadow: 0 6px 28px 0 rgba(0,0,0,0.18);
+      margin-bottom: 0.12em;
+    }
     h1 {
       font-family: 'Montserrat', 'Noto Sans JP', sans-serif;
-      font-size: 3.7em;
-      margin: 0.1em 0 0.04em 0;
+      font-size: 3.8em;
       font-weight: 700;
-      letter-spacing: 0.08em;
-      color: #FFA500; /* ← 昔のverのオレンジ単色！ */
-      user-select: none;
-      z-index: 1;
-      background: none;
-      -webkit-background-clip: unset;
-      background-clip: unset;
-      -webkit-text-fill-color: unset;
-      text-shadow: none;
+      letter-spacing: 0.07em;
+      margin: 0;
+      /* 光沢オレンジのグラデーション */
+      background: linear-gradient(90deg, #FFA500 5%, #fffbe5 35%, #fff 45%, #FFA500 60%, #FF7F50 100%);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+      /* 光沢感 (白グロスを::afterで重ねる) */
       position: relative;
+      z-index: 1;
+      text-shadow:
+        0 2px 12px rgba(0,0,0,0.18),
+        0 1.5px 0 #fff8,
+        0 3px 12px #ffa50010;
+      user-select: none;
+      filter: drop-shadow(0 2px 8px #fff3);
+    }
+    h1::after {
+      /* 光沢のハイライトを描く（上部の白いカーブ帯） */
+      content: '';
+      position: absolute;
+      left: 10%;
+      top: 7%;
+      width: 80%;
+      height: 35%;
+      background: linear-gradient(120deg, rgba(255,255,255,0.73) 10%, rgba(255,255,255,0.13) 80%);
+      border-radius: 60% 60% 40% 40% / 70% 70% 30% 30%;
+      opacity: 0.45;
+      pointer-events: none;
+      z-index: 2;
+      filter: blur(1.2px);
+    }
+    .subtitle-bg {
+      display: inline-block;
+      position: relative;
+      padding: 0.15em 1.0em;
+      border-radius: 1.1em;
+      background: linear-gradient(120deg, rgba(255,255,255,0.62) 0%, rgba(255,255,255,0.11) 100%);
+      box-shadow: 0 1.5px 9px 0 rgba(0,0,0,0.14);
+      margin-bottom: 1.0em;
     }
     .subtitle {
       font-size: 1.3em;
-      margin-bottom: 0.9em;
-      margin-top: 0.1em;
-      color: #fff; /* シンプルな白 */
-      letter-spacing: 0.03em;
+      color: #fff;
       font-weight: 400;
+      letter-spacing: 0.03em;
+      margin: 0;
       font-family: 'Noto Sans JP', 'Montserrat', sans-serif;
-      line-height: 1.5;
-      user-select: none;
-      z-index: 1;
-      background: none;
-      text-shadow: none;
+      line-height: 1.52;
       position: relative;
+      z-index: 1;
+      text-shadow:
+        0 2px 8px rgba(0,0,0,0.13),
+        0 1.5px 0 #fff8;
+      user-select: none;
     }
     .buttons {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
       gap: 32px;
-      margin-top: 1.6em;
+      margin-top: 1.4em;
     }
     .button-link {
       position: relative;
@@ -214,6 +253,10 @@
       .overlay {
         transform: none;
       }
+      .title-bg, .subtitle-bg {
+        padding-left: 0.5em;
+        padding-right: 0.5em;
+      }
     }
     @media (max-width: 380px) {
       .button-link {
@@ -227,8 +270,12 @@
   <div id="background-clear"></div>
   <div id="background-blur"></div>
   <div class="overlay" id="overlay">
-    <h1>しばた図鑑</h1>
-    <div class="subtitle">しばたの自然と文化を楽しむWebアプリ</div>
+    <span class="title-bg">
+      <h1>しばた図鑑</h1>
+    </span>
+    <span class="subtitle-bg">
+      <div class="subtitle">しばたの自然と文化を楽しむWebアプリ</div>
+    </span>
     <div class="buttons">
       <a href="list.html" class="button-link button-zukan">
         <i class="fa-solid fa-scroll" aria-hidden="true"></i>図鑑一覧
@@ -242,19 +289,14 @@
     </div>
   </div>
   <script>
-    // 背景画像セット（画像ファイル名を合わせてください）
     document.getElementById('background-clear').style.backgroundImage = "url('background1.jpg')";
     document.getElementById('background-blur').style.backgroundImage = "url('background1.jpg')";
-    // ぼかしレイヤーを後からふわっとフェードイン
     setTimeout(function() {
       document.getElementById('background-blur').style.opacity = '1';
     }, 500);
-    // UX群ふわっと表示
     setTimeout(function() {
       document.getElementById('overlay').classList.add('visible');
     }, 850);
-
-    // スマホやタブレットのタッチ操作でも「ホバー感」を出す
     document.querySelectorAll('.button-link').forEach(btn => {
       btn.addEventListener('touchstart', () => btn.classList.add('active'), {passive: true});
       btn.addEventListener('touchend', () => btn.classList.remove('active'));
