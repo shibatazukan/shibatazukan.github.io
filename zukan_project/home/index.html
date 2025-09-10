@@ -48,7 +48,7 @@
       border-radius: 10px;
       z-index: 1000;
       cursor: pointer;
-      transition: background 0.3s;
+      transition: background 0.3s, left 0.3s;
     }
     .menu-toggle:hover {
       background: rgba(0, 0, 0, 0.6);
@@ -70,6 +70,11 @@
     }
     .side-menu.open {
       left: 0;
+    }
+
+    /* サイドメニューを開いたとき三本線を右にずらす */
+    .side-menu.open ~ .menu-toggle {
+      left: 280px; /* メニュー幅260px + 余白20px */
     }
 
     .side-menu .menu-title {
@@ -149,9 +154,10 @@
 
     /* 中央の3つの大きなボタン用 */
     .buttons .button-link {
-      display: flex;
-      align-items: center;     /* アイコンと文字を縦中央揃え */
-      justify-content: center; /* 全体を中央寄せ */
+      display: flex;              /* アイコンと文字を横並び */
+      align-items: center;        /* 縦中央揃え */
+      justify-content: flex-start;/* 左寄せにして揃える */
+      gap: 0.8em;
       padding: 1em 2em;
       font-size: 1.1em;
       font-weight: bold;
@@ -162,8 +168,7 @@
       border-radius: 18px;
       box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
       transition: transform 0.3s, box-shadow 0.3s, background 0.3s;
-      min-width: 200px;
-      gap: 0.6em;
+      min-width: 220px;
     }
 
     .buttons .button-link:hover {
@@ -172,9 +177,11 @@
       background: linear-gradient(135deg, #FFD580 30%, #FFB347 100%);
     }
 
-    /* アイコンのサイズ統一 */
+    /* アイコンのサイズと幅を統一 */
     .buttons .button-link i {
       font-size: 1.35em;
+      width: 1.4em;    /* 幅を固定することで位置をそろえる */
+      text-align: center;
       line-height: 1;
     }
 
@@ -191,11 +198,6 @@
 </head>
 <body>
 
-  <!-- ハンバーガーメニュー -->
-  <div class="menu-toggle" id="menuToggle">
-    <i class="fa-solid fa-bars"></i>
-  </div>
-
   <!-- サイドメニュー -->
   <nav class="side-menu" id="sideMenu">
     <div class="menu-title"><i class="fa-solid fa-user"></i> ユーザー名</div>
@@ -206,6 +208,11 @@
     <a href="settings.html"><i class="fa-solid fa-gear"></i> せってい</a>
     <a href="help.html"><i class="fa-solid fa-circle-question"></i> ヘルプ</a>
   </nav>
+
+  <!-- ハンバーガーメニュー -->
+  <div class="menu-toggle" id="menuToggle">
+    <i class="fa-solid fa-bars"></i>
+  </div>
 
   <!-- 背景 -->
   <div id="background-clear"></div>
