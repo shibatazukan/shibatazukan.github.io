@@ -133,20 +133,32 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            color: transparent;
-            text-shadow: 0 2px 8px rgba(255, 140, 0, 0.4);
+            color: transparent; /* text-shadowで縁取りするため、本来の文字色を透明に */
+            /* 既存のtext-shadowを削除し、新しい縁取り用のtext-shadowを追加 */
+            text-shadow:
+                -2px -2px 0 #000,  /* 左上 */
+                2px -2px 0 #000,   /* 右上 */
+                -2px 2px 0 #000,   /* 左下 */
+                2px 2px 0 #000,    /* 右下 */
+                0 4px 10px rgba(255, 140, 0, 0.6); /* ソフトな影で立体感を出す（任意） */
             user-select: none;
         }
-
+        
         .subtitle {
+            font-family: 'Noto Sans JP', sans-serif; /* サブタイトルは読みやすさを考慮しNoto Sans JPに設定 */
             font-size: 1.2em;
             color: #fff;
             font-weight: 400;
             margin-bottom: 1.5em;
             line-height: 1.6;
             user-select: none;
+            /* サブタイトルに縁取りを追加 */
+            text-shadow:
+                -1px -1px 0 #000,  /* 左上 */
+                1px -1px 0 #000,   /* 右上 */
+                -1px 1px 0 #000,   /* 左下 */
+                1px 1px 0 #000;    /* 右下 */
         }
-
         /* ボタンスタイル */
         .buttons {
             display: flex;
