@@ -29,34 +29,34 @@
       background-repeat: no-repeat;
       pointer-events: none;
       user-select: none;
-      transition: opacity 0.8s cubic-bezier(.4,0,.2,1);
     }
     #background-clear {
       z-index: -2;
       opacity: 1;
+      transition: opacity 1s cubic-bezier(.4,0,.2,1);
     }
     #background-blur {
       z-index: -1;
       filter: blur(4px);
-      /* ぼかし画像にグラデーションマスク */
+      opacity: 0;
+      /* 中央クリア・上下ぼかしグラデーションマスク */
       -webkit-mask-image: linear-gradient(to bottom, 
         rgba(0,0,0,1) 0%,
-        rgba(0,0,0,0.15) 38%,
-        rgba(0,0,0,0) 48%,
-        rgba(0,0,0,0) 52%,
-        rgba(0,0,0,0.15) 62%,
+        rgba(0,0,0,0.15) 35%,
+        rgba(0,0,0,0) 47%,
+        rgba(0,0,0,0) 53%,
+        rgba(0,0,0,0.15) 65%,
         rgba(0,0,0,1) 100%
       );
       mask-image: linear-gradient(to bottom, 
         rgba(0,0,0,1) 0%,
-        rgba(0,0,0,0.15) 38%,
-        rgba(0,0,0,0) 48%,
-        rgba(0,0,0,0) 52%,
-        rgba(0,0,0,0.15) 62%,
+        rgba(0,0,0,0.15) 35%,
+        rgba(0,0,0,0) 47%,
+        rgba(0,0,0,0) 53%,
+        rgba(0,0,0,0.15) 65%,
         rgba(0,0,0,1) 100%
       );
-      opacity: 0.45; /* お好みで */
-      transition: filter 0.7s cubic-bezier(.4,0,.2,1), opacity 0.7s cubic-bezier(.4,0,.2,1);
+      transition: opacity 1.2s cubic-bezier(.4,0,.2,1);
     }
     .overlay {
       background: rgba(24, 28, 31, 0.38);
@@ -75,8 +75,8 @@
       overflow: hidden;
       opacity: 0;
       pointer-events: none;
-      transform: translateY(-4vh);
-      transition: opacity 0.7s, transform 0.7s;
+      transform: translateY(-4vh); /* ほんの少し上 */
+      transition: opacity 0.7s cubic-bezier(.4,0,.2,1), transform 0.7s cubic-bezier(.4,0,.2,1);
     }
     .overlay.visible {
       opacity: 1;
@@ -213,18 +213,19 @@
     </div>
   </div>
   <script>
+    // 初期状態：鮮明な背景のみ・他は全部非表示
     document.getElementById('background-clear').style.backgroundImage = "url('background1.jpg')";
     document.getElementById('background-blur').style.backgroundImage = "url('background1.jpg')";
-    // ぼかしアニメーション（初回鮮明→徐々にぼかし）
+
+    // 1. 少し待ってから、ぼかしレイヤーをフェードイン
     setTimeout(function() {
-      const blur = document.getElementById('background-blur');
-      blur.style.filter = 'blur(4px)';
-      blur.style.opacity = '0.45';
-    }, 150);
-    // UX群を素早く出す
+      document.getElementById('background-blur').style.opacity = '1';
+    }, 600); // 0.6秒後にぼかしフェードイン（お好みで調整）
+
+    // 2. さらに少し遅れてUX群をフェードイン
     setTimeout(function() {
       document.getElementById('overlay').classList.add('visible');
-    }, 500);
+    }, 900); // 0.9秒後にUX群フェードイン（お好みで調整）
   </script>
 </body>
 </html>
