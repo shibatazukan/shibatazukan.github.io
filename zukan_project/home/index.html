@@ -21,12 +21,11 @@
       min-height: 100vh;
       min-width: 100vw;
       background: transparent;
-      transition: none;
       width: 100vw;
       height: 100vh;
       overflow: hidden;
     }
-    #background-clear, #background-blur {
+    #background {
       position: fixed;
       top: 0; left: 0;
       width: 100vw;
@@ -36,22 +35,23 @@
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
+      z-index: -2;
+      opacity: 1;
+      transition: background-image 1.2s cubic-bezier(.4,0,.2,1);
       pointer-events: none;
       user-select: none;
-      transition: background-image 1.2s cubic-bezier(.4,0,.2,1);
     }
-    #background-clear {
-      z-index: -2;
-      filter: none;
-      opacity: 1;
-    }
-    #background-blur {
+    #background-filter {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      min-width: 100vw;
+      min-height: 100vh;
+      background: rgba(24,28,31,0.35); /* ほの暗いフィルター */
+      pointer-events: none;
       z-index: -1;
-      filter: blur(0px);
-      opacity: 1;
-      transition:
-        background-image 1.2s cubic-bezier(.4,0,.2,1),
-        filter 1.2s cubic-bezier(.4,0,.2,1);
+      transition: background 1s cubic-bezier(.4,0,.2,1);
     }
     .overlay {
       background: rgba(24, 28, 31, 0.52);
@@ -190,8 +190,8 @@
   </style>
 </head>
 <body>
-  <div id="background-clear"></div>
-  <div id="background-blur"></div>
+  <div id="background"></div>
+  <div id="background-filter"></div>
   <div class="overlay">
     <h1>しばた図鑑</h1>
     <div class="subtitle">しばたの自然と文化を楽しむWebアプリ</div>
@@ -209,8 +209,7 @@
       'background3.jpg'
     ];
     let index = 0;
-    const bgClear = document.getElementById('background-clear');
-    const bgBlur = document.getElementById('background-blur');
+    const bg = document.getElementById('background');
 
     // 画像のプリロード
     images.forEach(src => {
@@ -218,37 +217,13 @@
       img.src = src;
     });
 
-    function setBackgrounds(idx) {
-      bgClear.style.backgroundImage = `url('${images[idx]}')`;
-      bgBlur.style.backgroundImage  = `url('${images[idx]}')`;
-    }
-
     // 初期背景
-    setBackgrounds(index);
-
-    // blurアニメーション
-    function animateBlurIn() {
-      bgBlur.style.transition = 'filter 1.2s cubic-bezier(.4,0,.2,1)';
-      bgBlur.style.filter = 'blur(0px)';
-      setTimeout(() => {
-        bgBlur.style.filter = 'blur(8px)';
-      }, 10); // 少し遅延してからぼかし開始
-    }
-
-    // 初回のみ
-    animateBlurIn();
+    bg.style.backgroundImage = `url('${images[index]}')`;
 
     // 画像切り替え
     setInterval(() => {
       index = (index + 1) % images.length;
-      setBackgrounds(index);
-      bgBlur.style.transition = 'none';
-      bgBlur.style.filter = 'blur(0px)';
-      // 少し待ってからアニメーション
-      setTimeout(() => {
-        bgBlur.style.transition = 'filter 1.2s cubic-bezier(.4,0,.2,1)';
-        bgBlur.style.filter = 'blur(8px)';
-      }, 50);
+      bg.style.backgroundImage = `url('${images[index]}')`;
     }, 5000);
   </script>
 </body>
