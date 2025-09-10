@@ -11,34 +11,34 @@
       padding: 0;
       font-family: 'Noto Sans JP', 'Montserrat', sans-serif;
       color: #fff;
-      min-height: 100vh;
       width: 100vw;
       height: 100vh;
-      overflow: hidden;
-      background: transparent;
-    }
-    body {
       min-height: 100vh;
       min-width: 100vw;
-      background: transparent;
-      width: 100vw;
-      height: 100vh;
       overflow: hidden;
+      background: transparent;
     }
-    #background {
+    #background-clear, #background-blur {
       position: fixed;
-      top: 0;
-      left: 0;
+      top: 0; left: 0;
       width: 100vw;
       height: 100vh;
       background-image: url('background1.jpg');
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
-      z-index: -1;
-      opacity: 1;
       pointer-events: none;
       user-select: none;
+    }
+    #background-clear {
+      z-index: -2;
+      opacity: 1;
+    }
+    #background-blur {
+      z-index: -1;
+      filter: blur(0px);
+      opacity: 1;
+      transition: filter 1.2s cubic-bezier(.4,0,.2,1);
     }
     .overlay {
       background: rgba(24, 28, 31, 0.52);
@@ -55,9 +55,11 @@
       box-sizing: border-box;
       position: relative;
       overflow: hidden;
-      /* --- ここを調整 --- */
-      transform: translateY(-5vh); /* 中央よりほんの少し（5vh分）だけ上へ */
-      /* 3〜7vhくらいで微調整可、-5vhが「ほんの少し」 */
+      opacity: 0;
+      transition: opacity 0.9s cubic-bezier(.4,0,.2,1);
+    }
+    .overlay.visible {
+      opacity: 1;
     }
     h1 {
       font-family: 'Montserrat', 'Noto Sans JP', sans-serif;
@@ -161,9 +163,6 @@
         font-size: 1em;
         box-sizing: border-box;
       }
-      .overlay {
-        transform: translateY(-4vh); /* スマホ時はちょっと控えめに */
-      }
     }
     @media (max-width: 380px) {
       .button-link {
@@ -178,8 +177,9 @@
   </style>
 </head>
 <body>
-  <div id="background"></div>
-  <div class="overlay">
+  <div id="background-clear"></div>
+  <div id="background-blur"></div>
+  <div class="overlay" id="overlay">
     <h1>しばた図鑑</h1>
     <div class="subtitle">しばたの自然と文化を楽しむWebアプリ</div>
     <div class="buttons">
@@ -188,5 +188,23 @@
       <a href="map.html" class="button-link">マップを開く</a>
     </div>
   </div>
+  <script>
+    // 最初非表示
+    document.getElementById('overlay').style.opacity = 0;
+
+    // 背景画像セット
+    document.getElementById('background-clear').style.backgroundImage = "url('background1.jpg')";
+    document.getElementById('background-blur').style.backgroundImage = "url('background1.jpg')";
+
+    // ぼかしアニメーション
+    setTimeout(function() {
+      document.getElementById('background-blur').style.filter = 'blur(8px)';
+    }, 150); // ほんの少し待ってからぼかし開始
+
+    // UX群出現（ぼかし終わった後にフェードイン）
+    setTimeout(function() {
+      document.getElementById('overlay').classList.add('visible');
+    }, 1300); // ぼかしアニメーション後に表示（タイミング調整可）
+  </script>
 </body>
 </html>
