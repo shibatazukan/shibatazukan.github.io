@@ -1,241 +1,365 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>しばた図鑑</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Montserrat:wght@700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Montserrat:wght@700&display=swap"
+    rel="stylesheet"
+  />
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+  />
   <style>
-    html, body {
-      margin: 0; padding: 0;
-      font-family: 'Noto Sans JP', 'Montserrat', sans-serif;
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: "Noto Sans JP", "Montserrat", sans-serif;
       color: #fff;
-      width: 100vw; height: 100vh;
+      width: 100vw;
+      height: 100vh;
       overflow: hidden;
       background: transparent;
     }
-
-    #background-clear, #background-blur {
+    #background-clear,
+    #background-blur {
       position: fixed;
-      top: 0; left: 0;
-      width: 100vw; height: 100vh;
-      background-image: url('background1.jpg');
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-image: url("background1.jpg");
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
       pointer-events: none;
       user-select: none;
     }
-
-    #background-clear { z-index: -2; }
+    #background-clear {
+      z-index: -2;
+    }
     #background-blur {
       z-index: -1;
       filter: blur(4px);
       opacity: 0;
-      transition: opacity 1.2s cubic-bezier(.4,0,.2,1);
+      transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    /* ハンバーガーメニュー */
-    .menu-toggle {
-      position: absolute;
-      top: 20px; left: 20px;
-      font-size: 1.8em;
-      color: white;
-      background: rgba(0, 0, 0, 0.4);
-      padding: 10px 12px;
-      border-radius: 10px;
-      z-index: 1000;
+    /* --- ハンバーガーメニュー --- */
+    #hamburger {
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      font-size: 2.2em;
+      color: #ffa500;
+      z-index: 1002;
       cursor: pointer;
-      transition: background 0.3s;
+      user-select: none;
+      transition: color 0.3s ease;
     }
-    .menu-toggle:hover {
-      background: rgba(0, 0, 0, 0.6);
+    #hamburger:hover {
+      color: #ffb347;
     }
 
     /* サイドメニュー */
     .side-menu {
       position: fixed;
-      top: 0; left: -260px;
-      width: 260px; height: 100%;
-      background: rgba(20, 20, 20, 0.95);
-      box-shadow: 2px 0 10px rgba(0,0,0,0.5);
-      padding: 2em 1em 1em 1em;
+      top: 0;
+      left: 0;
+      width: 260px;
+      height: 100vh;
+      background: rgba(30, 30, 30, 0.95);
+      box-shadow: 2px 0 12px rgba(0, 0, 0, 0.8);
+      transform: translateX(-100%);
+      transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 1001;
+      padding: 80px 1em 1em 1em; /* ① 三本線と被らないように上部に余白 */
       box-sizing: border-box;
-      z-index: 999;
-      transition: left 0.35s ease-in-out;
       display: flex;
       flex-direction: column;
+      gap: 1.2em;
+      font-weight: 600;
+      font-size: 1.1em;
+      user-select: none;
     }
     .side-menu.open {
-      left: 0;
+      transform: translateX(0);
     }
-
-    .side-menu .menu-title {
-      font-size: 1.2em;
-      font-weight: bold;
-      margin-bottom: 1.5em;
-      color: #FFA500;
-      display: flex;
-      align-items: center;
-      gap: 0.6em;
-      margin-left: 0.2em;
-    }
-
     .side-menu a {
-      color: white;
-      text-decoration: none;
-      padding: 0.6em 0;
-      font-size: 1em;
       display: flex;
       align-items: center;
-      gap: 0.8em;
-      transition: background 0.25s;
-      border-radius: 6px;
+      color: #ffa500;
+      text-decoration: none;
+      padding: 0.55em 1em;
+      border-radius: 10px;
+      transition: background-color 0.3s ease;
+      font-weight: 700;
+      gap: 0.75em;
     }
-    .side-menu a:hover {
-      background: rgba(255, 255, 255, 0.1);
+    .side-menu a:hover,
+    .side-menu a:focus {
+      background: linear-gradient(135deg, #ffd580 30%, #ffb347 100%);
+      color: #fff;
+      outline: none;
+    }
+    .side-menu a i {
+      min-width: 24px;
+      font-size: 1.3em;
+      color: #ffa500;
+      flex-shrink: 0;
     }
 
-    /* 中央オーバーレイ */
+    /* --- メイン画面中央のコンテンツ --- */
     .overlay {
-      position: absolute;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
       text-align: center;
+      box-sizing: border-box;
+      position: relative;
+      overflow: hidden;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.7s cubic-bezier(.4,0,.2,1);
+      transition: opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+      padding: 0 1em;
+      z-index: 0;
     }
     .overlay.visible {
       opacity: 1;
       pointer-events: auto;
     }
-
-    /* タイトルを目立たせる */
     h1 {
-      font-family: 'Montserrat', 'Noto Sans JP', sans-serif;
-      font-size: 3.8em;
-      font-weight: 800;
+      font-family: "Montserrat", "Noto Sans JP", sans-serif;
+      font-size: 4.2em; /* ② 大きく */
+      font-weight: 900;
       letter-spacing: 0.1em;
-      margin: 0.1em 0 0.2em 0;
-      background: linear-gradient(180deg, #FFD700, #FFA500 70%, #ffffff 95%);
+      margin: 0 0 0.25em 0;
+      /* 色合い変更・グラデーション強調 */
+      background: linear-gradient(
+        180deg,
+        #ffb347 40%,
+        #ffa500 75%,
+        #ffd580 100%
+      );
+      color: transparent;
+      background-clip: text;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      background-clip: text;
-      color: transparent;
-      text-shadow: 0 2px 8px rgba(255, 140, 0, 0.4);
+      line-height: 1.05;
       user-select: none;
+      position: relative;
+      text-shadow: 0 0 6px rgba(255, 165, 0, 0.6);
     }
-
     .subtitle {
-      font-size: 1.2em;
+      font-size: 1.3em;
       color: #fff;
-      font-weight: 400;
-      margin-bottom: 1.5em;
-      line-height: 1.6;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      margin: 0 0 1.8em 0;
+      font-family: "Noto Sans JP", "Montserrat", sans-serif;
+      line-height: 1.5;
       user-select: none;
+      text-shadow: 0 0 5px rgba(0, 0, 0, 0.4);
+      max-width: 400px;
     }
-
-    /* ボタンスタイル */
     .buttons {
       display: flex;
-      flex-direction: column;
-      gap: 20px;
-      align-items: center;
+      flex-wrap: wrap;
       justify-content: center;
+      gap: 32px;
+      margin-top: 1.1em;
+      z-index: 1;
+      position: relative;
     }
-
     .button-link {
+      position: relative;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      padding: 1em 2em;
-      font-size: 1.1em;
-      font-weight: bold;
-      letter-spacing: 0.04em;
-      color: #fff;
-      background: linear-gradient(135deg, #FFA500, #FF7F50);
+      color: white;
+      padding: 1.1em 2.2em;
+      font-size: 1.15em;
       text-decoration: none;
       border-radius: 18px;
       box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
-      transition: transform 0.3s, box-shadow 0.3s, background 0.3s;
-      min-width: 200px;
+      transition: transform 0.3s cubic-bezier(0.3, 1.3, 0.5, 1),
+        box-shadow 0.3s, background 0.3s;
+      overflow: hidden;
+      font-weight: bold;
+      letter-spacing: 0.04em;
+      border: none;
+      outline: none;
+      box-sizing: border-box;
+      background: linear-gradient(135deg, #ffa500, #ff7f50 60%);
       gap: 0.6em;
+      min-width: 10em;
     }
-
-    .button-link:hover {
-      transform: translateY(-6px) scale(1.04);
-      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
-      background: linear-gradient(135deg, #FFD580 30%, #FFB347 100%);
-    }
-
-    .button-link .fa-solid {
+    .button-link .fa-solid,
+    .button-link .fa-scroll {
       font-size: 1.35em;
+      margin-right: 0.65em;
+      margin-left: -0.1em; /* ② 巻物アイコン位置調整 */
+      vertical-align: middle;
+    }
+    .button-zukan {
+      background: linear-gradient(135deg, #ffa500, #ff7f50 60%);
+    }
+    .button-zukan:hover,
+    .button-zukan:focus,
+    .button-zukan.active {
+      background: linear-gradient(135deg, #ffd580 30%, #ffb347 100%);
+    }
+    .button-camera {
+      background: linear-gradient(135deg, #3cc47c, #168f4e 60%);
+    }
+    .button-camera:hover,
+    .button-camera:focus,
+    .button-camera.active {
+      background: linear-gradient(135deg, #6cfcb7 30%, #35b86b 100%);
+    }
+    .button-map {
+      background: linear-gradient(135deg, #3381ff, #2350b8 60%);
+    }
+    .button-map:hover,
+    .button-map:focus,
+    .button-map.active {
+      background: linear-gradient(135deg, #6dc4ff 30%, #3f6db3 100%);
+    }
+    .button-link::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.18);
+      transform: skewX(-20deg);
+      transition: left 0.5s cubic-bezier(0.3, 1.3, 0.5, 1);
+      pointer-events: none;
+    }
+    .button-link:hover::after,
+    .button-link:focus::after,
+    .button-link.active::after {
+      left: 100%;
+    }
+    .button-link:hover,
+    .button-link:focus,
+    .button-link:active,
+    .button-link.active {
+      transform: translateY(-7px) scale(1.045);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.26);
+      color: #fffbf7;
     }
 
     @media (max-width: 600px) {
-      h1 { font-size: 2.5em; }
-      .subtitle { font-size: 1em; }
+      h1 {
+        font-size: 2.8em;
+      }
+      .subtitle {
+        font-size: 1.1em;
+      }
+      .buttons {
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        margin-top: 0.7em;
+      }
       .button-link {
         width: 80vw;
+        padding: 1em 1em;
         font-size: 1em;
-        padding: 0.9em 1.1em;
+        box-sizing: border-box;
+      }
+      /* ハンバーガーメニューアイコン小さめ */
+      #hamburger {
+        font-size: 1.8em;
+        top: 12px;
+        left: 12px;
+      }
+      .side-menu {
+        width: 220px;
+        padding-top: 70px;
+        font-size: 1em;
+      }
+    }
+    @media (max-width: 380px) {
+      .button-link {
+        font-size: 0.91em;
+        padding: 0.9em 1em;
+        min-width: unset;
+        width: 90vw;
       }
     }
   </style>
 </head>
 <body>
+  <div id="background-clear"></div>
+  <div id="background-blur"></div>
 
-  <!-- ハンバーガーメニュー -->
-  <div class="menu-toggle" id="menuToggle">
+  <!-- ハンバーガーメニューアイコン -->
+  <div id="hamburger" aria-label="メニューを開く" role="button" tabindex="0" aria-expanded="false">
     <i class="fa-solid fa-bars"></i>
   </div>
 
   <!-- サイドメニュー -->
-  <nav class="side-menu" id="sideMenu">
-    <div class="menu-title"><i class="fa-solid fa-user"></i> ユーザー名</div>
-    <a href="index.html"><i class="fa-solid fa-house"></i> ホーム</a>
-    <a href="list.html"><i class="fa-solid fa-scroll"></i> 図鑑</a>
-    <a href="map.html"><i class="fa-solid fa-map"></i> マップ</a>
-    <a href="../camera/index.html"><i class="fa-solid fa-camera"></i> カメラ</a>
-    <a href="settings.html"><i class="fa-solid fa-gear"></i> せってい</a>
-    <a href="help.html"><i class="fa-solid fa-circle-question"></i> ヘルプ</a>
+  <nav class="side-menu" aria-label="サイドメニュー">
+    <a href="#" class="menu-user" tabindex="0">
+      <i class="fa-solid fa-user"></i> ユーザー
+    </a>
+    <a href="#" class="menu-camera" tabindex="0">
+      <i class="fa-solid fa-camera"></i> カメラメニュー
+    </a>
+    <a href="#" class="menu-map" tabindex="0">
+      <i class="fa-solid fa-map-location-dot"></i> マップ
+    </a>
+    <a href="#" class="menu-zukan" tabindex="0">
+      <i class="fa-solid fa-scroll"></i> 図鑑一覧
+    </a>
+    <a href="#" class="menu-settings" tabindex="0">
+      <i class="fa-solid fa-gear"></i> 設定
+    </a>
   </nav>
 
-  <!-- 背景 -->
-  <div id="background-clear"></div>
-  <div id="background-blur"></div>
-
-  <!-- 中央表示 -->
-  <div class="overlay" id="overlay">
+  <!-- メインコンテンツ -->
+  <div class="overlay visible" role="main" aria-label="アプリケーションメインコンテンツ">
     <h1>しばた図鑑</h1>
-    <div class="subtitle">しばたの自然と文化を楽しむWebアプリ</div>
-    <div class="buttons">
-      <a href="list.html" class="button-link"><i class="fa-solid fa-scroll"></i>図鑑一覧</a>
-      <a href="../camera/index.html" class="button-link"><i class="fa-solid fa-camera"></i>カメラを開く</a>
-      <a href="map.html" class="button-link"><i class="fa-solid fa-map-location-dot"></i>マップを開く</a>
+    <p class="subtitle">しばたの自然と文化を楽しむアプリ</p>
+    <div class="buttons" role="navigation" aria-label="メニューへのショートカット">
+      <a href="#" class="button-link button-zukan" role="button" tabindex="0">
+        <i class="fa-solid fa-scroll"></i> 図鑑一覧
+      </a>
+      <a href="#" class="button-link button-camera" role="button" tabindex="0">
+        <i class="fa-solid fa-camera"></i> カメラ
+      </a>
+      <a href="#" class="button-link button-map" role="button" tabindex="0">
+        <i class="fa-solid fa-map-location-dot"></i> マップ
+      </a>
     </div>
   </div>
 
-  <!-- JS -->
   <script>
-    // 背景表示
-    document.getElementById('background-clear').style.backgroundImage = "url('background1.jpg')";
-    document.getElementById('background-blur').style.backgroundImage = "url('background1.jpg')";
-    setTimeout(() => {
-      document.getElementById('background-blur').style.opacity = '1';
-    }, 500);
-    setTimeout(() => {
-      document.getElementById('overlay').classList.add('visible');
-    }, 850);
+    const hamburger = document.getElementById("hamburger");
+    const sideMenu = document.querySelector(".side-menu");
 
-    // メニュー開閉
-    const menuToggle = document.getElementById('menuToggle');
-    const sideMenu = document.getElementById('sideMenu');
-    menuToggle.addEventListener('click', () => {
-      sideMenu.classList.toggle('open');
+    function toggleMenu() {
+      const isOpen = sideMenu.classList.toggle("open");
+      hamburger.setAttribute("aria-expanded", isOpen);
+    }
+
+    hamburger.addEventListener("click", toggleMenu);
+
+    // キーボード操作対応
+    hamburger.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        toggleMenu();
+      }
     });
   </script>
 </body>
