@@ -8,8 +8,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
   <style>
     html, body {
-      margin: 0;
-      padding: 0;
+      margin: 0; padding: 0;
       font-family: 'Noto Sans JP', 'Montserrat', sans-serif;
       color: #fff;
       width: 100vw; height: 100vh;
@@ -19,49 +18,112 @@
     #background-clear, #background-blur {
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
       background-image: url('background1.jpg');
-      background-size: cover; background-position: center; background-repeat: no-repeat;
+      background-size: cover; background-position: center;
+      background-repeat: no-repeat;
       pointer-events: none; user-select: none;
     }
     #background-clear { z-index: -2; }
-    #background-blur  { z-index: -1; filter: blur(4px); opacity: 0; transition: opacity 1.2s cubic-bezier(.4,0,.2,1);}
+    #background-blur {
+      z-index: -1;
+      filter: blur(4px);
+      opacity: 0;
+      transition: opacity 1.2s cubic-bezier(.4,0,.2,1);
+    }
+
+    /* Hamburger icon */
+    .menu-toggle {
+      position: absolute;
+      top: 20px; left: 20px;
+      font-size: 1.8em;
+      color: white;
+      background: rgba(0,0,0,0.4);
+      padding: 10px 12px;
+      border-radius: 10px;
+      z-index: 1000;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .menu-toggle:hover {
+      background: rgba(0,0,0,0.6);
+    }
+
+    /* Side menu */
+    .side-menu {
+      position: fixed;
+      top: 0;
+      left: -260px;
+      width: 260px;
+      height: 100%;
+      background: rgba(20, 20, 20, 0.95);
+      box-shadow: 2px 0 10px rgba(0,0,0,0.5);
+      padding: 1.5em 1em;
+      box-sizing: border-box;
+      z-index: 999;
+      transition: left 0.35s ease-in-out;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .side-menu.open {
+      left: 0;
+    }
+
+    .side-menu .menu-title {
+      font-size: 1.2em;
+      font-weight: bold;
+      margin-bottom: 1.2em;
+      color: #FFA500;
+    }
+
+    .side-menu a {
+      color: white;
+      text-decoration: none;
+      padding: 0.6em 0;
+      font-size: 1em;
+      display: flex;
+      align-items: center;
+      gap: 0.8em;
+      transition: background 0.25s;
+      border-radius: 6px;
+    }
+
+    .side-menu a:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
     .overlay {
       width: 100vw; height: 100vh;
       display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
       box-sizing: border-box; position: relative; overflow: hidden;
       opacity: 0; pointer-events: none; transition: opacity 0.7s cubic-bezier(.4,0,.2,1);
     }
-    .overlay.visible { opacity: 1; pointer-events: auto; }
+    .overlay.visible {
+      opacity: 1; pointer-events: auto;
+    }
+
     h1 {
       font-family: 'Montserrat', 'Noto Sans JP', sans-serif;
-      font-size: 3em;
-      font-weight: 700;
-      letter-spacing: 0.08em;
+      font-size: 3em; font-weight: 700; letter-spacing: 0.08em;
       margin: 0.1em 0 0.14em 0;
-      /* v20風：オレンジ下部が白く光るグラデ */
       background: linear-gradient(180deg, #FFA500 60%, #fff 95%);
-      color: #FFA500;
-      background-clip: text;
       -webkit-background-clip: text;
       color: transparent;
       -webkit-text-fill-color: transparent;
-      line-height: 1.08; user-select: none;
-      /* さらに上部光沢筋を追加 */
+      line-height: 1.08;
+      user-select: none;
       position: relative;
     }
+
     .subtitle {
-      font-size: 1.15em;
-      color: #fff;
-      font-weight: 400;
-      letter-spacing: 0.03em;
-      margin: 0 0 1.2em 0;
-      font-family: 'Noto Sans JP', 'Montserrat', sans-serif;
-      line-height: 1.52;
-      user-select: none;
-      text-shadow: none;
+      font-size: 1.15em; color: #fff; font-weight: 400; letter-spacing: 0.03em;
+      margin: 0 0 1.2em 0; font-family: 'Noto Sans JP', 'Montserrat', sans-serif;
+      line-height: 1.52; user-select: none;
     }
+
     .buttons {
       display: flex; flex-wrap: wrap; justify-content: center; gap: 32px; margin-top: 1.1em; z-index: 1; position: relative;
     }
+
     .button-link {
       position: relative;
       display: inline-flex;
@@ -72,61 +134,85 @@
       text-decoration: none;
       border-radius: 18px;
       box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
-      transition: transform 0.3s cubic-bezier(.3,1.3,.5,1), box-shadow 0.3s, background 0.3s;
+      transition: transform 0.3s, box-shadow 0.3s, background 0.3s;
       overflow: hidden;
       font-weight: bold;
       letter-spacing: 0.04em;
-      border: none; outline: none; box-sizing: border-box;
       background: linear-gradient(135deg, #FFA500, #FF7F50 60%);
-      gap: 0.6em; min-width: 10em;
+      gap: 0.6em;
+      min-width: 10em;
     }
-    .button-link .fa-solid,
-    .button-link .fa-scroll {
+
+    .button-link:hover {
+      transform: translateY(-7px) scale(1.045);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.26);
+      color: #fffbf7;
+    }
+
+    .button-link .fa-solid {
       font-size: 1.35em;
       margin-right: 0.65em;
-      margin-left: -0.25em; vertical-align: middle;
+      margin-left: -0.25em;
     }
+
     .button-zukan {
       background: linear-gradient(135deg, #FFA500, #FF7F50 60%);
     }
-    .button-zukan:hover, .button-zukan:focus, .button-zukan.active {
+    .button-zukan:hover {
       background: linear-gradient(135deg, #FFD580 30%, #FFB347 100%);
     }
     .button-camera {
       background: linear-gradient(135deg, #3cc47c, #168f4e 60%);
     }
-    .button-camera:hover, .button-camera:focus, .button-camera.active {
+    .button-camera:hover {
       background: linear-gradient(135deg, #6cfcb7 30%, #35b86b 100%);
     }
     .button-map {
       background: linear-gradient(135deg, #3381ff, #2350b8 60%);
     }
-    .button-map:hover, .button-map:focus, .button-map.active {
+    .button-map:hover {
       background: linear-gradient(135deg, #6dc4ff 30%, #3f6db3 100%);
     }
-    .button-link::after {
-      content: ""; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
-      background: rgba(255, 255, 255, 0.18); transform: skewX(-20deg);
-      transition: left 0.5s cubic-bezier(.3,1.3,.5,1); pointer-events: none;
-    }
-    .button-link:hover::after, .button-link:focus::after, .button-link.active::after { left: 100%; }
-    .button-link:hover, .button-link:focus, .button-link:active, .button-link.active {
-      transform: translateY(-7px) scale(1.045); box-shadow: 0 12px 28px rgba(0, 0, 0, 0.26); color: #fffbf7;
-    }
+
     @media (max-width: 600px) {
       h1 { font-size: 2em; }
       .subtitle { font-size: 0.98em; }
-      .buttons { flex-direction: column; align-items: center; gap: 12px; margin-top: 0.7em;}
-      .button-link { width: 80vw; padding: 1em 1em; font-size: 1em; box-sizing: border-box;}
-    }
-    @media (max-width: 380px) {
-      .button-link { font-size: 0.91em; padding: 0.8em 0.6em;}
+      .buttons {
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        margin-top: 0.7em;
+      }
+      .button-link {
+        width: 80vw;
+        padding: 1em 1em;
+        font-size: 1em;
+      }
     }
   </style>
 </head>
 <body>
+
+  <!-- Hamburger Icon -->
+  <div class="menu-toggle" id="menuToggle">
+    <i class="fa-solid fa-bars"></i>
+  </div>
+
+  <!-- Slide-out Menu -->
+  <nav class="side-menu" id="sideMenu">
+    <div class="menu-title">👤 ユーザー名</div>
+    <a href="index.html"><i class="fa-solid fa-house"></i> ホーム</a>
+    <a href="list.html"><i class="fa-solid fa-scroll"></i> 図鑑</a>
+    <a href="map.html"><i class="fa-solid fa-map-location-dot"></i> マップ</a>
+    <a href="#"><i class="fa-solid fa-gear"></i> せってい</a>
+    <a href="#"><i class="fa-solid fa-circle-question"></i> ヘルプ</a>
+  </nav>
+
+  <!-- Background -->
   <div id="background-clear"></div>
   <div id="background-blur"></div>
+
+  <!-- Main Overlay -->
   <div class="overlay" id="overlay">
     <h1>しばた図鑑</h1>
     <div class="subtitle">しばたの自然と文化を楽しむWebアプリ</div>
@@ -142,15 +228,27 @@
       </a>
     </div>
   </div>
+
   <script>
+    // 背景フェード＆オーバーレイ表示
     document.getElementById('background-clear').style.backgroundImage = "url('background1.jpg')";
     document.getElementById('background-blur').style.backgroundImage = "url('background1.jpg')";
-    setTimeout(function() {
+    setTimeout(() => {
       document.getElementById('background-blur').style.opacity = '1';
     }, 500);
-    setTimeout(function() {
+    setTimeout(() => {
       document.getElementById('overlay').classList.add('visible');
     }, 850);
+
+    // ハンバーガーメニューの開閉
+    const menuToggle = document.getElementById('menuToggle');
+    const sideMenu = document.getElementById('sideMenu');
+
+    menuToggle.addEventListener('click', () => {
+      sideMenu.classList.toggle('open');
+    });
+
+    // スマホのタッチ対応
     document.querySelectorAll('.button-link').forEach(btn => {
       btn.addEventListener('touchstart', () => btn.classList.add('active'), {passive: true});
       btn.addEventListener('touchend', () => btn.classList.remove('active'));
