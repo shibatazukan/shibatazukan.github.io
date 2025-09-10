@@ -13,29 +13,39 @@
       color: #fff;
       min-height: 100vh;
       background: #181c1f;
+      overscroll-behavior: none;
     }
     body {
       min-height: 100vh;
       transition: background-image 1.2s cubic-bezier(.4,0,.2,1);
+      overscroll-behavior: none;
     }
     #background {
       position: fixed;
       top: 0; left: 0;
-      width: 100vw; height: 100vh;
+      width: 100vw;
+      min-height: 100vh;
+      min-height: 100dvh;
+      height: 100vh;
+      height: 100dvh;
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
-      background-attachment: fixed;
+      /* background-attachment: fixed; ← スマホで問題になるので削除 */
       transition: opacity 1.2s cubic-bezier(.4,0,.2,1);
       z-index: -2;
       opacity: 1;
       filter: brightness(0.96) saturate(1.10) blur(0.5px);
-      background-image: url('background1.jpg'); /* 初期背景を必ず指定 */
+      background-image: url('background1.jpg');
+      overscroll-behavior: none;
     }
     .overlay {
       background: rgba(24, 28, 31, 0.52);
       backdrop-filter: blur(6px) saturate(1.05);
       min-height: 100vh;
+      min-height: 100dvh;
+      height: 100vh;
+      height: 100dvh;
       width: 100vw;
       display: flex;
       flex-direction: column;
@@ -46,6 +56,7 @@
       padding-top: 7vh;
       padding-bottom: 6vh;
       position: relative;
+      overscroll-behavior: none;
     }
 
     .logo-circle {
@@ -226,8 +237,6 @@
   </div>
   <script>
     // 背景画像リスト
-    // 修正後のJavaScript
-    // 変更する秒数は、CSSのtransition時間（1200ms）と同じにします。
     const images = [
       'background1.jpg',
       'background2.jpg',
@@ -235,27 +244,29 @@
     ];
     let index = 0;
     const bg = document.getElementById('background');
-    
+
     // 画像のプリロード
     images.forEach(src => {
       const img = new Image();
       img.src = src;
     });
-    
-    // 初期背景の設定はそのまま
+
+    // 初期背景（CSSでも指定しているので安心）
     bg.style.backgroundImage = `url('${images[index]}')`;
     bg.style.opacity = 1;
-    
+
     setInterval(() => {
-      // まず不透明度を0に設定
+      // フェードアウト
       bg.style.opacity = 0;
-      
-      // 1200msのトランジション後に次の画像をセットし、すぐに不透明度を1に戻す
       setTimeout(() => {
         index = (index + 1) % images.length;
+        // 画像切り替え
         bg.style.backgroundImage = `url('${images[index]}')`;
-        bg.style.opacity = 1;
-      }, 1200); // CSSのtransition時間と同じか短くすることで、真っ黒な状態を隠す
+        // 0.1秒後にフェードイン
+        setTimeout(() => {
+          bg.style.opacity = 1;
+        }, 100);
+      }, 1200);
     }, 5000);
   </script>
 </body>
