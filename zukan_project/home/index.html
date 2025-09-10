@@ -38,7 +38,7 @@
     #background-blur {
       z-index: -1;
       filter: blur(0px);
-      opacity: 0.35; /* 0.3〜0.5くらいが程よい。濃いとぼかしが勝つ */
+      opacity: 0.2;
       transition: filter 0.7s cubic-bezier(.4,0,.2,1), opacity 0.7s cubic-bezier(.4,0,.2,1);
     }
     .overlay {
@@ -58,11 +58,14 @@
       overflow: hidden;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.7s cubic-bezier(.4,0,.2,1);
+      /* ほんの少し上へ */
+      transform: translateY(-4vh);
+      transition: opacity 0.7s cubic-bezier(.4,0,.2,1), transform 0.7s cubic-bezier(.4,0,.2,1);
     }
     .overlay.visible {
       opacity: 1;
       pointer-events: auto;
+      /* transformはそのまま（上に寄せたまま） */
     }
     h1 {
       font-family: 'Montserrat', 'Noto Sans JP', sans-serif;
@@ -76,7 +79,8 @@
       color: transparent;
       -webkit-text-fill-color: transparent;
       text-shadow: 0 2px 18px rgba(0,0,0,0.11);
-      animation: titleFadeIn 1.5s cubic-bezier(.3,1.3,.5,1) .18s backwards;
+      /* アニメーション時間を短く・スムーズに */
+      animation: titleFadeIn 0.85s cubic-bezier(.4,0,.2,1) 0.08s backwards;
       user-select: none;
     }
     @keyframes titleFadeIn {
@@ -92,7 +96,7 @@
       letter-spacing: 0.03em;
       text-shadow: 0 1.5px 12px rgba(0,0,0,0.13);
       font-weight: 400;
-      animation: subtitleIn 1.4s cubic-bezier(.33,1.2,.5,1.05) .5s backwards;
+      animation: subtitleIn 1.0s cubic-bezier(.33,1.2,.5,1.05) .4s backwards;
       font-family: 'Noto Sans JP', 'Montserrat', sans-serif;
       line-height: 1.5;
     }
@@ -106,7 +110,7 @@
       justify-content: center;
       gap: 32px;
       margin-top: 1.6em;
-      animation: fadeIn 2.1s cubic-bezier(.2,1.4,.5,1) .8s backwards;
+      animation: fadeIn 1.3s cubic-bezier(.2,1.4,.5,1) .6s backwards;
     }
     .button-link {
       position: relative;
@@ -166,6 +170,9 @@
         font-size: 1em;
         box-sizing: border-box;
       }
+      .overlay {
+        transform: translateY(-2vh); /* スマホはやや控えめに */
+      }
     }
     @media (max-width: 380px) {
       .button-link {
@@ -199,14 +206,14 @@
     // ぼかしアニメーション
     setTimeout(function() {
       const blur = document.getElementById('background-blur');
-      blur.style.filter = 'blur(4px)'; // ここでぼかしを弱めに
-      blur.style.opacity = '0.15';     // さらに元画像が透けるように
-    }, 150); // すぐぼかし開始
+      blur.style.filter = 'blur(4px)';
+      blur.style.opacity = '0.2';
+    }, 150);
 
-    // UX群を素早く出す（ぼかしとほぼ同時に出す）
+    // UX群を素早く出す
     setTimeout(function() {
       document.getElementById('overlay').classList.add('visible');
-    }, 500); // 0.5秒（500ms）でフェードイン
+    }, 500);
   </script>
 </body>
 </html>
