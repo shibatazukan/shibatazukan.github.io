@@ -33,7 +33,7 @@
       z-index: -1;
       filter: blur(4px);
       opacity: 0;
-      transition: opacity 1s ease-in-out;
+      transition: opacity 1.2s cubic-bezier(.4,0,.2,1);
     }
 
     /* ハンバーガーメニュー */
@@ -67,8 +67,12 @@
       display: flex;
       flex-direction: column;
     }
-    .side-menu.open { left: 0; }
-    .side-menu.open ~ .menu-toggle { left: 280px; }
+    .side-menu.open {
+      left: 0;
+    }
+    .side-menu.open ~ .menu-toggle {
+      left: 280px;
+    }
 
     .side-menu .menu-title {
       font-size: 1.2em;
@@ -92,7 +96,9 @@
       transition: background 0.25s;
       border-radius: 6px;
     }
-    .side-menu a:hover { background: rgba(255, 255, 255, 0.1); }
+    .side-menu a:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
     
     /* 中央オーバーレイ */
     .overlay {
@@ -100,23 +106,31 @@
       top: 50%; left: 50%;
       transform: translate(-50%, -50%);
       text-align: center;
+      opacity: 0;
       pointer-events: none;
+      transition: opacity 0.7s cubic-bezier(.4,0,.2,1);
+    }
+    .overlay.visible {
+      opacity: 1;
+      pointer-events: auto;
     }
 
     .title-block {
       margin-bottom: 50px;
       transform: translateY(-15px);
     }
-
+    
     h1 {
       font-family: 'Montserrat', 'Noto Sans JP', sans-serif;
-      font-size: 3.8em;
+      font-size: 4.0em;
       font-weight: 800;
       letter-spacing: 0.1em;
       margin: 0.1em 0 0.2em 0;
       background: linear-gradient(180deg, #FFD700, #FFA500 70%, #ffffff 95%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
+      background-clip: text;
+      color: transparent;
       text-shadow: 0 2px 8px rgba(255, 140, 0, 0.4);
       user-select: none;
     }
@@ -155,11 +169,13 @@
       transition: transform 0.3s, box-shadow 0.3s, background 0.3s;
       min-width: 170px;
     }
+
     .buttons .button-link i {
       font-size: 1.35em;
       width: 2.0em;
       text-align: center;
     }
+
     .buttons .button-link:hover {
       transform: translateY(-6px) scale(1.04);
       box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
@@ -189,12 +205,14 @@
     <a href="help.html"><i class="fa-solid fa-circle-question"></i> ヘルプ</a>
   </nav>
 
-  <div class="menu-toggle" id="menuToggle"><i class="fa-solid fa-bars"></i></div>
+  <div class="menu-toggle" id="menuToggle">
+    <i class="fa-solid fa-bars"></i>
+  </div>
 
   <div id="background-clear"></div>
   <div id="background-blur"></div>
 
-  <div class="overlay">
+  <div class="overlay" id="overlay">
     <div class="title-block">
       <h1>新発田ずかん</h1>
       <div class="subtitle">しばたの自然と文化を楽しむWebアプリ</div>
@@ -207,32 +225,40 @@
   </div>
 
   <script>
-    const images = ["background1.jpg","background2.jpg","background3.jpg"];
-    let current = 0;
+    // 初期表示
+    const backgrounds = ['background1.jpg','background2.jpg','background3.jpg'];
+    let currentIndex = 0;
+
     const bgClear = document.getElementById('background-clear');
     const bgBlur = document.getElementById('background-blur');
 
-    bgClear.style.backgroundImage = `url(${images[current]})`;
-    bgBlur.style.backgroundImage = `url(${images[current]})`;
+    // 初期背景セット
+    bgClear.style.backgroundImage = `url('${backgrounds[0]}')`;
+    bgBlur.style.backgroundImage = `url('${backgrounds[0]}')`;
 
-    setTimeout(() => { bgBlur.style.opacity = '1'; }, 500);
+    setTimeout(() => {
+      bgBlur.style.opacity = '1';
+    }, 500);
 
-    function crossFade() {
-      const next = (current + 1) % images.length;
-      bgBlur.style.opacity = '0'; // 現在の画像フェードアウト
-      setTimeout(() => {
-        bgClear.style.backgroundImage = `url(${images[next]})`; // 次の画像を下にセット
-        bgBlur.style.backgroundImage = `url(${images[next]})`;
-        bgBlur.style.opacity = '1'; // フェードイン
-        current = next;
-      }, 1000); // フェードアウトと同時に切替
-    }
+    setTimeout(() => {
+      document.getElementById('overlay').classList.add('visible');
+    }, 850);
 
-    setInterval(crossFade, 5000);
+    // クロスフェード切り替え
+    setInterval(() => {
+      currentIndex = (currentIndex + 1) % backgrounds.length;
+      bgClear.style.backgroundImage = `url('${backgrounds[currentIndex]}')`;
+      bgBlur.style.opacity = '0';
+      bgBlur.style.backgroundImage = `url('${backgrounds[currentIndex]}')`;
+      setTimeout(() => { bgBlur.style.opacity = '1'; }, 50); // 少し遅延してフェードイン
+    }, 5000);
 
+    // メニュー開閉
     const menuToggle = document.getElementById('menuToggle');
     const sideMenu = document.getElementById('sideMenu');
-    menuToggle.addEventListener('click', () => { sideMenu.classList.toggle('open'); });
+    menuToggle.addEventListener('click', () => {
+      sideMenu.classList.toggle('open');
+    });
   </script>
 </body>
 </html>
