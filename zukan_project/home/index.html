@@ -60,7 +60,8 @@
       transition: opacity 1.2s cubic-bezier(.4,0,.2,1);
     }
     .overlay {
-      background: rgba(24, 28, 31, 0.38);
+      /* 背景フィルター(黒)は削除 → 完全透明 */
+      background: transparent !important;
       backdrop-filter: blur(3px) saturate(1.05);
       width: 100vw;
       height: 100vh;
@@ -76,7 +77,8 @@
       overflow: hidden;
       opacity: 0;
       pointer-events: none;
-      transform: translateY(4vh); /* 少し下に */
+      /* 中央より少し下に */
+      transform: translateY(4vh);
       transition: opacity 0.7s cubic-bezier(.4,0,.2,1), transform 0.7s cubic-bezier(.4,0,.2,1);
     }
     .overlay.visible {
@@ -154,23 +156,28 @@
       font-size: 1.35em;
       margin-right: 0.65em;
       margin-left: -0.25em;
+      /* 縦位置微調整 */
+      vertical-align: middle;
     }
     .button-zukan {
       background: linear-gradient(135deg, #FFA500, #FF7F50 60%);
     }
-    .button-zukan:hover, .button-zukan:focus {
+    .button-zukan:hover, .button-zukan:focus,
+    .button-zukan.active {
       background: linear-gradient(135deg, #FFD580 30%, #FFB347 100%);
     }
     .button-camera {
       background: linear-gradient(135deg, #3cc47c, #168f4e 60%);
     }
-    .button-camera:hover, .button-camera:focus {
+    .button-camera:hover, .button-camera:focus,
+    .button-camera.active {
       background: linear-gradient(135deg, #6cfcb7 30%, #35b86b 100%);
     }
     .button-map {
       background: linear-gradient(135deg, #3381ff, #2350b8 60%);
     }
-    .button-map:hover, .button-map:focus {
+    .button-map:hover, .button-map:focus,
+    .button-map.active {
       background: linear-gradient(135deg, #6dc4ff 30%, #3f6db3 100%);
     }
     .button-link::after {
@@ -185,10 +192,12 @@
       transition: left 0.5s cubic-bezier(.3,1.3,.5,1);
       pointer-events: none;
     }
-    .button-link:hover::after, .button-link:focus::after {
+    .button-link:hover::after, .button-link:focus::after,
+    .button-link.active::after {
       left: 100%;
     }
-    .button-link:hover, .button-link:focus {
+    /* ホバー・アクティブで動く（PC: hover/focus, スマホ: active・.activeクラス） */
+    .button-link:hover, .button-link:focus, .button-link:active, .button-link.active {
       transform: translateY(-7px) scale(1.045);
       box-shadow: 0 12px 28px rgba(0, 0, 0, 0.26);
       color: #fffbf7;
@@ -247,14 +256,24 @@
     </div>
   </div>
   <script>
+    // 背景画像セット
     document.getElementById('background-clear').style.backgroundImage = "url('background1.jpg')";
     document.getElementById('background-blur').style.backgroundImage = "url('background1.jpg')";
+    // ぼかしレイヤーを後からふわっとフェードイン
     setTimeout(function() {
       document.getElementById('background-blur').style.opacity = '1';
     }, 500);
+    // UX群ふわっと表示
     setTimeout(function() {
       document.getElementById('overlay').classList.add('visible');
     }, 850);
+
+    // スマホやタブレットのタッチ操作でも「ホバー感」を出す
+    document.querySelectorAll('.button-link').forEach(btn => {
+      btn.addEventListener('touchstart', () => btn.classList.add('active'), {passive: true});
+      btn.addEventListener('touchend', () => btn.classList.remove('active'));
+      btn.addEventListener('touchcancel', () => btn.classList.remove('active'));
+    });
   </script>
 </body>
 </html>
