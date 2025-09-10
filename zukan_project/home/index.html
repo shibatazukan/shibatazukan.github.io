@@ -29,16 +29,33 @@
       background-repeat: no-repeat;
       pointer-events: none;
       user-select: none;
+      transition: opacity 0.8s cubic-bezier(.4,0,.2,1);
     }
     #background-clear {
       z-index: -2;
       opacity: 1;
-      transition: opacity 0.8s cubic-bezier(.4,0,.2,1);
     }
     #background-blur {
       z-index: -1;
-      filter: blur(0px);
-      opacity: 0.2;
+      filter: blur(4px);
+      /* ぼかし画像にグラデーションマスク */
+      -webkit-mask-image: linear-gradient(to bottom, 
+        rgba(0,0,0,1) 0%,
+        rgba(0,0,0,0.15) 38%,
+        rgba(0,0,0,0) 48%,
+        rgba(0,0,0,0) 52%,
+        rgba(0,0,0,0.15) 62%,
+        rgba(0,0,0,1) 100%
+      );
+      mask-image: linear-gradient(to bottom, 
+        rgba(0,0,0,1) 0%,
+        rgba(0,0,0,0.15) 38%,
+        rgba(0,0,0,0) 48%,
+        rgba(0,0,0,0) 52%,
+        rgba(0,0,0,0.15) 62%,
+        rgba(0,0,0,1) 100%
+      );
+      opacity: 0.45; /* お好みで */
       transition: filter 0.7s cubic-bezier(.4,0,.2,1), opacity 0.7s cubic-bezier(.4,0,.2,1);
     }
     .overlay {
@@ -58,14 +75,12 @@
       overflow: hidden;
       opacity: 0;
       pointer-events: none;
-      /* ほんの少し上へ */
       transform: translateY(-4vh);
-      transition: opacity 0.7s cubic-bezier(.4,0,.2,1), transform 0.7s cubic-bezier(.4,0,.2,1);
+      transition: opacity 0.7s, transform 0.7s;
     }
     .overlay.visible {
       opacity: 1;
       pointer-events: auto;
-      /* transformはそのまま（上に寄せたまま） */
     }
     h1 {
       font-family: 'Montserrat', 'Noto Sans JP', sans-serif;
@@ -79,7 +94,6 @@
       color: transparent;
       -webkit-text-fill-color: transparent;
       text-shadow: 0 2px 18px rgba(0,0,0,0.11);
-      /* アニメーション時間を短く・スムーズに */
       animation: titleFadeIn 0.85s cubic-bezier(.4,0,.2,1) 0.08s backwards;
       user-select: none;
     }
@@ -171,7 +185,7 @@
         box-sizing: border-box;
       }
       .overlay {
-        transform: translateY(-2vh); /* スマホはやや控えめに */
+        transform: translateY(-2vh);
       }
     }
     @media (max-width: 380px) {
@@ -199,17 +213,14 @@
     </div>
   </div>
   <script>
-    // 背景画像セット
     document.getElementById('background-clear').style.backgroundImage = "url('background1.jpg')";
     document.getElementById('background-blur').style.backgroundImage = "url('background1.jpg')";
-
-    // ぼかしアニメーション
+    // ぼかしアニメーション（初回鮮明→徐々にぼかし）
     setTimeout(function() {
       const blur = document.getElementById('background-blur');
       blur.style.filter = 'blur(4px)';
-      blur.style.opacity = '0.2';
+      blur.style.opacity = '0.45';
     }, 150);
-
     // UX群を素早く出す
     setTimeout(function() {
       document.getElementById('overlay').classList.add('visible');
