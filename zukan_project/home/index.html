@@ -21,6 +21,7 @@
       position: fixed;
       top: 0; left: 0;
       width: 100vw; height: 100vh;
+      background-image: url('background1.jpg');
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
@@ -33,7 +34,7 @@
       z-index: -1;
       filter: blur(4px);
       opacity: 0;
-      transition: opacity 1s ease;
+      transition: opacity 1.2s ease-in-out;
     }
 
     /* ハンバーガーメニュー */
@@ -67,12 +68,8 @@
       display: flex;
       flex-direction: column;
     }
-    .side-menu.open {
-      left: 0;
-    }
-    .side-menu.open ~ .menu-toggle {
-      left: 280px; /* サイドメニュー幅260px + 余白20px */
-    }
+    .side-menu.open { left: 0; }
+    .side-menu.open ~ .menu-toggle { left: 280px; }
 
     .side-menu .menu-title {
       font-size: 1.2em;
@@ -96,9 +93,7 @@
       transition: background 0.25s;
       border-radius: 6px;
     }
-    .side-menu a:hover {
-      background: rgba(255, 255, 255, 0.1);
-    }
+    .side-menu a:hover { background: rgba(255, 255, 255, 0.1); }
     
     /* 中央オーバーレイ */
     .overlay {
@@ -106,23 +101,20 @@
       top: 50%; left: 50%;
       transform: translate(-50%, -50%);
       text-align: center;
-      opacity: 0;
       pointer-events: none;
-      transition: opacity 0.7s cubic-bezier(.4,0,.2,1);
-    }
-    .overlay.visible {
-      opacity: 1;
-      pointer-events: auto;
     }
 
-    .title-block {
-      margin-bottom: 50px;
-      transform: translateY(-15px);
+    /* タイトル・サブタイトルをクロスフェード */
+    h1, .subtitle {
+      opacity: 0;
+      transition: opacity 1.8s ease-in-out;
     }
-    
+    h1.visible, .subtitle.visible { opacity: 1; }
+
+    /* タイトル装飾 */
     h1 {
       font-family: 'Montserrat', 'Noto Sans JP', sans-serif;
-      font-size: 4.0em;
+      font-size: 3.8em;
       font-weight: 800;
       letter-spacing: 0.1em;
       margin: 0.1em 0 0.2em 0;
@@ -144,6 +136,7 @@
       user-select: none;
     }
 
+    /* ボタンスタイル */
     .buttons {
       display: flex;
       flex-direction: column;
@@ -169,13 +162,11 @@
       transition: transform 0.3s, box-shadow 0.3s, background 0.3s;
       min-width: 170px;
     }
-
     .buttons .button-link i {
       font-size: 1.35em;
       width: 2.0em;
       text-align: center;
     }
-
     .buttons .button-link:hover {
       transform: translateY(-6px) scale(1.04);
       box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
@@ -217,10 +208,8 @@
 
   <!-- 中央表示 -->
   <div class="overlay" id="overlay">
-    <div class="title-block">
-      <h1>新発田ずかん</h1>
-      <div class="subtitle">しばたの自然と文化を楽しむWebアプリ</div>
-    </div>
+    <h1 id="title">新発田ずかん</h1>
+    <div class="subtitle" id="subtitle">しばたの自然と文化を楽しむWebアプリ</div>
     <div class="buttons">
       <a href="list.html" class="button-link"><i class="fa-solid fa-scroll"></i>ずかんを開く </a>
       <a href="../camera/index.html" class="button-link"><i class="fa-solid fa-camera"></i>カメラを開く</a>
@@ -230,47 +219,20 @@
 
   <!-- JS -->
   <script>
-    // 背景画像リスト
-    const images = ["background1.jpg", "background2.jpg", "background3.jpg"];
-    let current = 0;
-
-    const bgClear = document.getElementById('background-clear');
-    const bgBlur = document.getElementById('background-blur');
-
-    // 初期設定
-    bgClear.style.backgroundImage = `url(${images[current]})`;
-    bgBlur.style.backgroundImage = `url(${images[current]})`;
-
-    // 初回フェードイン
+    // 背景表示
+    document.getElementById('background-clear').style.backgroundImage = "url('background1.jpg')";
+    document.getElementById('background-blur').style.backgroundImage = "url('background1.jpg')";
     setTimeout(() => {
-      bgBlur.style.opacity = '1';
+      document.getElementById('background-blur').style.opacity = '1';
     }, 500);
 
+    // タイトルとサブタイトルをクロスフェードで表示
     setTimeout(() => {
-      document.getElementById('overlay').classList.add('visible');
-    }, 850);
-
-    // 背景切り替え関数
-    function changeBackground() {
-      const next = (current + 1) % images.length;
-
-      // フェードアウト
-      bgBlur.style.opacity = "0";
-
-      setTimeout(() => {
-        // 画像切り替え
-        bgClear.style.backgroundImage = `url(${images[next]})`;
-        bgBlur.style.backgroundImage = `url(${images[next]})`;
-
-        // フェードイン
-        bgBlur.style.opacity = "1";
-
-        current = next;
-      }, 1000); // フェード時間に合わせる
-    }
-
-    // 5秒ごとに切り替え
-    setInterval(changeBackground, 5000);
+      document.getElementById('title').classList.add('visible');
+    }, 1000);
+    setTimeout(() => {
+      document.getElementById('subtitle').classList.add('visible');
+    }, 2000);
 
     // メニュー開閉
     const menuToggle = document.getElementById('menuToggle');
