@@ -12,10 +12,10 @@
       font-family: 'Noto Sans JP', 'Montserrat', sans-serif;
       color: #fff;
       min-height: 100vh;
-      background: #181c1f;
       width: 100vw;
       height: 100vh;
       overflow: hidden;
+      background: transparent;
     }
     body {
       min-height: 100vh;
@@ -32,26 +32,15 @@
       height: 100vh;
       min-width: 100vw;
       min-height: 100vh;
+      background-image: url('background1.jpg');
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
-      z-index: -2;
+      z-index: -1;
       opacity: 1;
-      transition: background-image 1.2s cubic-bezier(.4,0,.2,1);
       pointer-events: none;
       user-select: none;
-    }
-    #background-filter {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100vw;
-      height: 100vh;
-      min-width: 100vw;
-      min-height: 100vh;
-      background: rgba(24,28,31,0.35); /* ほの暗いフィルター */
-      pointer-events: none;
-      z-index: -1;
-      transition: background 1s cubic-bezier(.4,0,.2,1);
+      transition: none;
     }
     .overlay {
       background: rgba(24, 28, 31, 0.52);
@@ -191,7 +180,6 @@
 </head>
 <body>
   <div id="background"></div>
-  <div id="background-filter"></div>
   <div class="overlay">
     <h1>しばた図鑑</h1>
     <div class="subtitle">しばたの自然と文化を楽しむWebアプリ</div>
@@ -201,30 +189,5 @@
       <a href="map.html" class="button-link">マップを開く</a>
     </div>
   </div>
-  <script>
-    // 背景画像リスト
-    const images = [
-      'background1.jpg',
-      'background2.jpg',
-      'background3.jpg'
-    ];
-    let index = 0;
-    const bg = document.getElementById('background');
-
-    // 画像のプリロード
-    images.forEach(src => {
-      const img = new Image();
-      img.src = src;
-    });
-
-    // 初期背景
-    bg.style.backgroundImage = `url('${images[index]}')`;
-
-    // 画像切り替え
-    setInterval(() => {
-      index = (index + 1) % images.length;
-      bg.style.backgroundImage = `url('${images[index]}')`;
-    }, 5000);
-  </script>
 </body>
 </html>
