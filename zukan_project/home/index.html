@@ -25,7 +25,7 @@
       top: 0; left: 0;
       width: 100vw;
       height: 100vh;
-      background-image: url('background1.jpg'); /* 画像名は適宜変更してください */
+      background-image: url('background1.jpg'); /* 画像名は適宜修正 */
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
@@ -68,7 +68,7 @@
       min-width: 100vw;
       display: flex;
       flex-direction: column;
-      justify-content: center; /* 完全中央寄せ */
+      justify-content: center;
       align-items: center;
       text-align: center;
       box-sizing: border-box;
@@ -89,72 +89,30 @@
       margin: 0.1em 0 0.04em 0;
       font-weight: 700;
       letter-spacing: 0.08em;
-      /* v20 オレンジ〜ゴールド系グラデーション */
-      background: linear-gradient(90deg, #FFA500 10%, #fff3c0 70%, #FF7F50 100%);
-      background-clip: text;
-      -webkit-background-clip: text;
-      color: transparent;
-      -webkit-text-fill-color: transparent;
-      text-shadow:
-        0 2px 18px rgba(60,0,60,0.18),
-        0 1.5px 0 #6a4083;
-      position: relative;
+      color: #FFA500; /* ← 昔のverのオレンジ単色！ */
       user-select: none;
       z-index: 1;
-    }
-    h1::before {
-      content: "";
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%,-50%);
-      width: 120%;
-      height: 120%;
-      background: rgba(0,0,0,0.20);
-      border-radius: 1em;
-      z-index: -1;
-      pointer-events: none;
-      filter: blur(2px);
-    }
-    @keyframes titleFadeIn {
-      0% {opacity:0; letter-spacing:0.35em; filter:blur(4px);}
-      80%{filter:blur(1px);}
-      100%{opacity:1; letter-spacing: 0.08em; filter:blur(0);}
+      background: none;
+      -webkit-background-clip: unset;
+      background-clip: unset;
+      -webkit-text-fill-color: unset;
+      text-shadow: none;
+      position: relative;
     }
     .subtitle {
       font-size: 1.3em;
       margin-bottom: 0.9em;
       margin-top: 0.1em;
-      color: #fffbe5;
+      color: #fff; /* シンプルな白 */
       letter-spacing: 0.03em;
-      text-shadow:
-        0 2px 12px rgba(60,0,60,0.23),
-        0 1px 0 #6a4083;
       font-weight: 400;
-      animation: subtitleIn 1.0s cubic-bezier(.33,1.2,.5,1.05) .4s backwards;
       font-family: 'Noto Sans JP', 'Montserrat', sans-serif;
       line-height: 1.5;
-      position: relative;
       user-select: none;
       z-index: 1;
-    }
-    .subtitle::before {
-      content: "";
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%,-50%);
-      width: 110%;
-      height: 125%;
-      background: rgba(0,0,0,0.13);
-      border-radius: 1em;
-      z-index: -1;
-      pointer-events: none;
-      filter: blur(1.4px);
-    }
-    @keyframes subtitleIn {
-      0% {opacity: 0; transform: translateY(-18px);}
-      100%{opacity: 1; transform: none;}
+      background: none;
+      text-shadow: none;
+      position: relative;
     }
     .buttons {
       display: flex;
@@ -162,7 +120,6 @@
       justify-content: center;
       gap: 32px;
       margin-top: 1.6em;
-      animation: fadeIn 1.3s cubic-bezier(.2,1.4,.5,1) .6s backwards;
     }
     .button-link {
       position: relative;
@@ -263,10 +220,6 @@
         font-size: 0.91em;
         padding: 0.8em 0.6em;
       }
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to   { opacity: 1; }
     }
   </style>
 </head>
