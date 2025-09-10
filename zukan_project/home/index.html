@@ -225,40 +225,50 @@
   </div>
 
   <script>
-    // 初期表示
-    const backgrounds = ['background1.jpg','background2.jpg','background3.jpg'];
-    let currentIndex = 0;
-
-    const bgClear = document.getElementById('background-clear');
-    const bgBlur = document.getElementById('background-blur');
-
-    // 初期背景セット
-    bgClear.style.backgroundImage = `url('${backgrounds[0]}')`;
-    bgBlur.style.backgroundImage = `url('${backgrounds[0]}')`;
-
+  const backgrounds = ['background1.jpg','background2.jpg','background3.jpg'];
+  let currentIndex = 0;
+  
+  const bgClear = document.getElementById('background-clear');
+  const bgBlur = document.getElementById('background-blur');
+  
+  bgClear.style.backgroundImage = `url('${backgrounds[0]}')`;
+  bgBlur.style.backgroundImage = `url('${backgrounds[0]}')`;
+  bgBlur.style.opacity = '1';
+  
+  setTimeout(() => {
+    document.getElementById('overlay').classList.add('visible');
+  }, 850);
+  
+  // クロスフェード用の2枚目レイヤーを作る
+  const bgFade = document.createElement('div');
+  bgFade.style.position = 'fixed';
+  bgFade.style.top = '0';
+  bgFade.style.left = '0';
+  bgFade.style.width = '100vw';
+  bgFade.style.height = '100vh';
+  bgFade.style.backgroundSize = 'cover';
+  bgFade.style.backgroundPosition = 'center';
+  bgFade.style.backgroundRepeat = 'no-repeat';
+  bgFade.style.pointerEvents = 'none';
+  bgFade.style.userSelect = 'none';
+  bgFade.style.zIndex = '-1';
+  bgFade.style.opacity = '0';
+  bgFade.style.transition = 'opacity 1.2s cubic-bezier(.4,0,.2,1)';
+  document.body.appendChild(bgFade);
+  
+  setInterval(() => {
+    const nextIndex = (currentIndex + 1) % backgrounds.length;
+    bgFade.style.backgroundImage = `url('${backgrounds[nextIndex]}')`;
+    bgFade.style.opacity = '1';
+  
+    // フェードが終わったら bgClear を更新して bgFade を透明に戻す
     setTimeout(() => {
-      bgBlur.style.opacity = '1';
-    }, 500);
+      bgClear.style.backgroundImage = `url('${backgrounds[nextIndex]}')`;
+      bgFade.style.opacity = '0';
+      currentIndex = nextIndex;
+    }, 1200); // transition と同じ時間
+  }, 5000);
+</script>
 
-    setTimeout(() => {
-      document.getElementById('overlay').classList.add('visible');
-    }, 850);
-
-    // クロスフェード切り替え
-    setInterval(() => {
-      currentIndex = (currentIndex + 1) % backgrounds.length;
-      bgClear.style.backgroundImage = `url('${backgrounds[currentIndex]}')`;
-      bgBlur.style.opacity = '0';
-      bgBlur.style.backgroundImage = `url('${backgrounds[currentIndex]}')`;
-      setTimeout(() => { bgBlur.style.opacity = '1'; }, 50); // 少し遅延してフェードイン
-    }, 5000);
-
-    // メニュー開閉
-    const menuToggle = document.getElementById('menuToggle');
-    const sideMenu = document.getElementById('sideMenu');
-    menuToggle.addEventListener('click', () => {
-      sideMenu.classList.toggle('open');
-    });
-  </script>
 </body>
 </html>
