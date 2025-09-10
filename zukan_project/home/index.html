@@ -126,21 +126,26 @@
         h1 {
             font-family: 'Mochiy Pop One', sans-serif;
             font-size: 4.0em;
-            font-weight: 800;
+            font-weight: 800; /* Mochiy Pop Oneは400のみなので見た目は変わりません */
             letter-spacing: 0.1em;
             margin: 0.1em 0 0.2em 0;
+            
+            /* 修正点：グラデーションを背景として適用し、文字色を白に変更 */
             background: linear-gradient(180deg, #FFD700, #FFA500 70%, #ffffff 95%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            color: transparent; /* text-shadowで縁取りするため、本来の文字色を透明に */
-            /* 既存のtext-shadowを削除し、新しい縁取り用のtext-shadowを追加 */
-            text-shadow:
-                -2px -2px 0 #000,  /* 左上 */
-                2px -2px 0 #000,   /* 右上 */
-                -2px 2px 0 #000,   /* 左下 */
-                2px 2px 0 #000,    /* 右下 */
-                0 4px 10px rgba(255, 140, 0, 0.6); /* ソフトな影で立体感を出す（任意） */
+            -webkit-background-clip: none; /* グラデーションの適用を解除 */
+            -webkit-text-fill-color: #fff; /* 文字色を白に設定 */
+            background-clip: none;
+            color: #fff; /* 通常の文字色も白に設定 */
+        
+            /* 縁取りはtext-shadowで表現し、文字を白くする */
+            text-shadow: 
+                -2px -2px 0 #000,
+                2px -2px 0 #000,
+                -2px 2px 0 #000,
+                2px 2px 0 #000,
+                /* 文字の中心を白く見せるための白い影を追加 */
+                0px 0px 5px #fff,
+                0 4px 10px rgba(0, 0, 0, 0.4); /* 外側のソフトな影 */
             user-select: none;
         }
         
