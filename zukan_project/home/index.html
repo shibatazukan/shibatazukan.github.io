@@ -226,6 +226,8 @@
   </div>
   <script>
     // 背景画像リスト
+    // 修正後のJavaScript
+    // 変更する秒数は、CSSのtransition時間（1200ms）と同じにします。
     const images = [
       'background1.jpg',
       'background2.jpg',
@@ -233,29 +235,27 @@
     ];
     let index = 0;
     const bg = document.getElementById('background');
-
+    
     // 画像のプリロード
     images.forEach(src => {
       const img = new Image();
       img.src = src;
     });
-
-    // 初期背景
+    
+    // 初期背景の設定はそのまま
     bg.style.backgroundImage = `url('${images[index]}')`;
     bg.style.opacity = 1;
-
+    
     setInterval(() => {
-      // フェードアウト
+      // まず不透明度を0に設定
       bg.style.opacity = 0;
+      
+      // 1200msのトランジション後に次の画像をセットし、すぐに不透明度を1に戻す
       setTimeout(() => {
         index = (index + 1) % images.length;
-        // 画像切り替え
         bg.style.backgroundImage = `url('${images[index]}')`;
-        // 0.1秒後にフェードイン
-        setTimeout(() => {
-          bg.style.opacity = 1;
-        }, 100);
-      }, 1200);
+        bg.style.opacity = 1;
+      }, 1200); // CSSのtransition時間と同じか短くすることで、真っ黒な状態を隠す
     }, 5000);
   </script>
 </body>
