@@ -48,71 +48,82 @@
       transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    /* --- ハンバーガーメニュー --- */
+    /* ----------------- ハンバーガーメニューアイコン ----------------- */
     #hamburger {
       position: fixed;
       top: 16px;
       left: 16px;
-      font-size: 2.2em;
-      color: #ffa500;
-      z-index: 1002;
+      z-index: 9999;
+      font-size: 28px;
+      color: #000; /* 黒 */
       cursor: pointer;
+      padding: 6px 10px;
+      border: 2px solid #000; /* 黒の四角枠 */
+      border-radius: 6px;
+      background-color: #fff; /* 白背景でコントラスト */
       user-select: none;
-      transition: color 0.3s ease;
+      transition: background-color 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      box-sizing: border-box;
     }
-    #hamburger:hover {
-      color: #ffb347;
+    #hamburger:hover,
+    #hamburger:focus {
+      background-color: #eee;
+      outline: none;
     }
 
-    /* サイドメニュー */
+    /* ----------------- サイドメニュー ----------------- */
     .side-menu {
       position: fixed;
       top: 0;
       left: 0;
       width: 260px;
       height: 100vh;
-      background: rgba(30, 30, 30, 0.95);
-      box-shadow: 2px 0 12px rgba(0, 0, 0, 0.8);
+      background: #ccc; /* グレー背景 */
+      color: #000; /* 黒文字 */
+      box-shadow: 2px 0 12px rgba(0, 0, 0, 0.15);
       transform: translateX(-100%);
       transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-      z-index: 1001;
-      padding: 80px 1em 1em 1em; /* ① 三本線と被らないように上部に余白 */
+      z-index: 9998;
+      padding-top: 80px; /* 三本線＆ユーザー名被り防止に上に余白 */
       box-sizing: border-box;
       display: flex;
       flex-direction: column;
-      gap: 1.2em;
-      font-weight: 600;
-      font-size: 1.1em;
-      user-select: none;
     }
     .side-menu.open {
       transform: translateX(0);
     }
     .side-menu a {
+      padding: 14px 24px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 1.1em;
+      color: #000;
       display: flex;
       align-items: center;
-      color: #ffa500;
-      text-decoration: none;
-      padding: 0.55em 1em;
-      border-radius: 10px;
-      transition: background-color 0.3s ease;
-      font-weight: 700;
-      gap: 0.75em;
+      gap: 14px;
+      border-radius: 4px;
+      transition: background-color 0.3s ease, color 0.3s ease;
+      user-select: none;
+    }
+    .side-menu a i {
+      color: #000;
+      min-width: 20px;
+      text-align: center;
+      font-size: 1.25em;
     }
     .side-menu a:hover,
     .side-menu a:focus {
-      background: linear-gradient(135deg, #ffd580 30%, #ffb347 100%);
+      background-color: #999;
       color: #fff;
       outline: none;
     }
-    .side-menu a i {
-      min-width: 24px;
-      font-size: 1.3em;
-      color: #ffa500;
-      flex-shrink: 0;
-    }
 
-    /* --- メイン画面中央のコンテンツ --- */
+    /* ----------------- オーバーレイ ----------------- */
     .overlay {
       width: 100vw;
       height: 100vh;
@@ -127,8 +138,7 @@
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1);
-      padding: 0 1em;
-      z-index: 0;
+      padding: 0 24px;
     }
     .overlay.visible {
       opacity: 1;
@@ -136,37 +146,31 @@
     }
     h1 {
       font-family: "Montserrat", "Noto Sans JP", sans-serif;
-      font-size: 4.2em; /* ② 大きく */
-      font-weight: 900;
+      font-size: 4.2em;
+      font-weight: 700;
       letter-spacing: 0.1em;
-      margin: 0 0 0.25em 0;
-      /* 色合い変更・グラデーション強調 */
-      background: linear-gradient(
-        180deg,
-        #ffb347 40%,
-        #ffa500 75%,
-        #ffd580 100%
-      );
-      color: transparent;
+      margin: 0.1em 0 0.14em 0;
+      background: linear-gradient(180deg, #ff7f50 50%, #ff4500 95%);
+      color: #ff4500;
       background-clip: text;
       -webkit-background-clip: text;
+      color: transparent;
       -webkit-text-fill-color: transparent;
-      line-height: 1.05;
+      line-height: 1.08;
       user-select: none;
       position: relative;
-      text-shadow: 0 0 6px rgba(255, 165, 0, 0.6);
+      text-shadow: 0 2px 6px rgba(255, 69, 0, 0.5);
     }
     .subtitle {
       font-size: 1.3em;
       color: #fff;
-      font-weight: 500;
+      font-weight: 400;
       letter-spacing: 0.04em;
-      margin: 0 0 1.8em 0;
+      margin: 0 0 1.5em 0;
       font-family: "Noto Sans JP", "Montserrat", sans-serif;
-      line-height: 1.5;
+      line-height: 1.52;
       user-select: none;
-      text-shadow: 0 0 5px rgba(0, 0, 0, 0.4);
-      max-width: 400px;
+      text-shadow: 0 0 6px rgba(0, 0, 0, 0.35);
     }
     .buttons {
       display: flex;
@@ -204,7 +208,7 @@
     .button-link .fa-scroll {
       font-size: 1.35em;
       margin-right: 0.65em;
-      margin-left: -0.1em; /* ② 巻物アイコン位置調整 */
+      margin-left: -0.25em;
       vertical-align: middle;
     }
     .button-zukan {
@@ -256,13 +260,12 @@
       box-shadow: 0 12px 28px rgba(0, 0, 0, 0.26);
       color: #fffbf7;
     }
-
     @media (max-width: 600px) {
       h1 {
-        font-size: 2.8em;
+        font-size: 2.5em;
       }
       .subtitle {
-        font-size: 1.1em;
+        font-size: 1.05em;
       }
       .buttons {
         flex-direction: column;
@@ -272,92 +275,74 @@
       }
       .button-link {
         width: 80vw;
-        padding: 1em 1em;
-        font-size: 1em;
-        box-sizing: border-box;
-      }
-      /* ハンバーガーメニューアイコン小さめ */
-      #hamburger {
-        font-size: 1.8em;
-        top: 12px;
-        left: 12px;
-      }
-      .side-menu {
-        width: 220px;
-        padding-top: 70px;
-        font-size: 1em;
-      }
-    }
-    @media (max-width: 380px) {
-      .button-link {
-        font-size: 0.91em;
-        padding: 0.9em 1em;
-        min-width: unset;
-        width: 90vw;
+        min-width: 0;
+        font-size: 1.1em;
+        padding: 1em 1.6em;
       }
     }
   </style>
 </head>
 <body>
+  <!-- 背景 -->
   <div id="background-clear"></div>
   <div id="background-blur"></div>
 
-  <!-- ハンバーガーメニューアイコン -->
-  <div id="hamburger" aria-label="メニューを開く" role="button" tabindex="0" aria-expanded="false">
+  <!-- ハンバーガーメニュー（三本線） -->
+  <div id="hamburger" tabindex="0" aria-label="メニュー開閉ボタン">
     <i class="fa-solid fa-bars"></i>
   </div>
 
   <!-- サイドメニュー -->
-  <nav class="side-menu" aria-label="サイドメニュー">
-    <a href="#" class="menu-user" tabindex="0">
+  <nav class="side-menu" aria-label="サイトメニュー" role="navigation">
+    <a href="#" tabindex="0">
       <i class="fa-solid fa-user"></i> ユーザー
     </a>
-    <a href="#" class="menu-zukan" tabindex="0">
-      <i class="fa-solid fa-scroll"></i> 図鑑
+    <a href="#" tabindex="0">
+      <i class="fa-solid fa-scroll"></i> 図鑑一覧
     </a>
-    <a href="#" class="menu-camera" tabindex="0">
+    <a href="#" tabindex="0">
       <i class="fa-solid fa-camera"></i> カメラ
     </a>
-    <a href="#" class="menu-map" tabindex="0">
-      <i class="fa-solid fa-map-location-dot"></i> マップ
+    <a href="#" tabindex="0">
+      <i class="fa-solid fa-map"></i> マップ
     </a>
-    <a href="#" class="menu-settings" tabindex="0">
+    <a href="#" tabindex="0">
       <i class="fa-solid fa-gear"></i> せってい
     </a>
-    <a href="#" class="menu-help" tabindex="0">
-      <i class="fa-solid fa-gear"></i>ヘルプ
+    <a href="#" tabindex="0">
+      <i class="fa-solid fa-question"></i> ヘルプ
     </a>
   </nav>
 
-  <!-- メインコンテンツ -->
-  <div class="overlay visible" role="main" aria-label="アプリケーションメインコンテンツ">
+  <!-- オーバーレイ部分 -->
+  <main class="overlay visible" role="main" aria-label="メインコンテンツ">
     <h1>しばた図鑑</h1>
-    <p class="subtitle">しばたの自然と文化を楽しむアプリ</p>
-    <div class="buttons" role="navigation" aria-label="メニューへのショートカット">
-      <a href="#" class="button-link button-zukan" role="button" tabindex="0">
+    <p class="subtitle">
+      しばたの自然と文化を楽しむアプリ
+    </p>
+    <div class="buttons" role="group" aria-label="代表UXボタン">
+      <a href="#" class="button-zukan button-link" tabindex="0" role="button">
         <i class="fa-solid fa-scroll"></i> 図鑑一覧
       </a>
-      <a href="#" class="button-link button-camera" role="button" tabindex="0">
+      <a href="#" class="button-camera button-link" tabindex="0" role="button">
         <i class="fa-solid fa-camera"></i> カメラ
       </a>
-      <a href="#" class="button-link button-map" role="button" tabindex="0">
-        <i class="fa-solid fa-map-location-dot"></i> マップ
+      <a href="#" class="button-map button-link" tabindex="0" role="button">
+        <i class="fa-solid fa-map"></i> マップ
       </a>
     </div>
-  </div>
+  </main>
 
   <script>
+    // ハンバーガーメニュー開閉処理
     const hamburger = document.getElementById("hamburger");
     const sideMenu = document.querySelector(".side-menu");
 
     function toggleMenu() {
-      const isOpen = sideMenu.classList.toggle("open");
-      hamburger.setAttribute("aria-expanded", isOpen);
+      sideMenu.classList.toggle("open");
     }
 
     hamburger.addEventListener("click", toggleMenu);
-
-    // キーボード操作対応
     hamburger.addEventListener("keydown", (e) => {
       if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
