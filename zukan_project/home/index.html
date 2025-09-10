@@ -21,6 +21,7 @@
       position: fixed;
       top: 0; left: 0;
       width: 100vw; height: 100vh;
+      background-image: url('background1.jpg');
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
@@ -70,8 +71,9 @@
     .side-menu.open {
       left: 0;
     }
+    /* サイドメニューが開いたとき三本線を右へずらす */
     .side-menu.open ~ .menu-toggle {
-      left: 280px;
+      left: 280px; /* サイドメニュー幅260px + 余白20px */
     }
 
     .side-menu .menu-title {
@@ -116,10 +118,11 @@
     }
 
     .title-block {
-      margin-bottom: 50px;
-      transform: translateY(-15px);
+      margin-bottom: 50px; /* ボタンとの距離を調整 */
+      transform: translateY(-15px); /* 全体を上に移動 */
     }
     
+    /* タイトルを目立たせる */
     h1 {
       font-family: 'Montserrat', 'Noto Sans JP', sans-serif;
       font-size: 4.0em;
@@ -144,6 +147,7 @@
       user-select: none;
     }
 
+    /* ボタンスタイル */
     .buttons {
       display: flex;
       flex-direction: column;
@@ -154,8 +158,8 @@
 
     .buttons .button-link {
       display: flex;
-      align-items: center;
-      justify-content: center;
+      align-items: center;        /* アイコンと文字を縦中央 */
+      justify-content: center;    /* 文字は中央のまま */
       gap: 0.6em;
       padding: 0.8em 1.5em;
       font-size: 1em;
@@ -170,6 +174,7 @@
       min-width: 170px;
     }
 
+    /* アイコンの幅を固定して位置を揃える */
     .buttons .button-link i {
       font-size: 1.35em;
       width: 2.0em;
@@ -195,6 +200,7 @@
 </head>
 <body>
 
+  <!-- サイドメニュー -->
   <nav class="side-menu" id="sideMenu">
     <div class="menu-title"><i class="fa-solid fa-user"></i> ユーザー名</div>
     <a href="index.html"><i class="fa-solid fa-house"></i> ホーム</a>
@@ -205,13 +211,16 @@
     <a href="help.html"><i class="fa-solid fa-circle-question"></i> ヘルプ</a>
   </nav>
 
+  <!-- ハンバーガーメニュー -->
   <div class="menu-toggle" id="menuToggle">
     <i class="fa-solid fa-bars"></i>
   </div>
 
+  <!-- 背景 -->
   <div id="background-clear"></div>
   <div id="background-blur"></div>
 
+  <!-- 中央表示 -->
   <div class="overlay" id="overlay">
     <div class="title-block">
       <h1>新発田ずかん</h1>
@@ -224,51 +233,24 @@
     </div>
   </div>
 
+  <!-- JS -->
   <script>
-  const backgrounds = ['background1.jpg','background2.jpg','background3.jpg'];
-  let currentIndex = 0;
-  
-  const bgClear = document.getElementById('background-clear');
-  const bgBlur = document.getElementById('background-blur');
-  
-  bgClear.style.backgroundImage = `url('${backgrounds[0]}')`;
-  bgBlur.style.backgroundImage = `url('${backgrounds[0]}')`;
-  bgBlur.style.opacity = '1';
-  
-  setTimeout(() => {
-    document.getElementById('overlay').classList.add('visible');
-  }, 850);
-  
-  // クロスフェード用の2枚目レイヤーを作る
-  const bgFade = document.createElement('div');
-  bgFade.style.position = 'fixed';
-  bgFade.style.top = '0';
-  bgFade.style.left = '0';
-  bgFade.style.width = '100vw';
-  bgFade.style.height = '100vh';
-  bgFade.style.backgroundSize = 'cover';
-  bgFade.style.backgroundPosition = 'center';
-  bgFade.style.backgroundRepeat = 'no-repeat';
-  bgFade.style.pointerEvents = 'none';
-  bgFade.style.userSelect = 'none';
-  bgFade.style.zIndex = '-1';
-  bgFade.style.opacity = '0';
-  bgFade.style.transition = 'opacity 1.2s cubic-bezier(.4,0,.2,1)';
-  document.body.appendChild(bgFade);
-  
-  setInterval(() => {
-    const nextIndex = (currentIndex + 1) % backgrounds.length;
-    bgFade.style.backgroundImage = `url('${backgrounds[nextIndex]}')`;
-    bgFade.style.opacity = '1';
-  
-    // フェードが終わったら bgClear を更新して bgFade を透明に戻す
+    // 背景表示
+    document.getElementById('background-clear').style.backgroundImage = "url('background1.jpg')";
+    document.getElementById('background-blur').style.backgroundImage = "url('background1.jpg')";
     setTimeout(() => {
-      bgClear.style.backgroundImage = `url('${backgrounds[nextIndex]}')`;
-      bgFade.style.opacity = '0';
-      currentIndex = nextIndex;
-    }, 1200); // transition と同じ時間
-  }, 5000);
-</script>
+      document.getElementById('background-blur').style.opacity = '1';
+    }, 500);
+    setTimeout(() => {
+      document.getElementById('overlay').classList.add('visible');
+    }, 850);
 
+    // メニュー開閉
+    const menuToggle = document.getElementById('menuToggle');
+    const sideMenu = document.getElementById('sideMenu');
+    menuToggle.addEventListener('click', () => {
+      sideMenu.classList.toggle('open');
+    });
+  </script>
 </body>
 </html>
