@@ -16,24 +16,50 @@
             background: transparent;
         }
 
-        #background-clear, #background-blur {
+        /* 修正: 背景コンテナとフェードレイヤーを追加 */
+        #background-container {
             position: fixed;
-            top: 0; left: 0;
-            width: 100vw; height: 100vh;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -2;
+        }
+
+        .background-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            pointer-events: none;
-            user-select: none;
-            transition: background-image 1.5s cubic-bezier(.4,0,.2,1); /* Added transition for background image */
+            opacity: 0; /* 最初は非表示 */
+            transition: opacity 1.5s cubic-bezier(.4, 0, .2, 1);
         }
 
-        #background-clear { z-index: -2; }
-        #background-blur {
-            z-index: -1;
+        .background-layer.active {
+            opacity: 1; /* フェードイン */
+        }
+        
+        .background-blur-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
             filter: blur(4px);
-            opacity: 0;
-            transition: opacity 1.2s cubic-bezier(.4,0,.2,1), background-image 1.5s cubic-bezier(.4,0,.2,1); /* Added background-image transition */
+            opacity: 0; /* 最初は非表示 */
+            z-index: -1;
+            transition: opacity 1.2s cubic-bezier(.4, 0, .2, 1);
+        }
+
+        .background-blur-layer.visible {
+            opacity: 1;
         }
 
         /* ハンバーガーメニュー */
@@ -212,8 +238,11 @@
         <i class="fa-solid fa-bars"></i>
     </div>
 
-    <div id="background-clear"></div>
-    <div id="background-blur"></div>
+    <div id="background-container">
+        <div class="background-layer" id="bg-1"></div>
+        <div class="background-layer" id="bg-2"></div>
+    </div>
+    <div class="background-blur-layer" id="background-blur"></div>
 
     <div class="overlay" id="overlay">
         <div class="title-block">
@@ -228,40 +257,50 @@
     </div>
 
     <script>
-        // Array of image URLs to cycle through
         const images = ['background1.jpg', 'background2.jpg', 'background3.jpg'];
         let currentIndex = 0;
-        const clearBg = document.getElementById('background-clear');
+        const bg1 = document.getElementById('bg-1');
+        const bg2 = document.getElementById('bg-2');
         const blurBg = document.getElementById('background-blur');
+        let activeBg = bg1;
+        let inactiveBg = bg2;
 
-        // Function to update the background images
+        // 初期設定
+        bg1.style.backgroundImage = `url('${images[currentIndex]}')`;
+        bg1.classList.add('active');
+        blurBg.style.backgroundImage = `url('${images[currentIndex]}')`;
+        setTimeout(() => blurBg.classList.add('visible'), 500);
+
         function updateBackground() {
-            // Preload the next image to ensure a smooth transition
+            // 次の画像を準備
             const nextIndex = (currentIndex + 1) % images.length;
-            const nextImage = new Image();
-            nextImage.src = images[nextIndex];
+            const nextImageUrl = images[nextIndex];
+            inactiveBg.style.backgroundImage = `url('${nextImageUrl}')`;
 
-            // When the next image is loaded, update the backgrounds
-            nextImage.onload = () => {
-                clearBg.style.backgroundImage = `url('${images[nextIndex]}')`;
-                blurBg.style.backgroundImage = `url('${images[nextIndex]}')`;
+            // 画像のロードを待機
+            const tempImage = new Image();
+            tempImage.src = nextImageUrl;
+            tempImage.onload = () => {
+                // フェードアウト
+                activeBg.classList.remove('active');
+                // フェードイン
+                inactiveBg.classList.add('active');
+
+                // アクティブと非アクティブを切り替え
+                [activeBg, inactiveBg] = [inactiveBg, activeBg];
                 currentIndex = nextIndex;
+
+                // ぼかし背景も更新
+                blurBg.style.backgroundImage = `url('${nextImageUrl}')`;
             };
         }
 
-        // Initialize background with the first image
-        clearBg.style.backgroundImage = `url('${images[currentIndex]}')`;
-        blurBg.style.backgroundImage = `url('${images[currentIndex]}')`;
-
-        // Start the background change loop after a short delay
+        // 最初の表示アニメーション
         setTimeout(() => {
-            blurBg.style.opacity = '1';
-            setTimeout(() => {
-                document.getElementById('overlay').classList.add('visible');
-            }, 350);
-        }, 500);
+            document.getElementById('overlay').classList.add('visible');
+        }, 850);
 
-        // Change the background image every 5 seconds (5000 milliseconds)
+        // 5秒ごとに背景を更新
         setInterval(updateBackground, 5000);
 
         // メニュー開閉
