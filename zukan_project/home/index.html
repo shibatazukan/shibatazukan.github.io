@@ -33,16 +33,17 @@
     #background-clear {
       z-index: -2;
       opacity: 1;
+      transition: opacity 0.8s cubic-bezier(.4,0,.2,1);
     }
     #background-blur {
       z-index: -1;
       filter: blur(0px);
-      opacity: 1;
-      transition: filter 1.2s cubic-bezier(.4,0,.2,1);
+      opacity: 0.35; /* 0.3〜0.5くらいが程よい。濃いとぼかしが勝つ */
+      transition: filter 0.7s cubic-bezier(.4,0,.2,1), opacity 0.7s cubic-bezier(.4,0,.2,1);
     }
     .overlay {
-      background: rgba(24, 28, 31, 0.52);
-      backdrop-filter: blur(6px) saturate(1.05);
+      background: rgba(24, 28, 31, 0.38);
+      backdrop-filter: blur(3px) saturate(1.05);
       width: 100vw;
       height: 100vh;
       min-height: 100vh;
@@ -57,7 +58,7 @@
       overflow: hidden;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.9s cubic-bezier(.4,0,.2,1);
+      transition: opacity 0.7s cubic-bezier(.4,0,.2,1);
     }
     .overlay.visible {
       opacity: 1;
@@ -191,19 +192,21 @@
     </div>
   </div>
   <script>
-    // 背景画像セット
+    // 背景画像セット（冗長だけど念のため）
     document.getElementById('background-clear').style.backgroundImage = "url('background1.jpg')";
     document.getElementById('background-blur').style.backgroundImage = "url('background1.jpg')";
 
     // ぼかしアニメーション
     setTimeout(function() {
-      document.getElementById('background-blur').style.filter = 'blur(8px)';
-    }, 150); // ほんの少し待ってからぼかし開始
+      const blur = document.getElementById('background-blur');
+      blur.style.filter = 'blur(4px)'; // ここでぼかしを弱めに
+      blur.style.opacity = '0.35';     // さらに元画像が透けるように
+    }, 150); // すぐぼかし開始
 
-    // UX群出現（ぼかし終わった後にフェードイン）
+    // UX群を素早く出す（ぼかしとほぼ同時に出す）
     setTimeout(function() {
       document.getElementById('overlay').classList.add('visible');
-    }, 1300); // ぼかしアニメーション後に表示（タイミング調整可）
+    }, 500); // 0.5秒（500ms）でフェードイン
   </script>
 </body>
 </html>
