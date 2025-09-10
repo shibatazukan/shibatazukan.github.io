@@ -5,142 +5,104 @@
   <title>しばた図鑑</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Montserrat:wght@700&display=swap" rel="stylesheet">
-  <!-- Font Awesome CDN for icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
   <style>
     html, body {
-      margin: 0;
-      padding: 0;
+      margin: 0; padding: 0;
       font-family: 'Noto Sans JP', 'Montserrat', sans-serif;
-      color: #fff;
-      width: 100vw;
-      height: 100vh;
-      overflow: hidden;
-      background: transparent;
+      color: #fff; width: 100vw; height: 100vh;
+      overflow: hidden; background: transparent;
     }
     #background-clear, #background-blur {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100vw;
-      height: 100vh;
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
       background-image: url('background1.jpg');
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      pointer-events: none;
-      user-select: none;
+      background-size: cover; background-position: center; background-repeat: no-repeat;
+      pointer-events: none; user-select: none;
     }
     #background-clear { z-index: -2; }
     #background-blur  { z-index: -1; filter: blur(4px); opacity: 0; transition: opacity 1.2s cubic-bezier(.4,0,.2,1);}
     .overlay {
-      width: 100vw;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      box-sizing: border-box;
-      position: relative;
-      overflow: hidden;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.7s cubic-bezier(.4,0,.2,1);
+      width: 100vw; height: 100vh;
+      display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
+      box-sizing: border-box; position: relative; overflow: hidden;
+      opacity: 0; pointer-events: none; transition: opacity 0.7s cubic-bezier(.4,0,.2,1);
     }
-    .overlay.visible {
-      opacity: 1;
-      pointer-events: auto;
+    .overlay.visible { opacity: 1; pointer-events: auto; }
+
+    /* タイトル下敷き */
+    .title-box {
+      position: relative; display: flex; flex-direction: column; align-items: center; margin-bottom: 0.4em;
     }
-    /* 下敷きパネル */
-    .panel-bg {
-      position: absolute;
-      left: 50%; top: 50%;
-      transform: translate(-50%,-50%);
-      min-width: 320px;
-      max-width: 92vw;
-      width: 540px;
-      padding: 2.2em 1.2em 2em 1.2em;
-      background: rgba(255,255,255,0.95);
-      border-radius: 2em;
-      box-shadow: 0 6px 32px 0 rgba(0,0,0,0.18);
+    .title-bg {
+      position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+      width: max-content;
+      max-width: 94vw;
+      min-width: 260px;
+      padding: 0.30em 1.3em 0.22em 1.3em;
+      background: rgba(255,255,255,0.98);
+      border-radius: 1.4em;
       z-index: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      backdrop-filter: blur(3px) saturate(1.05);
-      border: 1px solid #fff8;
-    }
-    /* タイトル・サブタイトルは絶対に上に */
-    .title-area {
-      position: relative;
-      z-index: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin-bottom: 1.3em;
+      box-shadow: 0 4px 24px 0 rgba(0,0,0,0.17);
+      pointer-events: none;
+      transition: background 0.2s;
     }
     h1 {
+      position: relative; z-index: 1;
       font-family: 'Montserrat', 'Noto Sans JP', sans-serif;
-      font-size: 3.2em;
-      margin: 0 0 0.15em 0;
-      font-weight: 700;
-      letter-spacing: 0.07em;
-      line-height: 1.06;
-      background: linear-gradient(90deg, #FFA500 10%, #fff6ce 40%, #fff 50%, #FFA500 65%, #FF7F50 100%);
-      background-clip: text;
-      -webkit-background-clip: text;
-      color: transparent;
-      -webkit-text-fill-color: transparent;
-      position: relative;
-      text-shadow:
-        0 3px 16px #ffdea930,
-        0 1.2px 0 #fff9;
-      user-select: none;
+      font-size: 3em; font-weight: 700;
+      letter-spacing: 0.08em; margin: 0;
+      color: #FFA500; /* オレンジ単色！ */
+      background: none;
+      -webkit-background-clip: unset; background-clip: unset; -webkit-text-fill-color: unset;
+      line-height: 1.08; user-select: none;
     }
     h1::after {
-      /* 光沢のエフェクト */
+      /* ほんのり光沢 */
       content: '';
+      display: block;
       position: absolute;
-      left: 10%;
-      top: 6%;
-      width: 80%;
-      height: 38%;
-      background: linear-gradient(120deg, rgba(255,255,255,0.73) 10%, rgba(255,255,255,0.09) 80%);
-      border-radius: 60% 60% 40% 40% / 70% 70% 30% 30%;
-      opacity: 0.38;
+      left: 15%; top: 18%;
+      width: 70%; height: 23%;
+      background: linear-gradient(120deg, rgba(255,255,255,0.47) 10%, rgba(255,255,255,0.04) 90%);
+      border-radius: 50% 50% 32% 50%/60% 70% 30% 60%;
+      opacity: 0.55;
       pointer-events: none;
       z-index: 2;
-      filter: blur(1.1px);
+    }
+
+    /* サブタイトル下敷き */
+    .subtitle-box {
+      position: relative; display: flex; flex-direction: column; align-items: center; margin-bottom: 1.1em;
+    }
+    .subtitle-bg {
+      position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+      width: max-content;
+      max-width: 86vw;
+      min-width: 160px;
+      padding: 0.28em 1.2em 0.22em 1.2em;
+      background: rgba(255,255,255,0.96);
+      border-radius: 1.1em;
+      z-index: 0;
+      box-shadow: 0 1.5px 9px 0 rgba(0,0,0,0.13);
+      pointer-events: none;
+      transition: background 0.2s;
     }
     .subtitle {
-      font-size: 1.13em;
-      color: #444;
-      font-weight: 400;
-      letter-spacing: 0.03em;
-      margin: 0.2em 0 0 0;
+      position: relative; z-index: 1;
+      font-size: 1.15em;
+      color: #222; /* くっきり濃いグレー */
+      font-weight: 400; letter-spacing: 0.03em; margin: 0;
       font-family: 'Noto Sans JP', 'Montserrat', sans-serif;
-      line-height: 1.55;
-      position: relative;
-      z-index: 1;
-      text-shadow:
-        0 2px 8px rgba(255,255,255,0.12),
-        0 1.2px 0 #fff;
-      user-select: none;
+      line-height: 1.52; user-select: none;
+      text-shadow: 0 1.2px 0 #fff8;
     }
     .buttons {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 32px;
-      margin-top: 1.1em;
-      z-index: 1;
-      position: relative;
+      display: flex; flex-wrap: wrap; justify-content: center; gap: 32px; margin-top: 1.1em; z-index: 1; position: relative;
     }
     .button-link {
       position: relative;
       display: inline-flex;
-      align-items: center;
-      justify-content: center;
+      align-items: center; justify-content: center;
       color: white;
       padding: 1.1em 2.2em;
       font-size: 1.15em;
@@ -151,92 +113,54 @@
       overflow: hidden;
       font-weight: bold;
       letter-spacing: 0.04em;
-      border: none;
-      outline: none;
-      box-sizing: border-box;
+      border: none; outline: none; box-sizing: border-box;
       background: linear-gradient(135deg, #FFA500, #FF7F50 60%);
-      gap: 0.6em;
-      min-width: 10em;
+      gap: 0.6em; min-width: 10em;
     }
     .button-link .fa-solid,
     .button-link .fa-scroll {
       font-size: 1.35em;
       margin-right: 0.65em;
-      margin-left: -0.25em;
-      vertical-align: middle;
+      margin-left: -0.25em; vertical-align: middle;
     }
     .button-zukan {
       background: linear-gradient(135deg, #FFA500, #FF7F50 60%);
     }
-    .button-zukan:hover, .button-zukan:focus,
-    .button-zukan.active {
+    .button-zukan:hover, .button-zukan:focus, .button-zukan.active {
       background: linear-gradient(135deg, #FFD580 30%, #FFB347 100%);
     }
     .button-camera {
       background: linear-gradient(135deg, #3cc47c, #168f4e 60%);
     }
-    .button-camera:hover, .button-camera:focus,
-    .button-camera.active {
+    .button-camera:hover, .button-camera:focus, .button-camera.active {
       background: linear-gradient(135deg, #6cfcb7 30%, #35b86b 100%);
     }
     .button-map {
       background: linear-gradient(135deg, #3381ff, #2350b8 60%);
     }
-    .button-map:hover, .button-map:focus,
-    .button-map.active {
+    .button-map:hover, .button-map:focus, .button-map.active {
       background: linear-gradient(135deg, #6dc4ff 30%, #3f6db3 100%);
     }
     .button-link::after {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: rgba(255, 255, 255, 0.18);
-      transform: skewX(-20deg);
-      transition: left 0.5s cubic-bezier(.3,1.3,.5,1);
-      pointer-events: none;
+      content: ""; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+      background: rgba(255, 255, 255, 0.18); transform: skewX(-20deg);
+      transition: left 0.5s cubic-bezier(.3,1.3,.5,1); pointer-events: none;
     }
-    .button-link:hover::after, .button-link:focus::after,
-    .button-link.active::after {
-      left: 100%;
-    }
+    .button-link:hover::after, .button-link:focus::after, .button-link.active::after { left: 100%; }
     .button-link:hover, .button-link:focus, .button-link:active, .button-link.active {
-      transform: translateY(-7px) scale(1.045);
-      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.26);
-      color: #fffbf7;
+      transform: translateY(-7px) scale(1.045); box-shadow: 0 12px 28px rgba(0, 0, 0, 0.26); color: #fffbf7;
     }
+
     @media (max-width: 600px) {
-      .panel-bg {
-        width: 98vw;
-        min-width: unset;
-        padding: 1.2em 0.2em 1.1em 0.2em;
-      }
-      h1 {
-        font-size: 2em;
-      }
-      .subtitle {
-        font-size: 0.98em;
-      }
-      .buttons {
-        flex-direction: column;
-        align-items: center;
-        gap: 12px;
-        margin-top: 0.7em;
-      }
-      .button-link {
-        width: 80vw;
-        padding: 1em 1em;
-        font-size: 1em;
-        box-sizing: border-box;
-      }
+      .panel-bg { width: 98vw; min-width: unset; padding: 1.2em 0.2em 1.1em 0.2em;}
+      h1 { font-size: 2em; }
+      .subtitle { font-size: 0.98em; }
+      .buttons { flex-direction: column; align-items: center; gap: 12px; margin-top: 0.7em;}
+      .button-link { width: 80vw; padding: 1em 1em; font-size: 1em; box-sizing: border-box;}
+      .title-bg, .subtitle-bg { min-width: 120px; padding-left: 0.5em; padding-right: 0.5em;}
     }
     @media (max-width: 380px) {
-      .button-link {
-        font-size: 0.91em;
-        padding: 0.8em 0.6em;
-      }
+      .button-link { font-size: 0.91em; padding: 0.8em 0.6em;}
     }
   </style>
 </head>
@@ -244,9 +168,12 @@
   <div id="background-clear"></div>
   <div id="background-blur"></div>
   <div class="overlay" id="overlay">
-    <div class="panel-bg"></div>
-    <div class="title-area">
+    <div class="title-box">
+      <div class="title-bg"></div>
       <h1>しばた図鑑</h1>
+    </div>
+    <div class="subtitle-box">
+      <div class="subtitle-bg"></div>
       <div class="subtitle">しばたの自然と文化を楽しむWebアプリ</div>
     </div>
     <div class="buttons">
