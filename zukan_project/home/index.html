@@ -123,30 +123,29 @@
         }
 
         /* タイトルを目立たせる */
-        h1 {
+       h1 {
             font-family: 'Mochiy Pop One', sans-serif;
             font-size: 4.0em;
-            font-weight: 800; /* Mochiy Pop Oneは400のみなので見た目は変わりません */
+            font-weight: normal; /* Mochiy Pop Oneは太さを変更できないためnormalに */
             letter-spacing: 0.1em;
             margin: 0.1em 0 0.2em 0;
             
-            /* 修正点：グラデーションを背景として適用し、文字色を白に変更 */
-            background: linear-gradient(180deg, #FFD700, #FFA500 70%, #ffffff 95%);
-            -webkit-background-clip: none; /* グラデーションの適用を解除 */
-            -webkit-text-fill-color: #fff; /* 文字色を白に設定 */
-            background-clip: none;
-            color: #fff; /* 通常の文字色も白に設定 */
-        
-            /* 縁取りはtext-shadowで表現し、文字を白くする */
-            text-shadow: 
+            color: #fff; /* 文字色を白に設定 */
+            
+            /* 縁取りを追加 */
+            text-shadow:
                 -2px -2px 0 #000,
                 2px -2px 0 #000,
                 -2px 2px 0 #000,
-                2px 2px 0 #000,
-                /* 文字の中心を白く見せるための白い影を追加 */
-                0px 0px 5px #fff,
-                0 4px 10px rgba(0, 0, 0, 0.4); /* 外側のソフトな影 */
+                2px 2px 0 #000;
+                
             user-select: none;
+            
+            /* グラデーション関連のプロパティはすべて削除 */
+            background: none;
+            -webkit-background-clip: none;
+            -webkit-text-fill-color: initial;
+            background-clip: none;
         }
         
         .subtitle {
