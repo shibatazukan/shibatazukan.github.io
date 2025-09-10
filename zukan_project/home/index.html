@@ -33,7 +33,7 @@
     /* Hamburger icon */
     .menu-toggle {
       position: absolute;
-      top: 20px; left: 20px;
+      top: 20px; right: 20px; /* 右上に移動 */
       font-size: 1.8em;
       color: white;
       background: rgba(0,0,0,0.4);
@@ -56,14 +56,13 @@
       height: 100%;
       background: rgba(20, 20, 20, 0.95);
       box-shadow: 2px 0 10px rgba(0,0,0,0.5);
-      padding: 1.5em 1em;
+      padding: 2em 1em 1em 1em;
       box-sizing: border-box;
       z-index: 999;
       transition: left 0.35s ease-in-out;
       display: flex;
       flex-direction: column;
     }
-
     .side-menu.open {
       left: 0;
     }
@@ -71,8 +70,11 @@
     .side-menu .menu-title {
       font-size: 1.2em;
       font-weight: bold;
-      margin-bottom: 1.2em;
+      margin-bottom: 1.5em;
       color: #FFA500;
+      display: flex;
+      align-items: center;
+      gap: 0.6em;
     }
 
     .side-menu a {
@@ -200,15 +202,16 @@
 
   <!-- Slide-out Menu -->
   <nav class="side-menu" id="sideMenu">
-    <div class="menu-title">👤 ユーザー名</div>
+    <div class="menu-title"><i class="fa-solid fa-user"></i> ユーザー名</div>
     <a href="index.html"><i class="fa-solid fa-house"></i> ホーム</a>
     <a href="list.html"><i class="fa-solid fa-scroll"></i> 図鑑</a>
-    <a href="map.html"><i class="fa-solid fa-map-location-dot"></i> マップ</a>
-    <a href="#"><i class="fa-solid fa-gear"></i> せってい</a>
-    <a href="#"><i class="fa-solid fa-circle-question"></i> ヘルプ</a>
+    <a href="map.html"><i class="fa-solid fa-map"></i> マップ</a>
+    <a href="../camera/index.html"><i class="fa-solid fa-camera"></i> カメラ</a>
+    <a href="settings.html"><i class="fa-solid fa-gear"></i> せってい</a>
+    <a href="help.html"><i class="fa-solid fa-circle-question"></i> ヘルプ</a>
   </nav>
 
-  <!-- Background -->
+  <!-- Backgrounds -->
   <div id="background-clear"></div>
   <div id="background-blur"></div>
 
@@ -218,17 +221,18 @@
     <div class="subtitle">しばたの自然と文化を楽しむWebアプリ</div>
     <div class="buttons">
       <a href="list.html" class="button-link button-zukan">
-        <i class="fa-solid fa-scroll" aria-hidden="true"></i>図鑑一覧
+        <i class="fa-solid fa-scroll"></i>図鑑一覧
       </a>
       <a href="../camera/index.html" class="button-link button-camera">
-        <i class="fa-solid fa-camera" aria-hidden="true"></i>カメラを開く
+        <i class="fa-solid fa-camera"></i>カメラを開く
       </a>
       <a href="map.html" class="button-link button-map">
-        <i class="fa-solid fa-map-location-dot" aria-hidden="true"></i>マップを開く
+        <i class="fa-solid fa-map-location-dot"></i>マップを開く
       </a>
     </div>
   </div>
 
+  <!-- JavaScript -->
   <script>
     // 背景フェード＆オーバーレイ表示
     document.getElementById('background-clear').style.backgroundImage = "url('background1.jpg')";
@@ -240,7 +244,7 @@
       document.getElementById('overlay').classList.add('visible');
     }, 850);
 
-    // ハンバーガーメニューの開閉
+    // ハンバーガーメニュー開閉
     const menuToggle = document.getElementById('menuToggle');
     const sideMenu = document.getElementById('sideMenu');
 
@@ -248,12 +252,13 @@
       sideMenu.classList.toggle('open');
     });
 
-    // スマホのタッチ対応
+    // モバイルのタッチ対応
     document.querySelectorAll('.button-link').forEach(btn => {
-      btn.addEventListener('touchstart', () => btn.classList.add('active'), {passive: true});
+      btn.addEventListener('touchstart', () => btn.classList.add('active'), { passive: true });
       btn.addEventListener('touchend', () => btn.classList.remove('active'));
       btn.addEventListener('touchcancel', () => btn.classList.remove('active'));
     });
   </script>
+
 </body>
 </html>
