@@ -42,20 +42,20 @@
     }
     .overlay {
       background: rgba(24, 28, 31, 0.52);
-      backdrop-filter: blur(6px) saturate(1.05);
       width: 100vw;
       height: 100vh;
       min-height: 100vh;
       min-width: 100vw;
       display: flex;
       flex-direction: column;
-      justify-content: center;   /* ←中央寄せのポイント */
-      align-items: center;       /* 横方向中央 */
+      justify-content: flex-start;
+      align-items: center;
       text-align: center;
       box-sizing: border-box;
       position: relative;
       overflow: hidden;
-      /* paddingなしでOK */
+      /* ここで上方向へ寄せる（中央-10vh） */
+      padding-top: 18vh;
     }
     h1 {
       font-family: 'Montserrat', 'Noto Sans JP', sans-serif;
@@ -160,8 +160,7 @@
         box-sizing: border-box;
       }
       .overlay {
-        /* 画面中央寄せはそのまま */
-        padding: 0;
+        padding-top: 12vh;
       }
     }
     @media (max-width: 380px) {
