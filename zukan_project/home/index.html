@@ -60,7 +60,6 @@
       transition: opacity 1.2s cubic-bezier(.4,0,.2,1);
     }
     .overlay {
-      /* 背景フィルター(黒)は削除 → 完全透明 */
       background: transparent !important;
       backdrop-filter: blur(3px) saturate(1.05);
       width: 100vw;
@@ -69,7 +68,7 @@
       min-width: 100vw;
       display: flex;
       flex-direction: column;
-      justify-content: center;
+      justify-content: center; /* 完全中央寄せ */
       align-items: center;
       text-align: center;
       box-sizing: border-box;
@@ -77,8 +76,7 @@
       overflow: hidden;
       opacity: 0;
       pointer-events: none;
-      /* 中央より少し下に */
-      transform: translateY(4vh);
+      transform: none; /* 下げを解除して中央に */
       transition: opacity 0.7s cubic-bezier(.4,0,.2,1), transform 0.7s cubic-bezier(.4,0,.2,1);
     }
     .overlay.visible {
@@ -96,9 +94,29 @@
       -webkit-background-clip: text;
       color: transparent;
       -webkit-text-fill-color: transparent;
-      text-shadow: 0 2px 18px rgba(0,0,0,0.11);
+      text-shadow:
+        0 2px 18px rgba(0,0,0,0.18), /* 影をやや強く */
+        0 1px 0 #000, /* 黒のアウトライン */
+        0 0px 18px rgba(0,0,0,0.12);
       animation: titleFadeIn 0.85s cubic-bezier(.4,0,.2,1) 0.08s backwards;
       user-select: none;
+      /* 背景半透明パネル追加で視認性UP */
+      position: relative;
+      z-index: 1;
+    }
+    h1::before {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%,-50%);
+      width: 120%;
+      height: 120%;
+      background: rgba(0,0,0,0.28);
+      border-radius: 1em;
+      z-index: -1;
+      pointer-events: none;
+      filter: blur(2px);
     }
     @keyframes titleFadeIn {
       0% {opacity:0; letter-spacing:0.35em; filter:blur(4px);}
@@ -109,13 +127,32 @@
       font-size: 1.3em;
       margin-bottom: 0.9em;
       margin-top: 0.1em;
-      color: #fff8e7cc;
+      color: #fff8e7;
       letter-spacing: 0.03em;
-      text-shadow: 0 1.5px 12px rgba(0,0,0,0.13);
+      text-shadow:
+        0 1.5px 12px rgba(0,0,0,0.19), /* 影をやや強く */
+        0 1px 0 #000; /* 黒アウトライン */
       font-weight: 400;
       animation: subtitleIn 1.0s cubic-bezier(.33,1.2,.5,1.05) .4s backwards;
       font-family: 'Noto Sans JP', 'Montserrat', sans-serif;
       line-height: 1.5;
+      /* 背景半透明パネル追加で視認性UP */
+      position: relative;
+      z-index: 1;
+    }
+    .subtitle::before {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%,-50%);
+      width: 110%;
+      height: 125%;
+      background: rgba(0,0,0,0.18);
+      border-radius: 1em;
+      z-index: -1;
+      pointer-events: none;
+      filter: blur(1.5px);
     }
     @keyframes subtitleIn {
       0% {opacity: 0; transform: translateY(-18px);}
@@ -156,7 +193,6 @@
       font-size: 1.35em;
       margin-right: 0.65em;
       margin-left: -0.25em;
-      /* 縦位置微調整 */
       vertical-align: middle;
     }
     .button-zukan {
@@ -196,7 +232,6 @@
     .button-link.active::after {
       left: 100%;
     }
-    /* ホバー・アクティブで動く（PC: hover/focus, スマホ: active・.activeクラス） */
     .button-link:hover, .button-link:focus, .button-link:active, .button-link.active {
       transform: translateY(-7px) scale(1.045);
       box-shadow: 0 12px 28px rgba(0, 0, 0, 0.26);
@@ -222,7 +257,7 @@
         box-sizing: border-box;
       }
       .overlay {
-        transform: translateY(2vh);
+        transform: none;
       }
     }
     @media (max-width: 380px) {
