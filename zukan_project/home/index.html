@@ -21,7 +21,6 @@
       position: fixed;
       top: 0; left: 0;
       width: 100vw; height: 100vh;
-      background-image: url('background1.jpg');
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
@@ -34,7 +33,7 @@
       z-index: -1;
       filter: blur(4px);
       opacity: 0;
-      transition: opacity 1.2s ease-in-out;
+      transition: opacity 1s ease-in-out;
     }
 
     /* ハンバーガーメニュー */
@@ -104,14 +103,11 @@
       pointer-events: none;
     }
 
-    /* タイトル・サブタイトルをクロスフェード */
-    h1, .subtitle {
-      opacity: 0;
-      transition: opacity 1.8s ease-in-out;
+    .title-block {
+      margin-bottom: 50px;
+      transform: translateY(-15px);
     }
-    h1.visible, .subtitle.visible { opacity: 1; }
 
-    /* タイトル装飾 */
     h1 {
       font-family: 'Montserrat', 'Noto Sans JP', sans-serif;
       font-size: 3.8em;
@@ -121,8 +117,6 @@
       background: linear-gradient(180deg, #FFD700, #FFA500 70%, #ffffff 95%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      background-clip: text;
-      color: transparent;
       text-shadow: 0 2px 8px rgba(255, 140, 0, 0.4);
       user-select: none;
     }
@@ -136,7 +130,6 @@
       user-select: none;
     }
 
-    /* ボタンスタイル */
     .buttons {
       display: flex;
       flex-direction: column;
@@ -186,7 +179,6 @@
 </head>
 <body>
 
-  <!-- サイドメニュー -->
   <nav class="side-menu" id="sideMenu">
     <div class="menu-title"><i class="fa-solid fa-user"></i> ユーザー名</div>
     <a href="index.html"><i class="fa-solid fa-house"></i> ホーム</a>
@@ -197,19 +189,16 @@
     <a href="help.html"><i class="fa-solid fa-circle-question"></i> ヘルプ</a>
   </nav>
 
-  <!-- ハンバーガーメニュー -->
-  <div class="menu-toggle" id="menuToggle">
-    <i class="fa-solid fa-bars"></i>
-  </div>
+  <div class="menu-toggle" id="menuToggle"><i class="fa-solid fa-bars"></i></div>
 
-  <!-- 背景 -->
   <div id="background-clear"></div>
   <div id="background-blur"></div>
 
-  <!-- 中央表示 -->
-  <div class="overlay" id="overlay">
-    <h1 id="title">新発田ずかん</h1>
-    <div class="subtitle" id="subtitle">しばたの自然と文化を楽しむWebアプリ</div>
+  <div class="overlay">
+    <div class="title-block">
+      <h1>新発田ずかん</h1>
+      <div class="subtitle">しばたの自然と文化を楽しむWebアプリ</div>
+    </div>
     <div class="buttons">
       <a href="list.html" class="button-link"><i class="fa-solid fa-scroll"></i>ずかんを開く </a>
       <a href="../camera/index.html" class="button-link"><i class="fa-solid fa-camera"></i>カメラを開く</a>
@@ -217,29 +206,33 @@
     </div>
   </div>
 
-  <!-- JS -->
   <script>
-    // 背景表示
-    document.getElementById('background-clear').style.backgroundImage = "url('background1.jpg')";
-    document.getElementById('background-blur').style.backgroundImage = "url('background1.jpg')";
-    setTimeout(() => {
-      document.getElementById('background-blur').style.opacity = '1';
-    }, 500);
+    const images = ["background1.jpg","background2.jpg","background3.jpg"];
+    let current = 0;
+    const bgClear = document.getElementById('background-clear');
+    const bgBlur = document.getElementById('background-blur');
 
-    // タイトルとサブタイトルをクロスフェードで表示
-    setTimeout(() => {
-      document.getElementById('title').classList.add('visible');
-    }, 1000);
-    setTimeout(() => {
-      document.getElementById('subtitle').classList.add('visible');
-    }, 2000);
+    bgClear.style.backgroundImage = `url(${images[current]})`;
+    bgBlur.style.backgroundImage = `url(${images[current]})`;
 
-    // メニュー開閉
+    setTimeout(() => { bgBlur.style.opacity = '1'; }, 500);
+
+    function crossFade() {
+      const next = (current + 1) % images.length;
+      bgBlur.style.opacity = '0'; // 現在の画像フェードアウト
+      setTimeout(() => {
+        bgClear.style.backgroundImage = `url(${images[next]})`; // 次の画像を下にセット
+        bgBlur.style.backgroundImage = `url(${images[next]})`;
+        bgBlur.style.opacity = '1'; // フェードイン
+        current = next;
+      }, 1000); // フェードアウトと同時に切替
+    }
+
+    setInterval(crossFade, 5000);
+
     const menuToggle = document.getElementById('menuToggle');
     const sideMenu = document.getElementById('sideMenu');
-    menuToggle.addEventListener('click', () => {
-      sideMenu.classList.toggle('open');
-    });
+    menuToggle.addEventListener('click', () => { sideMenu.classList.toggle('open'); });
   </script>
 </body>
 </html>
