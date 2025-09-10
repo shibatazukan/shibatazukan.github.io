@@ -32,14 +32,13 @@
     }
     #background-clear {
       z-index: -2;
-      opacity: 1; /* ずっと完全に表示 */
+      opacity: 1;
       transition: opacity 1s cubic-bezier(.4,0,.2,1);
     }
     #background-blur {
       z-index: -1;
       filter: blur(4px);
-      opacity: 0; /* 最初は消しておく */
-      /* 中央クリア、上下ぼかしグラデーションマスク */
+      opacity: 0;
       -webkit-mask-image: linear-gradient(to bottom, 
         rgba(0,0,0,1) 0%,
         rgba(0,0,0,0.15) 35%,
@@ -75,7 +74,7 @@
       overflow: hidden;
       opacity: 0;
       pointer-events: none;
-      transform: translateY(-4vh); /* ほんの少し上へ */
+      transform: translateY(-4vh);
       transition: opacity 0.7s cubic-bezier(.4,0,.2,1), transform 0.7s cubic-bezier(.4,0,.2,1);
     }
     .overlay.visible {
@@ -126,10 +125,10 @@
       margin-top: 1.6em;
       animation: fadeIn 1.3s cubic-bezier(.2,1.4,.5,1) .6s backwards;
     }
+    /* ここからボタン個別カラー */
     .button-link {
       position: relative;
       display: inline-block;
-      background: linear-gradient(135deg, #FFA500, #FF7F50 60%);
       color: white;
       padding: 1.1em 2.2em;
       font-size: 1.15em;
@@ -143,7 +142,30 @@
       border: none;
       outline: none;
       box-sizing: border-box;
+      background: linear-gradient(135deg, #FFA500, #FF7F50 60%);
     }
+    /* 図鑑一覧：オレンジ */
+    .button-zukan {
+      background: linear-gradient(135deg, #FFA500, #FF7F50 60%);
+    }
+    .button-zukan:hover, .button-zukan:focus {
+      background: linear-gradient(135deg, #FFD580 30%, #FFB347 100%);
+    }
+    /* カメラを開く：グリーン */
+    .button-camera {
+      background: linear-gradient(135deg, #3cc47c, #168f4e 60%);
+    }
+    .button-camera:hover, .button-camera:focus {
+      background: linear-gradient(135deg, #6cfcb7 30%, #35b86b 100%);
+    }
+    /* マップを開く：ブルー */
+    .button-map {
+      background: linear-gradient(135deg, #3381ff, #2350b8 60%);
+    }
+    .button-map:hover, .button-map:focus {
+      background: linear-gradient(135deg, #6dc4ff 30%, #3f6db3 100%);
+    }
+    /* 共通のホバーアニメーション */
     .button-link::after {
       content: "";
       position: absolute;
@@ -156,14 +178,13 @@
       transition: left 0.5s cubic-bezier(.3,1.3,.5,1);
       pointer-events: none;
     }
+    .button-link:hover::after, .button-link:focus::after {
+      left: 100%;
+    }
     .button-link:hover, .button-link:focus {
       transform: translateY(-7px) scale(1.045);
       box-shadow: 0 12px 28px rgba(0, 0, 0, 0.26);
-      background: linear-gradient(135deg, #FFD580 30%, #FFB347 100%);
       color: #fffbf7;
-    }
-    .button-link:hover::after, .button-link:focus::after {
-      left: 100%;
     }
     @media (max-width: 600px) {
       h1 {
@@ -207,27 +228,20 @@
     <h1>しばた図鑑</h1>
     <div class="subtitle">しばたの自然と文化を楽しむWebアプリ</div>
     <div class="buttons">
-      <a href="list.html" class="button-link">図鑑一覧</a>
-      <a href="../camera/index.html" class="button-link">カメラを開く</a>
-      <a href="map.html" class="button-link">マップを開く</a>
+      <a href="list.html" class="button-link button-zukan">図鑑一覧</a>
+      <a href="../camera/index.html" class="button-link button-camera">カメラを開く</a>
+      <a href="map.html" class="button-link button-map">マップを開く</a>
     </div>
   </div>
   <script>
-    // 背景画像セット
     document.getElementById('background-clear').style.backgroundImage = "url('background1.jpg')";
     document.getElementById('background-blur').style.backgroundImage = "url('background1.jpg')";
-
-    // 1. 最初は鮮明な画像だけ（blurレイヤーはopacity:0）
-
-    // 2. 一定時間後、ぼかしレイヤー（上下グラデーション仕様）をフェードイン
     setTimeout(function() {
       document.getElementById('background-blur').style.opacity = '1';
-    }, 500); // 0.5秒後にフェードイン（演出お好みで）
-
-    // 3. さらに遅れてUX群を表示
+    }, 500);
     setTimeout(function() {
       document.getElementById('overlay').classList.add('visible');
-    }, 850); // 0.85秒後にUX群登場（演出お好みで）
+    }, 850);
   </script>
 </body>
 </html>
