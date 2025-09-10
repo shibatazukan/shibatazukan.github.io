@@ -49,13 +49,15 @@
       min-width: 100vw;
       display: flex;
       flex-direction: column;
-      justify-content: center;   /* ←中央寄せのポイント */
-      align-items: center;       /* 横方向中央 */
+      justify-content: center;
+      align-items: center;
       text-align: center;
       box-sizing: border-box;
       position: relative;
       overflow: hidden;
-      /* paddingなしでOK */
+      /* --- ここを調整 --- */
+      transform: translateY(-5vh); /* 中央よりほんの少し（5vh分）だけ上へ */
+      /* 3〜7vhくらいで微調整可、-5vhが「ほんの少し」 */
     }
     h1 {
       font-family: 'Montserrat', 'Noto Sans JP', sans-serif;
@@ -160,8 +162,7 @@
         box-sizing: border-box;
       }
       .overlay {
-        /* 画面中央寄せはそのまま */
-        padding: 0;
+        transform: translateY(-4vh); /* スマホ時はちょっと控えめに */
       }
     }
     @media (max-width: 380px) {
