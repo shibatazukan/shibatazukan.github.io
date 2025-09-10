@@ -48,10 +48,14 @@
       border-radius: 10px;
       z-index: 1000;
       cursor: pointer;
-      transition: background 0.3s;
+      transition: background 0.3s, left 0.35s ease-in-out; /* ← leftをアニメーション */
     }
     .menu-toggle:hover {
       background: rgba(0, 0, 0, 0.6);
+    }
+    /* サイドメニューオープン時に三本線を右へ移動 */
+    .side-menu.open ~ .menu-toggle {
+      left: 280px; /* サイドメニュー幅260pxより少し余裕 */
     }
 
     /* サイドメニュー */
@@ -149,7 +153,7 @@
 
     .button-link {
       display: inline-flex;
-      align-items: center;
+      align-items: center; /* ← アイコンと文字を縦方向中央揃え */
       justify-content: center;
       padding: 1em 2em;
       font-size: 1.1em;
@@ -173,6 +177,7 @@
 
     .button-link .fa-solid {
       font-size: 1.35em;
+      line-height: 1; /* ← アイコン上下ズレ防止 */
     }
 
     @media (max-width: 600px) {
@@ -188,11 +193,6 @@
 </head>
 <body>
 
-  <!-- ハンバーガーメニュー -->
-  <div class="menu-toggle" id="menuToggle">
-    <i class="fa-solid fa-bars"></i>
-  </div>
-
   <!-- サイドメニュー -->
   <nav class="side-menu" id="sideMenu">
     <div class="menu-title"><i class="fa-solid fa-user"></i> ユーザー名</div>
@@ -203,6 +203,11 @@
     <a href="settings.html"><i class="fa-solid fa-gear"></i> せってい</a>
     <a href="help.html"><i class="fa-solid fa-circle-question"></i> ヘルプ</a>
   </nav>
+
+  <!-- ハンバーガーメニュー -->
+  <div class="menu-toggle" id="menuToggle">
+    <i class="fa-solid fa-bars"></i>
+  </div>
 
   <!-- 背景 -->
   <div id="background-clear"></div>
