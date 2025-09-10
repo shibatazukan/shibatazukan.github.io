@@ -26,7 +26,7 @@
             background-repeat: no-repeat;
             pointer-events: none;
             user-select: none;
-            transition: background-image 1.5s cubic-bezier(.4,0,.2,1);
+            transition: background-image 1.5s cubic-bezier(.4,0,.2,1); /* Added transition for background image */
         }
 
         #background-clear { z-index: -2; }
@@ -34,7 +34,7 @@
             z-index: -1;
             filter: blur(4px);
             opacity: 0;
-            transition: opacity 1.2s cubic-bezier(.4,0,.2,1), background-image 1.5s cubic-bezier(.4,0,.2,1);
+            transition: opacity 1.2s cubic-bezier(.4,0,.2,1), background-image 1.5s cubic-bezier(.4,0,.2,1); /* Added background-image transition */
         }
 
         /* ハンバーガーメニュー */
@@ -50,7 +50,9 @@
             cursor: pointer;
             transition: background 0.3s, left 0.35s ease-in-out;
         }
-        .menu-toggle:hover { background: rgba(0,0,0,0.6); }
+        .menu-toggle:hover {
+            background: rgba(0, 0, 0, 0.6);
+        }
 
         /* サイドメニュー */
         .side-menu {
@@ -66,8 +68,13 @@
             display: flex;
             flex-direction: column;
         }
-        .side-menu.open { left: 0; }
-        .side-menu.open ~ .menu-toggle { left: 280px; }
+        .side-menu.open {
+            left: 0;
+        }
+        /* サイドメニューが開いたとき三本線を右へずらす */
+        .side-menu.open ~ .menu-toggle {
+            left: 280px; /* サイドメニュー幅260px + 余白20px */
+        }
 
         .side-menu .menu-title {
             font-size: 1.2em;
@@ -91,7 +98,9 @@
             transition: background 0.25s;
             border-radius: 6px;
         }
-        .side-menu a:hover { background: rgba(255, 255, 255, 0.1); }
+        .side-menu a:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
 
         /* 中央オーバーレイ */
         .overlay {
@@ -103,32 +112,57 @@
             pointer-events: none;
             transition: opacity 0.7s cubic-bezier(.4,0,.2,1);
         }
-        .overlay.visible { opacity: 1; pointer-events: auto; }
-
-        .title-block { margin-bottom: 50px; transform: translateY(-15px); }
-
-        h1 {
-            font-family: 'Mochiy Pop One', sans-serif;
-            font-size: 5em;
-            font-weight: normal;
-            letter-spacing: 0.1em;
-            margin: 0.1em 0 0.2em 0;
-            color: #ffa500;
-            text-shadow: -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000;
-            user-select: none;
+        .overlay.visible {
+            opacity: 1;
+            pointer-events: auto;
         }
 
-        .subtitle {
+        .title-block {
+            margin-bottom: 50px;
+            transform: translateY(-15px);
+        }
+
+        /* タイトルを目立たせる */
+       h1 {
             font-family: 'Mochiy Pop One', sans-serif;
+            font-size: 5em;
+            font-weight: normal; /* Mochiy Pop Oneは太さを変更できないためnormalに */
+            letter-spacing: 0.1em;
+            margin: 0.1em 0 0.2em 0;
+            
+            color: #ffa500; /* 文字色を白に設定 */
+            
+            /* 縁取りを追加 */
+            text-shadow:
+                -2px -2px 0 #000,
+                2px -2px 0 #000,
+                -2px 2px 0 #000,
+                2px 2px 0 #000;
+                
+            user-select: none;
+            
+            /* グラデーション関連のプロパティはすべて削除 */
+            background: none;
+            -webkit-background-clip: none;
+            -webkit-text-fill-color: initial;
+            background-clip: none;
+        }
+        
+        .subtitle {
+            font-family: 'Mochiy Pop One', sans-serif; /* サブタイトルは読みやすさを考慮しNoto Sans JPに設定 */
             font-size: 1.7em;
             color: #fff;
             font-weight: 400;
             margin-bottom: 1.5em;
             line-height: 1.6;
             user-select: none;
-            text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+            /* サブタイトルに縁取りを追加 */
+            text-shadow:
+                -1px -1px 0 #000,  /* 左上 */
+                1px -1px 0 #000,   /* 右上 */
+                -1px 1px 0 #000,   /* 左下 */
+                1px 1px 0 #000;    /* 右下 */
         }
-
         /* ボタンスタイル */
         .buttons {
             display: flex;
@@ -148,30 +182,35 @@
             font-weight: bold;
             letter-spacing: 0.04em;
             color: #fff;
+            background: linear-gradient(135deg, #FFA500, #FF7F50);
             text-decoration: none;
             border-radius: 18px;
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
             transition: transform 0.3s, box-shadow 0.3s, background 0.3s;
             min-width: 170px;
         }
-        .buttons .button-link i { font-size: 1.35em; width: 2em; text-align: center; }
 
-        .buttons .button-link:hover { transform: translateY(-6px) scale(1.04); box-shadow: 0 12px 28px rgba(0,0,0,0.3); }
+        /* アイコンの幅を固定して位置を揃える */
+        .buttons .button-link i {
+            font-size: 1.35em;
+            width: 2.0em;
+            text-align: center;
+        }
 
-        /* 個別ボタン色 */
-        .button-link.btn-scroll { background: linear-gradient(135deg, #FFA500, #FF7F50); }
-        .button-link.btn-scroll:hover { background: linear-gradient(135deg, #FFD580, #FFB347); }
-
-        .button-link.btn-camera { background: linear-gradient(135deg, #4facfe, #00f2fe); }
-        .button-link.btn-camera:hover { background: linear-gradient(135deg, #00c6ff, #0072ff); }
-
-        .button-link.btn-map { background: linear-gradient(135deg, #43e97b, #38f9d7); }
-        .button-link.btn-map:hover { background: linear-gradient(135deg, #3bdc93, #32d6c3); }
+        .buttons .button-link:hover {
+            transform: translateY(-6px) scale(1.04);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(135deg, #FFD580 30%, #FFB347 100%);
+        }
 
         @media (max-width: 800px) {
             h1 { font-size: 2.7em; }
             .subtitle { font-size: 1em; }
-            .button-link { width: 63vw; font-size: 1em; padding: 0.9em 0.7em; }
+            .button-link {
+                width: 63vw;
+                font-size: 1em;
+                padding: 0.9em 0.7em;
+            }
         }
     </style>
 </head>
@@ -186,7 +225,9 @@
         <a href="help.html"><i class="fa-solid fa-circle-question"></i> ヘルプ</a>
     </nav>
 
-    <div class="menu-toggle" id="menuToggle"><i class="fa-solid fa-bars"></i></div>
+    <div class="menu-toggle" id="menuToggle">
+        <i class="fa-solid fa-bars"></i>
+    </div>
 
     <div id="background-clear"></div>
     <div id="background-blur"></div>
@@ -197,23 +238,27 @@
             <div class="subtitle">しばたの自然と文化を楽しむWebアプリ</div>
         </div>
         <div class="buttons">
-            <a href="list.html" class="button-link btn-scroll"><i class="fa-solid fa-scroll"></i>ずかんを開く </a>
-            <a href="../camera/index.html" class="button-link btn-camera"><i class="fa-solid fa-camera"></i>カメラを開く</a>
-            <a href="map.html" class="button-link btn-map"><i class="fa-solid fa-map-location-dot"></i>マップを開く</a>
+            <a href="list.html" class="button-link"><i class="fa-solid fa-scroll"></i>ずかんを開く </a>
+            <a href="../camera/index.html" class="button-link"><i class="fa-solid fa-camera"></i>カメラを開く</a>
+            <a href="map.html" class="button-link"><i class="fa-solid fa-map-location-dot"></i>マップを開く</a>
         </div>
     </div>
 
     <script>
-        // 背景画像切替
+        // Array of image URLs to cycle through
         const images = ['background1.jpg', 'background2.jpg', 'background3.jpg'];
         let currentIndex = 0;
         const clearBg = document.getElementById('background-clear');
         const blurBg = document.getElementById('background-blur');
 
+        // Function to update the background images
         function updateBackground() {
+            // Preload the next image to ensure a smooth transition
             const nextIndex = (currentIndex + 1) % images.length;
             const nextImage = new Image();
             nextImage.src = images[nextIndex];
+
+            // When the next image is loaded, update the backgrounds
             nextImage.onload = () => {
                 clearBg.style.backgroundImage = `url('${images[nextIndex]}')`;
                 blurBg.style.backgroundImage = `url('${images[nextIndex]}')`;
@@ -221,20 +266,27 @@
             };
         }
 
+        // Initialize background with the first image
         clearBg.style.backgroundImage = `url('${images[currentIndex]}')`;
         blurBg.style.backgroundImage = `url('${images[currentIndex]}')`;
 
+        // Start the background change loop after a short delay
         setTimeout(() => {
             blurBg.style.opacity = '1';
-            setTimeout(() => { document.getElementById('overlay').classList.add('visible'); }, 350);
+            setTimeout(() => {
+                document.getElementById('overlay').classList.add('visible');
+            }, 350);
         }, 500);
 
+        // Change the background image every 5 seconds (5000 milliseconds)
         setInterval(updateBackground, 5000);
 
         // メニュー開閉
         const menuToggle = document.getElementById('menuToggle');
         const sideMenu = document.getElementById('sideMenu');
-        menuToggle.addEventListener('click', () => { sideMenu.classList.toggle('open'); });
+        menuToggle.addEventListener('click', () => {
+            sideMenu.classList.toggle('open');
+        });
     </script>
 </body>
 </html>
