@@ -30,6 +30,7 @@
       z-index: -2;
       opacity: 1;
       filter: brightness(0.96) saturate(1.10) blur(0.5px);
+      background-image: url('background1.jpg'); /* 初期背景を必ず指定 */
     }
     .overlay {
       background: rgba(24, 28, 31, 0.52);
@@ -137,7 +138,7 @@
       letter-spacing: 0.04em;
       border: none;
       outline: none;
-      box-sizing: border-box; /* 追加 */
+      box-sizing: border-box;
     }
 
     .button-link::after {
@@ -174,13 +175,13 @@
       .buttons {
         flex-direction: column;
         align-items: center;
-        gap: 16px; /* 24px→16px */
+        gap: 16px;
       }
       .button-link {
-        width: 80vw; /* 90vw→80vw */
+        width: 80vw;
         padding: 1.1em 2em;
         font-size: 1em;
-        box-sizing: border-box; /* 念のため再掲 */
+        box-sizing: border-box;
       }
       .logo-circle {
         width: 62px;
@@ -191,8 +192,8 @@
         font-size: 1.7em;
       }
       .overlay {
-        padding-top: 2vh; /* 3.5vh→2vh */
-        padding-bottom: 2vh; /* 3.5vh→2vh */
+        padding-top: 2vh;
+        padding-bottom: 2vh;
       }
     }
 
@@ -232,15 +233,28 @@
     ];
     let index = 0;
     const bg = document.getElementById('background');
+
+    // 画像のプリロード
+    images.forEach(src => {
+      const img = new Image();
+      img.src = src;
+    });
+
+    // 初期背景（CSSでも指定しているので安心）
     bg.style.backgroundImage = `url('${images[index]}')`;
     bg.style.opacity = 1;
 
     setInterval(() => {
+      // フェードアウト
       bg.style.opacity = 0;
       setTimeout(() => {
         index = (index + 1) % images.length;
+        // 画像切り替え
         bg.style.backgroundImage = `url('${images[index]}')`;
-        bg.style.opacity = 1;
+        // 0.1秒後にフェードイン
+        setTimeout(() => {
+          bg.style.opacity = 1;
+        }, 100);
       }, 1200);
     }, 5000);
   </script>
