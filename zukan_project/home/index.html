@@ -5,12 +5,11 @@
     <title>新発田ずかん</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Montserrat:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
         html, body {
             margin: 0; padding: 0;
-            font-family: 'Mochiy Pop One', sans-serif;
+            font-family: 'Noto Sans JP', sans-serif;
             color: #fff;
             width: 100vw; height: 100vh;
             overflow: hidden;
@@ -26,15 +25,17 @@
             background-repeat: no-repeat;
             pointer-events: none;
             user-select: none;
-            transition: background-image 1.5s cubic-bezier(.4,0,.2,1); /* Added transition for background image */
         }
-
-        #background-clear { z-index: -2; }
+        
+        #background-clear {
+            z-index: -2;
+            background-image: url('background1.jpg'); /* ここを固定 */
+        }
         #background-blur {
             z-index: -1;
             filter: blur(4px);
-            opacity: 0;
-            transition: opacity 1.2s cubic-bezier(.4,0,.2,1), background-image 1.5s cubic-bezier(.4,0,.2,1); /* Added background-image transition */
+            opacity: 1; /* 不透明度を1に固定 */
+            background-image: url('background1.jpg'); /* ここを固定 */
         }
 
         /* ハンバーガーメニュー */
@@ -108,13 +109,9 @@
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
             text-align: center;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.7s cubic-bezier(.4,0,.2,1);
-        }
-        .overlay.visible {
-            opacity: 1;
+            opacity: 1; /* 不透明度を1に固定 */
             pointer-events: auto;
+            transition: none; /* トランジションを削除 */
         }
 
         .title-block {
@@ -123,46 +120,35 @@
         }
 
         /* タイトルを目立たせる */
-       h1 {
+        h1 {
             font-family: 'Mochiy Pop One', sans-serif;
-            font-size: 5em;
-            font-weight: normal; /* Mochiy Pop Oneは太さを変更できないためnormalに */
+            font-size: 4.0em;
+            font-weight: normal;
             letter-spacing: 0.1em;
             margin: 0.1em 0 0.2em 0;
-            
-            color: #fff; /* 文字色を白に設定 */
-            
-            /* 縁取りを追加 */
+            color: #fff;
             text-shadow:
                 -2px -2px 0 #000,
                 2px -2px 0 #000,
                 -2px 2px 0 #000,
                 2px 2px 0 #000;
-                
             user-select: none;
-            
-            /* グラデーション関連のプロパティはすべて削除 */
-            background: none;
-            -webkit-background-clip: none;
-            -webkit-text-fill-color: initial;
-            background-clip: none;
         }
-        
+
         .subtitle {
-            font-family: 'Mochiy Pop One', sans-serif; /* サブタイトルは読みやすさを考慮しNoto Sans JPに設定 */
-            font-size: 1.7em;
+            font-size: 1.2em;
             color: #fff;
             font-weight: 400;
             margin-bottom: 1.5em;
             line-height: 1.6;
             user-select: none;
-            /* サブタイトルに縁取りを追加 */
             text-shadow:
-                -1px -1px 0 #000,  /* 左上 */
-                1px -1px 0 #000,   /* 右上 */
-                -1px 1px 0 #000,   /* 左下 */
-                1px 1px 0 #000;    /* 右下 */
+                -1px -1px 0 #000,
+                1px -1px 0 #000,
+                -1px 1px 0 #000,
+                1px 1px 0 #000;
         }
+
         /* ボタンスタイル */
         .buttons {
             display: flex;
@@ -203,8 +189,8 @@
             background: linear-gradient(135deg, #FFD580 30%, #FFB347 100%);
         }
 
-        @media (max-width: 800px) {
-            h1 { font-size: 2.7em; }
+        @media (max-width: 600px) {
+            h1 { font-size: 2.5em; }
             .subtitle { font-size: 1em; }
             .button-link {
                 width: 63vw;
@@ -245,42 +231,6 @@
     </div>
 
     <script>
-        // Array of image URLs to cycle through
-        const images = ['background1.jpg', 'background2.jpg', 'background3.jpg'];
-        let currentIndex = 0;
-        const clearBg = document.getElementById('background-clear');
-        const blurBg = document.getElementById('background-blur');
-
-        // Function to update the background images
-        function updateBackground() {
-            // Preload the next image to ensure a smooth transition
-            const nextIndex = (currentIndex + 1) % images.length;
-            const nextImage = new Image();
-            nextImage.src = images[nextIndex];
-
-            // When the next image is loaded, update the backgrounds
-            nextImage.onload = () => {
-                clearBg.style.backgroundImage = `url('${images[nextIndex]}')`;
-                blurBg.style.backgroundImage = `url('${images[nextIndex]}')`;
-                currentIndex = nextIndex;
-            };
-        }
-
-        // Initialize background with the first image
-        clearBg.style.backgroundImage = `url('${images[currentIndex]}')`;
-        blurBg.style.backgroundImage = `url('${images[currentIndex]}')`;
-
-        // Start the background change loop after a short delay
-        setTimeout(() => {
-            blurBg.style.opacity = '1';
-            setTimeout(() => {
-                document.getElementById('overlay').classList.add('visible');
-            }, 350);
-        }, 500);
-
-        // Change the background image every 5 seconds (5000 milliseconds)
-        setInterval(updateBackground, 5000);
-
         // メニュー開閉
         const menuToggle = document.getElementById('menuToggle');
         const sideMenu = document.getElementById('sideMenu');
