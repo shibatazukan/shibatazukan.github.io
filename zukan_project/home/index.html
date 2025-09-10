@@ -5,6 +5,8 @@
   <title>しばた図鑑</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Montserrat:wght@700&display=swap" rel="stylesheet">
+  <!-- Font Awesome CDN for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
   <style>
     html, body {
       margin: 0;
@@ -74,8 +76,7 @@
       overflow: hidden;
       opacity: 0;
       pointer-events: none;
-      /* 中央より少し下に */
-      transform: translateY(5vh);
+      transform: translateY(4vh); /* 少し下に */
       transition: opacity 0.7s cubic-bezier(.4,0,.2,1), transform 0.7s cubic-bezier(.4,0,.2,1);
     }
     .overlay.visible {
@@ -128,7 +129,9 @@
     }
     .button-link {
       position: relative;
-      display: inline-block;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       color: white;
       padding: 1.1em 2.2em;
       font-size: 1.15em;
@@ -143,6 +146,14 @@
       outline: none;
       box-sizing: border-box;
       background: linear-gradient(135deg, #FFA500, #FF7F50 60%);
+      gap: 0.6em;
+      min-width: 10em;
+    }
+    .button-link .fa-solid,
+    .button-link .fa-scroll {
+      font-size: 1.35em;
+      margin-right: 0.65em;
+      margin-left: -0.25em;
     }
     .button-zukan {
       background: linear-gradient(135deg, #FFA500, #FF7F50 60%);
@@ -224,9 +235,15 @@
     <h1>しばた図鑑</h1>
     <div class="subtitle">しばたの自然と文化を楽しむWebアプリ</div>
     <div class="buttons">
-      <a href="list.html" class="button-link button-zukan">図鑑一覧</a>
-      <a href="../camera/index.html" class="button-link button-camera">カメラを開く</a>
-      <a href="map.html" class="button-link button-map">マップを開く</a>
+      <a href="list.html" class="button-link button-zukan">
+        <i class="fa-solid fa-scroll" aria-hidden="true"></i>図鑑一覧
+      </a>
+      <a href="../camera/index.html" class="button-link button-camera">
+        <i class="fa-solid fa-camera" aria-hidden="true"></i>カメラを開く
+      </a>
+      <a href="map.html" class="button-link button-map">
+        <i class="fa-solid fa-map-location-dot" aria-hidden="true"></i>マップを開く
+      </a>
     </div>
   </div>
   <script>
