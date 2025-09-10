@@ -1,108 +1,129 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>しばた図鑑</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Montserrat:wght@700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Montserrat:wght@700&display=swap"
+    rel="stylesheet"
+  />
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+  />
   <style>
-    html, body {
+    html,
+    body {
       margin: 0;
       padding: 0;
-      font-family: 'Noto Sans JP', 'Montserrat', sans-serif;
+      font-family: "Noto Sans JP", "Montserrat", sans-serif;
       color: #fff;
       width: 100vw;
       height: 100vh;
       overflow: hidden;
       background: transparent;
     }
-
-    #background-clear, #background-blur {
+    #background-clear,
+    #background-blur {
       position: fixed;
-      top: 0; left: 0;
+      top: 0;
+      left: 0;
       width: 100vw;
       height: 100vh;
-      background-image: url('background1.jpg');
+      background-image: url("background1.jpg");
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
       pointer-events: none;
       user-select: none;
     }
-
     #background-clear {
       z-index: -2;
     }
-
     #background-blur {
       z-index: -1;
       filter: blur(4px);
       opacity: 0;
-      transition: opacity 1.2s cubic-bezier(.4,0,.2,1);
+      transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    /* ハンバーガーメニュー（左上） */
+    /* ----------------- ハンバーガーメニューアイコン ----------------- */
     #hamburger {
       position: fixed;
-      top: 20px;
-      left: 20px;
+      top: 16px;
+      left: 16px;
+      z-index: 9999;
+      font-size: 28px;
+      color: #000; /* 黒 */
+      cursor: pointer;
+      padding: 6px 10px;
+      border: 2px solid #000; /* 黒の四角枠 */
+      border-radius: 6px;
+      background-color: #fff; /* 白背景でコントラスト */
+      user-select: none;
+      transition: background-color 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       width: 44px;
       height: 44px;
-      background: white;
-      color: black;
-      border-radius: 8px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      cursor: pointer;
-      z-index: 10000;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      box-sizing: border-box;
+    }
+    #hamburger:hover,
+    #hamburger:focus {
+      background-color: #eee;
+      outline: none;
     }
 
-    #hamburger i {
-      font-size: 22px;
-    }
-
-    /* サイドメニュー */
+    /* ----------------- サイドメニュー ----------------- */
     .side-menu {
       position: fixed;
       top: 0;
       left: 0;
       width: 260px;
       height: 100vh;
-      background: rgba(0, 0, 0, 0.6); /* 透けた黒背景 */
-      color: #fff;
+      background: rgba(0, 0, 0, 0.6); /* 黒背景 */
+      color: #fff; /* 白文字 */
       box-shadow: 2px 0 12px rgba(0, 0, 0, 0.15);
       transform: translateX(-100%);
       transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
       z-index: 9998;
-      padding-top: 80px;
+      padding-top: 80px; /* 三本線＆ユーザー名被り防止に上に余白 */
       box-sizing: border-box;
       display: flex;
       flex-direction: column;
     }
-
     .side-menu.open {
       transform: translateX(0);
     }
-
     .side-menu a {
-      color: #fff;
+      padding: 14px 24px;
       text-decoration: none;
-      padding: 1em 1.5em;
+      font-weight: 600;
       font-size: 1.1em;
+      color: #000;
       display: flex;
       align-items: center;
-      gap: 0.8em;
-      transition: background 0.3s;
+      gap: 14px;
+      border-radius: 4px;
+      transition: background-color 0.3s ease, color 0.3s ease;
+      user-select: none;
+    }
+    .side-menu a i {
+      color: #000;
+      min-width: 20px;
+      text-align: center;
+      font-size: 1.25em;
+    }
+    .side-menu a:hover,
+    .side-menu a:focus {
+      background-color: #999;
+      color: #fff;
+      outline: none;
     }
 
-    .side-menu a:hover {
-      background: rgba(255, 255, 255, 0.2);
-    }
-
-    /* メインオーバーレイ */
+    /* ----------------- オーバーレイ ----------------- */
     .overlay {
       width: 100vw;
       height: 100vh;
@@ -116,44 +137,50 @@
       overflow: hidden;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.7s cubic-bezier(.4,0,.2,1);
-      padding-top: 80px;
+      transition: opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+      padding: 0 24px;
     }
-
     .overlay.visible {
       opacity: 1;
       pointer-events: auto;
     }
-
     h1 {
-      font-size: 4em;
+      font-family: "Montserrat", "Noto Sans JP", sans-serif;
+      font-size: 4.2em;
       font-weight: 700;
-      letter-spacing: 0.08em;
-      margin: 0.1em 0 0.3em 0;
-      background: linear-gradient(180deg, #FFA500 60%, #ffffff 95%);
+      letter-spacing: 0.1em;
+      margin: 0.1em 0 0.14em 0;
+      background: linear-gradient(180deg, #ff7f50 50%, #ff4500 95%);
+      color: #ff4500;
+      background-clip: text;
       -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
       color: transparent;
+      -webkit-text-fill-color: transparent;
+      line-height: 1.08;
       user-select: none;
+      position: relative;
+      text-shadow: 0 2px 6px rgba(255, 69, 0, 0.5);
     }
-
     .subtitle {
       font-size: 1.3em;
       color: #fff;
       font-weight: 400;
-      letter-spacing: 0.03em;
-      margin-bottom: 1.6em;
-      line-height: 1.5;
+      letter-spacing: 0.04em;
+      margin: 0 0 1.5em 0;
+      font-family: "Noto Sans JP", "Montserrat", sans-serif;
+      line-height: 1.52;
       user-select: none;
+      text-shadow: 0 0 6px rgba(0, 0, 0, 0.35);
     }
-
     .buttons {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 24px;
+      gap: 32px;
+      margin-top: 1.1em;
+      z-index: 1;
+      position: relative;
     }
-
     .button-link {
       position: relative;
       display: inline-flex;
@@ -165,121 +192,166 @@
       text-decoration: none;
       border-radius: 18px;
       box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
-      transition: transform 0.3s, box-shadow 0.3s, background 0.3s;
+      transition: transform 0.3s cubic-bezier(0.3, 1.3, 0.5, 1),
+      box-shadow 0.3s, background 0.3s;
       overflow: hidden;
       font-weight: bold;
       letter-spacing: 0.04em;
-      background: linear-gradient(135deg, #FFA500, #FF7F50 60%);
+      border: none;
+      outline: none;
+      box-sizing: border-box;
+      background: linear-gradient(135deg, #ffa500, #ff7f50 60%);
       gap: 0.6em;
       min-width: 10em;
     }
-
-    .button-link i {
+    .button-link .fa-solid,
+    .button-link .fa-scroll {
       font-size: 1.35em;
-      margin-right: 0.5em;
-      margin-left: -0.3em;
+      margin-right: 0.65em;
+      margin-left: -0.25em;
+      vertical-align: middle;
     }
-
-    .button-zukan:hover {
-      background: linear-gradient(135deg, #FFD580 30%, #FFB347 100%);
+    .button-zukan {
+      background: linear-gradient(135deg, #ffa500, #ff7f50 60%);
     }
-
+    .button-zukan:hover,
+    .button-zukan:focus,
+    .button-zukan.active {
+      background: linear-gradient(135deg, #ffd580 30%, #ffb347 100%);
+    }
     .button-camera {
       background: linear-gradient(135deg, #3cc47c, #168f4e 60%);
     }
-
-    .button-camera:hover {
+    .button-camera:hover,
+    .button-camera:focus,
+    .button-camera.active {
       background: linear-gradient(135deg, #6cfcb7 30%, #35b86b 100%);
     }
-
     .button-map {
       background: linear-gradient(135deg, #3381ff, #2350b8 60%);
     }
-
-    .button-map:hover {
+    .button-map:hover,
+    .button-map:focus,
+    .button-map.active {
       background: linear-gradient(135deg, #6dc4ff 30%, #3f6db3 100%);
     }
-
+    .button-link::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.18);
+      transform: skewX(-20deg);
+      transition: left 0.5s cubic-bezier(0.3, 1.3, 0.5, 1);
+      pointer-events: none;
+    }
+    .button-link:hover::after,
+    .button-link:focus::after,
+    .button-link.active::after {
+      left: 100%;
+    }
+    .button-link:hover,
+    .button-link:focus,
+    .button-link:active,
+    .button-link.active {
+      transform: translateY(-7px) scale(1.045);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.26);
+      color: #fffbf7;
+    }
     @media (max-width: 600px) {
       h1 {
-        font-size: 2.6em;
+        font-size: 2.5em;
       }
-
       .subtitle {
-        font-size: 1em;
+        font-size: 1.05em;
       }
-
       .buttons {
         flex-direction: column;
-        gap: 14px;
+        align-items: center;
+        gap: 12px;
+        margin-top: 0.7em;
       }
-
       .button-link {
         width: 80vw;
-        padding: 1em;
-        font-size: 1em;
+        min-width: 0;
+        font-size: 1.1em;
+        padding: 1em 1.6em;
       }
     }
   </style>
 </head>
 <body>
+  <!-- 背景 -->
   <div id="background-clear"></div>
   <div id="background-blur"></div>
 
-  <!-- ハンバーガーアイコン -->
-  <div id="hamburger">
+  <!-- ハンバーガーメニュー（三本線） -->
+  <div id="hamburger" tabindex="0" aria-label="メニュー開閉ボタン">
     <i class="fa-solid fa-bars"></i>
   </div>
 
   <!-- サイドメニュー -->
-  <nav class="side-menu">
-    <a href="#"><i class="fa-solid fa-user"></i> ユーザー</a>
-    <a href="#"><i class="fa-solid fa-house"></i> ホーム</a>
-    <a href="list.html"><i class="fa-solid fa-scroll"></i> 図鑑</a>
-    <a href="map.html"><i class="fa-solid fa-map-location-dot"></i> マップ</a>
-    <a href="../camera/index.html"><i class="fa-solid fa-camera"></i> カメラ</a>
-    <a href="#"><i class="fa-solid fa-gear"></i> せってい</a>
-    <a href="#"><i class="fa-solid fa-circle-question"></i> ヘルプ</a>
+  <nav class="side-menu" aria-label="サイトメニュー" role="navigation">
+    <a href="#" tabindex="0">
+      <i class="fa-solid fa-user"></i> ユーザー
+    </a>
+    <a href="#" tabindex="0">
+      <i class="fa-solid fa-home"></i> ホーム
+    </a>
+    <a href="#" tabindex="0">
+      <i class="fa-solid fa-scroll"></i> 図鑑一覧
+    </a>
+    <a href="#" tabindex="0">
+      <i class="fa-solid fa-camera"></i> カメラ
+    </a>
+    <a href="#" tabindex="0">
+      <i class="fa-solid fa-map"></i> マップ
+    </a>
+    <a href="#" tabindex="0">
+      <i class="fa-solid fa-gear"></i> せってい
+    </a>
+    <a href="#" tabindex="0">
+      <i class="fa-solid fa-question"></i> ヘルプ
+    </a>
   </nav>
 
-  <!-- メイン表示エリア -->
-  <div class="overlay" id="overlay">
+  <!-- オーバーレイ部分 -->
+  <main class="overlay visible" role="main" aria-label="メインコンテンツ">
     <h1>しばた図鑑</h1>
-    <div class="subtitle">しばたの自然と文化を楽しむWebアプリ</div>
-    <div class="buttons">
-      <a href="list.html" class="button-link button-zukan">
-        <i class="fa-solid fa-scroll"></i>図鑑一覧
+    <p class="subtitle">
+      しばたの自然と文化を楽しむアプリ
+    </p>
+    <div class="buttons" role="group" aria-label="代表UXボタン">
+      <a href="#" class="button-zukan button-link" tabindex="0" role="button">
+        <i class="fa-solid fa-scroll"></i> 図鑑一覧
       </a>
-      <a href="../camera/index.html" class="button-link button-camera">
-        <i class="fa-solid fa-camera"></i>カメラを開く
+      <a href="#" class="button-camera button-link" tabindex="0" role="button">
+        <i class="fa-solid fa-camera"></i> カメラ
       </a>
-      <a href="map.html" class="button-link button-map">
-        <i class="fa-solid fa-map-location-dot"></i>マップを開く
+      <a href="#" class="button-map button-link" tabindex="0" role="button">
+        <i class="fa-solid fa-map"></i> マップ
       </a>
     </div>
-  </div>
+  </main>
 
   <script>
-    // 背景ぼかしとメイン表示
-    document.getElementById('background-clear').style.backgroundImage = "url('background1.jpg')";
-    document.getElementById('background-blur').style.backgroundImage = "url('background1.jpg')";
+    // ハンバーガーメニュー開閉処理
+    const hamburger = document.getElementById("hamburger");
+    const sideMenu = document.querySelector(".side-menu");
 
-    setTimeout(() => {
-      document.getElementById('background-blur').style.opacity = '1';
-    }, 500);
+    function toggleMenu() {
+      sideMenu.classList.toggle("open");
+    }
 
-    setTimeout(() => {
-      document.getElementById('overlay').classList.add('visible');
-    }, 850);
-
-    // ハンバーガー開閉
-    const hamburger = document.getElementById('hamburger');
-    const sideMenu = document.querySelector('.side-menu');
-
-    hamburger.addEventListener('click', () => {
-      sideMenu.classList.toggle('open');
+    hamburger.addEventListener("click", toggleMenu);
+    hamburger.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        toggleMenu();
+      }
     });
-
-    // モバイルタップエフェクト
-    document.querySelectorAll('.button-link').forEach(btn => {
-      btn.addEventListener('touchstart', () => btn.classList.add
+  </script>
+</body>
+</html>
