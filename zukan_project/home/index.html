@@ -31,43 +31,46 @@
       opacity: 0; pointer-events: none; transition: opacity 0.7s cubic-bezier(.4,0,.2,1);
     }
     .overlay.visible { opacity: 1; pointer-events: auto; }
-
     h1 {
-      position: relative; z-index: 1;
       font-family: 'Montserrat', 'Noto Sans JP', sans-serif;
-      font-size: 3em; font-weight: 700;
-      letter-spacing: 0.08em; margin: 0.1em 0 0.13em 0;
+      font-size: 3em;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      margin: 0.1em 0 0.14em 0;
+      /* v20風：オレンジ下部が白く光るグラデ */
+      background: linear-gradient(180deg, #FFA500 60%, #fff 95%);
       color: #FFA500;
-      background: none;
-      -webkit-background-clip: unset; background-clip: unset; -webkit-text-fill-color: unset;
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
       line-height: 1.08; user-select: none;
-      /* ほんのり光沢感を出す白ハイライト */
+      /* さらに上部光沢筋を追加 */
+      position: relative;
     }
     h1::after {
       content: '';
-      display: block;
       position: absolute;
-      left: 13%; top: 19%;
-      width: 74%; height: 25%;
-      background: linear-gradient(120deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.07) 100%);
-      border-radius: 45% 55% 35% 65% / 60% 70% 30% 60%;
-      opacity: 0.62;
+      left: 15%; top: 14%;
+      width: 70%; height: 23%;
+      background: linear-gradient(120deg, rgba(255,255,255,0.65) 10%, rgba(255,255,255,0.04) 90%);
+      border-radius: 50% 50% 32% 50%/60% 70% 30% 60%;
+      opacity: 0.45;
       pointer-events: none;
       z-index: 2;
       filter: blur(0.5px);
+      display: block;
     }
-
     .subtitle {
       font-size: 1.15em;
       color: #fff;
-      font-weight: 400; letter-spacing: 0.03em; margin: 0 0 1.2em 0;
+      font-weight: 400;
+      letter-spacing: 0.03em;
+      margin: 0 0 1.2em 0;
       font-family: 'Noto Sans JP', 'Montserrat', sans-serif;
-      line-height: 1.52; user-select: none;
-      text-shadow:
-        0 2px 8px rgba(0,0,0,0.12),
-        0 1.2px 0 #fff8;
-      position: relative;
-      z-index: 1;
+      line-height: 1.52;
+      user-select: none;
+      text-shadow: none;
     }
     .buttons {
       display: flex; flex-wrap: wrap; justify-content: center; gap: 32px; margin-top: 1.1em; z-index: 1; position: relative;
