@@ -21,7 +21,6 @@
       position: fixed;
       top: 0; left: 0;
       width: 100vw; height: 100vh;
-      background-image: url('background1.jpg');
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
@@ -34,7 +33,7 @@
       z-index: -1;
       filter: blur(4px);
       opacity: 0;
-      transition: opacity 1.2s cubic-bezier(.4,0,.2,1);
+      transition: opacity 1s ease;
     }
 
     /* ハンバーガーメニュー */
@@ -71,7 +70,6 @@
     .side-menu.open {
       left: 0;
     }
-    /* サイドメニューが開いたとき三本線を右へずらす */
     .side-menu.open ~ .menu-toggle {
       left: 280px; /* サイドメニュー幅260px + 余白20px */
     }
@@ -118,11 +116,10 @@
     }
 
     .title-block {
-      margin-bottom: 50px; /* ボタンとの距離を調整 */
-      transform: translateY(-15px); /* 全体を上に移動 */
+      margin-bottom: 50px;
+      transform: translateY(-15px);
     }
     
-    /* タイトルを目立たせる */
     h1 {
       font-family: 'Montserrat', 'Noto Sans JP', sans-serif;
       font-size: 4.0em;
@@ -147,7 +144,6 @@
       user-select: none;
     }
 
-    /* ボタンスタイル */
     .buttons {
       display: flex;
       flex-direction: column;
@@ -158,8 +154,8 @@
 
     .buttons .button-link {
       display: flex;
-      align-items: center;        /* アイコンと文字を縦中央 */
-      justify-content: center;    /* 文字は中央のまま */
+      align-items: center;
+      justify-content: center;
       gap: 0.6em;
       padding: 0.8em 1.5em;
       font-size: 1em;
@@ -174,7 +170,6 @@
       min-width: 170px;
     }
 
-    /* アイコンの幅を固定して位置を揃える */
     .buttons .button-link i {
       font-size: 1.35em;
       width: 2.0em;
@@ -235,15 +230,47 @@
 
   <!-- JS -->
   <script>
-    // 背景表示
-    document.getElementById('background-clear').style.backgroundImage = "url('background1.jpg')";
-    document.getElementById('background-blur').style.backgroundImage = "url('background1.jpg')";
+    // 背景画像リスト
+    const images = ["background1.jpg", "background2.jpg", "background3.jpg"];
+    let current = 0;
+
+    const bgClear = document.getElementById('background-clear');
+    const bgBlur = document.getElementById('background-blur');
+
+    // 初期設定
+    bgClear.style.backgroundImage = `url(${images[current]})`;
+    bgBlur.style.backgroundImage = `url(${images[current]})`;
+
+    // 初回フェードイン
     setTimeout(() => {
-      document.getElementById('background-blur').style.opacity = '1';
+      bgBlur.style.opacity = '1';
     }, 500);
+
     setTimeout(() => {
       document.getElementById('overlay').classList.add('visible');
     }, 850);
+
+    // 背景切り替え関数
+    function changeBackground() {
+      const next = (current + 1) % images.length;
+
+      // フェードアウト
+      bgBlur.style.opacity = "0";
+
+      setTimeout(() => {
+        // 画像切り替え
+        bgClear.style.backgroundImage = `url(${images[next]})`;
+        bgBlur.style.backgroundImage = `url(${images[next]})`;
+
+        // フェードイン
+        bgBlur.style.opacity = "1";
+
+        current = next;
+      }, 1000); // フェード時間に合わせる
+    }
+
+    // 5秒ごとに切り替え
+    setInterval(changeBackground, 5000);
 
     // メニュー開閉
     const menuToggle = document.getElementById('menuToggle');
