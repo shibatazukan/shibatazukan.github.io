@@ -48,14 +48,14 @@
       border-radius: 10px;
       z-index: 1000;
       cursor: pointer;
-      transition: background 0.3s, left 0.35s ease-in-out; /* ← leftをアニメーション */
+      transition: background 0.3s, left 0.35s ease-in-out;
     }
     .menu-toggle:hover {
       background: rgba(0, 0, 0, 0.6);
     }
-    /* サイドメニューオープン時に三本線を右へ移動 */
+    /* サイドメニューオープン時に三本線を右へ移動（サイドメニューが先にある構造を想定） */
     .side-menu.open ~ .menu-toggle {
-      left: 280px; /* サイドメニュー幅260pxより少し余裕 */
+      left: 280px;
     }
 
     /* サイドメニュー */
@@ -101,6 +101,26 @@
     .side-menu a:hover {
       background: rgba(255, 255, 255, 0.1);
     }
+
+    /* --- ここから追加: アイコン列を揃える --- */
+    .side-menu a i,
+    .button-link i {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.4em;      /* アイコン列の幅を固定して縦列を揃える */
+      min-width: 1.4em;
+      font-size: 1.25em; /* アイコン全体の大きさを揃える */
+      line-height: 1;    /* ベースライン差を消す */
+      vertical-align: middle;
+    }
+
+    /* 特定アイコンがどうしても高さが違う場合の微調整（任意） */
+    .side-menu a .fa-scroll {
+      /* 微調整値は必要なら調整してください（現在はほぼ中央） */
+      transform: translateY(0);
+    }
+    /* --- ここまで追加 --- */
 
     /* 中央オーバーレイ */
     .overlay {
@@ -153,7 +173,7 @@
 
     .button-link {
       display: inline-flex;
-      align-items: center; /* ← アイコンと文字を縦方向中央揃え */
+      align-items: center;
       justify-content: center;
       padding: 1em 2em;
       font-size: 1.1em;
@@ -176,8 +196,8 @@
     }
 
     .button-link .fa-solid {
-      font-size: 1.35em;
-      line-height: 1; /* ← アイコン上下ズレ防止 */
+      /* ここは共通設定でほぼ揃うはず */
+      line-height: 1;
     }
 
     @media (max-width: 600px) {
@@ -193,7 +213,7 @@
 </head>
 <body>
 
-  <!-- サイドメニュー -->
+  <!-- サイドメニュー（先に置くと .side-menu.open ~ .menu-toggle のセレクタで移動できる） -->
   <nav class="side-menu" id="sideMenu">
     <div class="menu-title"><i class="fa-solid fa-user"></i> ユーザー名</div>
     <a href="index.html"><i class="fa-solid fa-house"></i> ホーム</a>
