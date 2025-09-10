@@ -192,7 +192,7 @@
     </div>
   </div>
   <script>
-    // 背景画像セット（冗長だけど念のため）
+    // 背景画像セット
     document.getElementById('background-clear').style.backgroundImage = "url('background1.jpg')";
     document.getElementById('background-blur').style.backgroundImage = "url('background1.jpg')";
 
@@ -200,7 +200,7 @@
     setTimeout(function() {
       const blur = document.getElementById('background-blur');
       blur.style.filter = 'blur(4px)'; // ここでぼかしを弱めに
-      blur.style.opacity = '0.20';     // さらに元画像が透けるように
+      blur.style.opacity = '0.15';     // さらに元画像が透けるように
     }, 150); // すぐぼかし開始
 
     // UX群を素早く出す（ぼかしとほぼ同時に出す）
