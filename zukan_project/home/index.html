@@ -120,20 +120,21 @@
         }
 
         /* タイトルを目立たせる */
-        h1 {
-            font-family: 'Mochiy Pop One', sans-serif;
-            font-size: 4.0em;
-            font-weight: normal;
-            letter-spacing: 0.1em;
-            margin: 0.1em 0 0.2em 0;
-            color: #fff;
-            text-shadow:
-                -2px -2px 0 #000,
-                2px -2px 0 #000,
-                -2px 2px 0 #000,
-                2px 2px 0 #000;
-            user-select: none;
-        }
+           h1 {
+                font-family: 'Mochiy Pop One', sans-serif;
+                font-size: 4.0em;
+                font-weight: 800;
+                letter-spacing: 0.1em;
+                margin: 0.1em 0 0.2em 0;
+                background: linear-gradient(180deg, #FFD700, #FFA500 70%, #ffffff 95%);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+                color: transparent;
+                text-shadow: 0 2px 8px rgba(255, 140, 0, 0.4);
+                user-select: none;
+            }
+
 
         .subtitle {
             font-size: 1.2em;
