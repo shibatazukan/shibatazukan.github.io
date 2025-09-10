@@ -32,14 +32,14 @@
     }
     #background-clear {
       z-index: -2;
-      opacity: 1;
+      opacity: 1; /* ずっと完全に表示 */
       transition: opacity 1s cubic-bezier(.4,0,.2,1);
     }
     #background-blur {
       z-index: -1;
       filter: blur(4px);
-      opacity: 0;
-      /* 中央クリア・上下ぼかしグラデーションマスク */
+      opacity: 0; /* 最初は消しておく */
+      /* 中央クリア、上下ぼかしグラデーションマスク */
       -webkit-mask-image: linear-gradient(to bottom, 
         rgba(0,0,0,1) 0%,
         rgba(0,0,0,0.15) 35%,
@@ -75,7 +75,7 @@
       overflow: hidden;
       opacity: 0;
       pointer-events: none;
-      transform: translateY(-4vh); /* ほんの少し上 */
+      transform: translateY(-4vh); /* ほんの少し上へ */
       transition: opacity 0.7s cubic-bezier(.4,0,.2,1), transform 0.7s cubic-bezier(.4,0,.2,1);
     }
     .overlay.visible {
@@ -213,19 +213,21 @@
     </div>
   </div>
   <script>
-    // 初期状態：鮮明な背景のみ・他は全部非表示
+    // 背景画像セット
     document.getElementById('background-clear').style.backgroundImage = "url('background1.jpg')";
     document.getElementById('background-blur').style.backgroundImage = "url('background1.jpg')";
 
-    // 1. 少し待ってから、ぼかしレイヤーをフェードイン
+    // 1. 最初は鮮明な画像だけ（blurレイヤーはopacity:0）
+
+    // 2. 一定時間後、ぼかしレイヤー（上下グラデーション仕様）をフェードイン
     setTimeout(function() {
       document.getElementById('background-blur').style.opacity = '1';
-    }, 600); // 0.6秒後にぼかしフェードイン（お好みで調整）
+    }, 500); // 0.5秒後にフェードイン（演出お好みで）
 
-    // 2. さらに少し遅れてUX群をフェードイン
+    // 3. さらに遅れてUX群を表示
     setTimeout(function() {
       document.getElementById('overlay').classList.add('visible');
-    }, 900); // 0.9秒後にUX群フェードイン（お好みで調整）
+    }, 850); // 0.85秒後にUX群登場（演出お好みで）
   </script>
 </body>
 </html>
