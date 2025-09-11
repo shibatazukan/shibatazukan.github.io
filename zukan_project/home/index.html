@@ -288,5 +288,27 @@
             sideMenu.classList.toggle('open');
         });
     </script>
+    
+    <script>
+  async function requestCameraPermission() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment' },
+        audio: false
+      });
+      stream.getTracks().forEach(track => track.stop());
+      console.log("✅ カメラ権限が許可されました");
+    } catch (err) {
+      console.warn("🚫 カメラの使用が拒否されました:", err);
+      alert("カメラの使用を許可してください。");
+    }
+  }
+
+  // ページ読み込み時にカメラ権限をリクエスト
+  window.addEventListener('DOMContentLoaded', () => {
+    requestCameraPermission();
+  });
+</script>
+
 </body>
 </html>
