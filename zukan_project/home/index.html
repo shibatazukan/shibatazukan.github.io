@@ -26,7 +26,7 @@
             background-repeat: no-repeat;
             pointer-events: none;
             user-select: none;
-            transition: background-image 1.5s cubic-bezier(.4,0,.2,1); 
+            transition: background-image 1.5s cubic-bezier(.4,0,.2,1); /* Added transition for background image */
         }
 
         #background-clear { z-index: -2; }
@@ -34,7 +34,7 @@
             z-index: -1;
             filter: blur(4px);
             opacity: 0;
-            transition: opacity 1.2s cubic-bezier(.4,0,.2,1), background-image 1.5s cubic-bezier(.4,0,.2,1); 
+            transition: opacity 1.2s cubic-bezier(.4,0,.2,1), background-image 1.5s cubic-bezier(.4,0,.2,1); /* Added background-image transition */
         }
 
         /* ハンバーガーメニュー */
@@ -288,27 +288,5 @@
             sideMenu.classList.toggle('open');
         });
     </script>
-    
-    <script>
-  async function requestCameraPermission() {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment' },
-        audio: false
-      });
-      stream.getTracks().forEach(track => track.stop());
-      console.log("✅ カメラ権限が許可されました");
-    } catch (err) {
-      console.warn("🚫 カメラの使用が拒否されました:", err);
-      alert("カメラの使用を許可してください。");
-    }
-  }
-
-  // ページ読み込み時にカメラ権限をリクエスト
-  window.addEventListener('DOMContentLoaded', () => {
-    requestCameraPermission();
-  });
-</script>
-
 </body>
 </html>
