@@ -213,7 +213,26 @@
     video.addEventListener('loadedmetadata', resizeCanvas);
 
     tf.loadLayersModel(modelPath).then(m => model = m);
-    
+
+    async function setupCamera() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: 'environment'
+          },
+          audio: false
+        });
+        video.srcObject = stream;
+        video.addEventListener('loadedmetadata', () => {
+          controlPanel.style.display = 'flex';
+          drawingCanvas.style.pointerEvents = "auto";
+        });
+      } catch (err) {
+        alert("カメラへのアクセスを許可してください。");
+      }
+    }
+    setupCamera();
+
     ctx.strokeStyle = '#007bff';
     ctx.lineWidth = 5;
     ctx.lineCap = 'round';
