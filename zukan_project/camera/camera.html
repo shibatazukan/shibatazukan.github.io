@@ -303,7 +303,7 @@
       if (!model || points.length < 2) return;
 
       predictButton.disabled = true;
-      saveButton.disabled = true;
+      saveButton.disabled = true; // 予測を開始する際に無効化
 
       const minX = Math.min(...points.map(p => p.x));
       const minY = Math.min(...points.map(p => p.y));
@@ -391,7 +391,7 @@
           count: finalCount,
           total: totalSamples
         };
-        saveButton.disabled = false;
+        saveButton.disabled = false; // 予測が成功した場合に有効化
         
 
         if (labelData.show3DObject) {
@@ -453,6 +453,7 @@
     
     saveButton.addEventListener('click', () => {
       if (!lastPrediction) return;
+      
       const { label, count, total } = lastPrediction;
       const now = new Date().toISOString();
       const labelData = labelInfo[label];
@@ -482,7 +483,10 @@
         console.log('すでにマイずかんに同じ名前のデータがあります（同日中）');
         alert('本日すでに「' + labelData.name + '」は登録済みです。');
       }
+      
+      // 保存処理が完了した後、再度ボタンを無効化する
       saveButton.disabled = true;
+      lastPrediction = null; // 保存後は、予測データをクリアする
     });
 
     AFRAME.registerComponent('face-camera-y', {
