@@ -311,7 +311,10 @@
       const maxY = Math.max(...points.map(p => p.y));
       const width = maxX - minX;
       const height = maxY - minY;
-      if (width <= 0 || height <= 0) return;
+      if (width <= 0 || height <= 0) {
+        predictButton.disabled = false;
+        return;
+      }
 
       const originalCanvas = document.createElement('canvas');
       originalCanvas.width = width;
@@ -324,6 +327,9 @@
       const totalSamples = 30;
 
       for (let i = 0; i < totalSamples; i++) {
+        // UIが固まらないように、1ループごとにブラウザに制御を返す
+        await tf.nextFrame();
+
         const processedCanvas = document.createElement('canvas');
         processedCanvas.width = width;
         processedCanvas.height = height;
@@ -341,17 +347,25 @@
         const resizedCtx = resizedCanvas.getContext('2d');
         resizedCtx.drawImage(processedCanvas, 0, 0, 224, 224);
 
-        const resizedImageData = resizedCtx.getImageData(0, 0, 224, 224);
-        const tensor = tf.browser.fromPixels(resizedImageData).toFloat().div(tf.scalar(255)).expandDims();
+        let tensor = null;
+        try {
+          const resizedImageData = resizedCtx.getImageData(0, 0, 224, 224);
+          tensor = tf.browser.fromPixels(resizedImageData).toFloat().div(tf.scalar(255)).expandDims();
 
-        const predictions = await model.predict(tensor).array();
-        const scores = predictions ? predictions.flat() : [];
-        const topResultIndex = scores.indexOf(Math.max(...scores));
-        const topScore = scores[topResultIndex];
-        const topLabel = classLabels.length > 0 && topResultIndex >= 0 ? classLabels[topResultIndex] : null;
+          const predictions = await model.predict(tensor).array();
+          const scores = predictions ? predictions.flat() : [];
+          const topResultIndex = scores.indexOf(Math.max(...scores));
+          const topScore = scores[topResultIndex];
+          const topLabel = classLabels.length > 0 && topResultIndex >= 0 ? classLabels[topResultIndex] : null;
 
-        if (topScore >= confidenceThreshold && topLabel) {
-          labels.push(topLabel);
+          if (topScore >= confidenceThreshold && topLabel) {
+            labels.push(topLabel);
+          }
+        } finally {
+          // メモリを解放する
+          if (tensor) {
+            tensor.dispose();
+          }
         }
       }
 
@@ -473,7 +487,7 @@
       
       const exists = zukan.some(item => item.name === entry.name && isSameDay(item.date, entry.date));
       
-      // 修正箇所: ここでボタンを無効化し、状態をリセットする
+      // アラートの前にボタンを無効化
       saveButton.disabled = true;
       lastPrediction = null;
 
