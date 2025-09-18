@@ -1,1 +1,38 @@
+<!-- my-zukan.html -->
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>マイずかん</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    .entry { margin: 10px 0; padding: 10px; border: 1px solid #ccc; border-radius: 8px; }
+  </style>
+</head>
+<body>
+  <h1>マイずかん</h1>
+  <div id="zukanContainer"></div>
+
+  <script>
+    const zukanData = JSON.parse(localStorage.getItem('myZukan')) || [];
+
+    const container = document.getElementById('zukanContainer');
+    if (zukanData.length === 0) {
+      container.innerHTML = '<p>まだ登録されていません。</p>';
+    } else {
+      zukanData.forEach(entry => {
+        const div = document.createElement('div');
+        div.className = 'entry';
+        div.innerHTML = `
+          <strong>なまえ:</strong> ${entry.name}<br>
+          <strong>種類:</strong> ${entry.category}<br>
+          <strong>説明:</strong> ${entry.description}<br>
+          <strong>登録日:</strong> ${entry.date}
+        `;
+        container.appendChild(div);
+      });
+    }
+  </script>
+</body>
+</html>
 
