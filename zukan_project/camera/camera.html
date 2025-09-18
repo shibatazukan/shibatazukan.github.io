@@ -303,7 +303,7 @@
       if (!model || points.length < 2) return;
 
       predictButton.disabled = true;
-      saveButton.disabled = true; // 予測を開始する際に無効化
+      saveButton.disabled = true;
 
       const minX = Math.min(...points.map(p => p.x));
       const minY = Math.min(...points.map(p => p.y));
@@ -391,8 +391,7 @@
           count: finalCount,
           total: totalSamples
         };
-        saveButton.disabled = false; // 予測が成功した場合に有効化
-        
+        saveButton.disabled = false;
 
         if (labelData.show3DObject) {
           const camera = document.querySelector('#mainCamera');
@@ -484,9 +483,9 @@
         alert('本日すでに「' + labelData.name + '」は登録済みです。');
       }
       
-      // 保存処理が完了した後、再度ボタンを無効化する
+      // 保存処理が完了し、アラートが表示された後にボタンを無効化する
       saveButton.disabled = true;
-      lastPrediction = null; // 保存後は、予測データをクリアする
+      lastPrediction = null;
     });
 
     AFRAME.registerComponent('face-camera-y', {
