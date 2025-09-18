@@ -473,6 +473,10 @@
       
       const exists = zukan.some(item => item.name === entry.name && isSameDay(item.date, entry.date));
       
+      // 修正箇所: ここでボタンを無効化し、状態をリセットする
+      saveButton.disabled = true;
+      lastPrediction = null;
+
       if (!exists) {
         zukan.push(entry);
         localStorage.setItem('myZukan', JSON.stringify(zukan));
@@ -482,10 +486,6 @@
         console.log('すでにマイずかんに同じ名前のデータがあります（同日中）');
         alert('本日すでに「' + labelData.name + '」は登録済みです。');
       }
-      
-      // 保存処理が完了し、アラートが表示された後にボタンを無効化する
-      saveButton.disabled = true;
-      lastPrediction = null;
     });
 
     AFRAME.registerComponent('face-camera-y', {
