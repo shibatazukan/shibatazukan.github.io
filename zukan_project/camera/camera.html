@@ -11,15 +11,27 @@
       margin: 0;
       overflow: hidden;
     }
-    #webcam, #drawingCanvas, a-scene {
+
+    #webcam {
       position: absolute;
       top: 0;
       left: 0;
       width: 100vw;
       height: 100vh;
+      object-fit: cover;
+      z-index: 0;
     }
-    #webcam { z-index: 0; object-fit: cover; }
-    #drawingCanvas { z-index: 5; pointer-events: none; }
+
+    #drawingCanvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 5;
+      pointer-events: none;
+    }
+    
     #controlPanel {
       position: absolute;
       bottom: 10px;
@@ -37,7 +49,9 @@
       justify-content: space-around;
       gap: 10px;
     }
-    #predictButton, #clearButton {
+
+    #predictButton,
+    #clearButton {
       padding: 10px 20px;
       font-size: 18px;
       border: none;
@@ -47,12 +61,36 @@
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
       transition: background-color 0.3s;
     }
-    #predictButton { background-color: #4caf50; }
-    #predictButton:hover { background-color: #45a049; }
-    #predictButton:disabled { background-color: #ccc; cursor: not-allowed; }
-    #clearButton { background-color: #f44336; }
-    #clearButton:hover { background-color: #d32f2f; }
-    a-scene { z-index: 1; }
+
+    #predictButton {
+      background-color: #4caf50;
+    }
+
+    #predictButton:hover {
+      background-color: #45a049;
+    }
+
+    #predictButton:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+
+    #clearButton {
+      background-color: #f44336;
+    }
+
+    #clearButton:hover {
+      background-color: #d32f2f;
+    }
+
+    a-scene {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 1;
+    }
   </style>
 </head>
 <body>
@@ -85,17 +123,73 @@
     const modelPath = 'model/model.json';
     const classLabels = ['蚊', 'バッタ', 'てんとう虫', 'アブラムシ', 'カメムシ', 'アリ', 'ハチ', 'チョウ', 'トンボ', 'セミ', 'シロツメクサ'];
     const labelInfo = {
-      '蚊': { name: '蚊', category: '昆虫', description: '血を吸うことがありますが、植物の蜜を吸うこともあります。', show3DObject: false },
-      'バッタ': { name: 'バッタ', category: '昆虫', description: '草原に多く生息し、高く跳ねることが特徴です。', show3DObject: false },
-      'てんとう虫': { name: 'てんとう虫', category: '昆虫', description: '赤い背中に黒い斑点があり、アブラムシを食べます。', show3DObject: false },
-      'アブラムシ': { name: 'アブラムシ', category: '昆虫', description: '植物に群がって樹液を吸います。', show3DObject: false },
-      'カメムシ': { name: 'カメムシ', category: '昆虫', description: '独特な臭いを持つことで知られています。', show3DObject: false },
-      'アリ': { name: 'アリ', category: '昆虫', description: '集団で行動し、巣を作ります。', show3DObject: false },
-      'ハチ': { name: 'ハチ', category: '昆虫', description: '花粉を運び、時には刺すこともあります。', show3DObject: false },
-      'チョウ': { name: 'チョウ', category: '昆虫', description: '美しい羽を持ち、花の蜜を吸います。', show3DObject: false },
-      'トンボ': { name: 'トンボ', category: '昆虫', description: '空中を素早く飛び回る捕食者です。', show3DObject: false },
-      'セミ': { name: 'セミ', category: '昆虫', description: '夏に大きな鳴き声で知られています。', show3DObject: false },
-      'シロツメクサ': { name: 'シロツメクサ', category: 'マメ科シャジクソウ属', description: '花言葉：幸運。四つ葉のクローバーで有名です。', show3DObject: false }
+      '蚊': {
+        name: '蚊',
+        category: '昆虫',
+        description: '血を吸うことがありますが、植物の蜜を吸うこともあります。',
+        show3DObject: false
+      },
+      'バッタ': {
+        name: 'バッタ',
+        category: '昆虫',
+        description: '草原に多く生息し、高く跳ねることが特徴です。',
+        show3DObject: false
+      },
+      'てんとう虫': {
+        name: 'てんとう虫',
+        category: '昆虫',
+        description: '赤い背中に黒い斑点があり、アブラムシを食べます。',
+        show3DObject: false
+      },
+      'アブラムシ': {
+        name: 'アブラムシ',
+        category: '昆虫',
+        description: '植物に群がって樹液を吸います。',
+        show3DObject: false
+      },
+      'カメムシ': {
+        name: 'カメムシ',
+        category: '昆虫',
+        description: '独特な臭いを持つことで知られています。',
+        show3DObject: false
+      },
+      'アリ': {
+        name: 'アリ',
+        category: '昆虫',
+        description: '集団で行動し、巣を作ります。',
+        show3DObject: false
+      },
+      'ハチ': {
+        name: 'ハチ',
+        category: '昆虫',
+        description: '花粉を運び、時には刺すこともあります。',
+        show3DObject: false
+      },
+      'チョウ': {
+        name: 'チョウ',
+        category: '昆虫',
+        description: '美しい羽を持ち、花の蜜を吸います。',
+        show3DObject: false
+      },
+      'トンボ': {
+        name: 'トンボ',
+        category: '昆虫',
+        description: '空中を素早く飛び回る捕食者です。',
+        show3DObject: false
+      },
+      'セミ': {
+        name: 'セミ',
+        category: '昆虫',
+        description: '夏に大きな鳴き声で知られています。',
+        show3DObject: false
+      },
+      'シロツメクサ': {
+        name: 'シロツメクサ',
+        category: 'マメ科シャジクソウ属',
+        description: '花言葉：幸運。四つ葉のクローバーで有名です。',
+        show3DObject: false,
+        model: 'model/model.json'
+      }
     };
 
     let model;
@@ -123,7 +217,9 @@
     async function setupCamera() {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: 'environment' },
+          video: {
+            facingMode: 'environment'
+          },
           audio: false
         });
         video.srcObject = stream;
@@ -138,91 +234,274 @@
     setupCamera();
 
     ctx.strokeStyle = '#007bff';
-    ctx.lineWidth = 4;
-    ctx.lineJoin = 'round';
+    ctx.lineWidth = 5;
     ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
 
-    drawingCanvas.addEventListener('mousedown', e => {
+    drawingCanvas.addEventListener('touchstart', e => {
+      if (e.touches.length !== 1) return;
+      e.preventDefault();
       isDrawing = true;
-      points = [[e.offsetX, e.offsetY]];
-    });
-    drawingCanvas.addEventListener('mousemove', e => {
-      if (isDrawing) {
-        points.push([e.offsetX, e.offsetY]);
-        ctx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
-        ctx.beginPath();
-        ctx.moveTo(points[0][0], points[0][1]);
-        points.forEach(p => ctx.lineTo(p[0], p[1]));
-        ctx.stroke();
-        predictButton.disabled = points.length < 5;
-      }
-    });
-    drawingCanvas.addEventListener('mouseup', () => {
-      isDrawing = false;
+      const t = e.touches[0];
+      points = [{
+        x: t.clientX,
+        y: t.clientY
+      }];
+      ctx.beginPath();
+      ctx.moveTo(t.clientX, t.clientY);
     });
 
-    predictButton.addEventListener('click', () => {
-      if (!model || points.length < 5) return;
-
-      const minX = Math.min(...points.map(p => p[0]));
-      const maxX = Math.max(...points.map(p => p[0]));
-      const minY = Math.min(...points.map(p => p[1]));
-      const maxY = Math.max(...points.map(p => p[1]));
-      const padding = 20;
-      const startX = Math.max(minX - padding, 0);
-      const startY = Math.max(minY - padding, 0);
-      const width = Math.min(maxX - minX + 2 * padding, video.videoWidth - startX);
-      const height = Math.min(maxY - minY + 2 * padding, video.videoHeight - startY);
-
-      const tempCanvas = document.createElement('canvas');
-      tempCanvas.width = 224;
-      tempCanvas.height = 224;
-      const tempCtx = tempCanvas.getContext('2d');
-      tempCtx.drawImage(video, startX, startY, width, height, 0, 0, 224, 224);
-
-      const imageData = tempCtx.getImageData(0, 0, 224, 224);
-      const inputTensor = tf.browser.fromPixels(imageData).toFloat().div(255).expandDims();
-      const prediction = model.predict(inputTensor);
-      prediction.array().then(predictions => {
-        const topPredictionIndex = predictions[0].indexOf(Math.max(...predictions[0]));
-        const finalLabel = classLabels[topPredictionIndex];
-        if (finalLabel) {
-          const labelData = labelInfo[finalLabel];
-          const template = `なまえ：${labelData.name}\n種類　：${labelData.category}\n説明　：${labelData.description}`;
-          document.getElementById('bubbleText').setAttribute('value', template);
-          infoBubble.setAttribute('visible', 'true');
-          infoBubble.setAttribute('position', '0 1.5 -2');
-          identifiedObject = finalLabel;
-
-          // マイずかんへの登録処理
-          const entry = {
-            name: labelData.name,
-            category: labelData.category,
-            description: labelData.description,
-            date: new Date().toLocaleString()
-          };
-
-          const currentZukan = JSON.parse(localStorage.getItem('myZukan')) || [];
-          const alreadyExists = currentZukan.some(item => item.name === entry.name);
-          if (!alreadyExists) {
-            currentZukan.push(entry);
-            localStorage.setItem('myZukan', JSON.stringify(currentZukan));
-          }
-
-          //2秒後にマイずかんページへ遷移
-          setTimeout(() => {
-            window.location.href = '../zukan/zukan.html';
-          }, 2000);
-        }
+    drawingCanvas.addEventListener('touchmove', e => {
+      if (!isDrawing || e.touches.length !== 1) return;
+      e.preventDefault();
+      const t = e.touches[0];
+      points.push({
+        x: t.clientX,
+        y: t.clientY
       });
+      ctx.lineTo(t.clientX, t.clientY);
+      ctx.stroke();
+      predictButton.disabled = false;
+    });
+
+    drawingCanvas.addEventListener('touchend', () => {
+      isDrawing = false;
+      ctx.closePath();
     });
 
     clearButton.addEventListener('click', () => {
-      points = [];
       ctx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+      points = [];
       predictButton.disabled = true;
-      infoBubble.setAttribute('visible', 'false');
+      infoBubble.setAttribute('visible', false);
+      if (identifiedObject) {
+        identifiedObject.parentNode.removeChild(identifiedObject);
+        identifiedObject = null;
+      }
     });
+
+    predictButton.addEventListener('click', async () => {
+      if (!model || points.length < 2) return;
+
+      predictButton.disabled = true;
+
+      const minX = Math.min(...points.map(p => p.x));
+      const minY = Math.min(...points.map(p => p.y));
+      const maxX = Math.max(...points.map(p => p.x));
+      const maxY = Math.max(...points.map(p => p.y));
+      const width = maxX - minX;
+      const height = maxY - minY;
+      if (width <= 0 || height <= 0) return;
+
+      // ボタンを押した瞬間の静止画を1枚だけキャプチャ
+      const originalCanvas = document.createElement('canvas');
+      originalCanvas.width = width;
+      originalCanvas.height = height;
+      const originalCtx = originalCanvas.getContext('2d');
+      originalCtx.drawImage(video, minX, minY, width, height, 0, 0, width, height);
+
+      const labels = [];
+      const confidenceThreshold = 0.95;
+      const totalSamples = 30;
+
+      for (let i = 0; i < totalSamples; i++) {
+        // 元画像を加工するための新しいキャンバスを作成
+        const processedCanvas = document.createElement('canvas');
+        processedCanvas.width = width;
+        processedCanvas.height = height;
+        const processedCtx = processedCanvas.getContext('2d');
+
+        // ランダムな回転角度を生成（例: -5度から+5度）
+        const rotationAngle = (Math.random() - 0.5) * 10 * Math.PI / 180;
+        
+        // 回転の中心を画像の中心に設定
+        processedCtx.translate(width / 2, height / 2);
+        processedCtx.rotate(rotationAngle);
+        processedCtx.drawImage(originalCanvas, -width / 2, -height / 2, width, height);
+        
+        // 加工済みの画像をモデルの入力サイズにリサイズ
+        const resizedCanvas = document.createElement('canvas');
+        resizedCanvas.width = 224;
+        resizedCanvas.height = 224;
+        const resizedCtx = resizedCanvas.getContext('2d');
+        resizedCtx.drawImage(processedCanvas, 0, 0, 224, 224);
+
+        const resizedImageData = resizedCtx.getImageData(0, 0, 224, 224);
+        const tensor = tf.browser.fromPixels(resizedImageData).toFloat().div(tf.scalar(255)).expandDims();
+
+        const predictions = await model.predict(tensor).array();
+        const scores = predictions ? predictions.flat() : [];
+        const topResultIndex = scores.indexOf(Math.max(...scores));
+        const topScore = scores[topResultIndex];
+        const topLabel = classLabels.length > 0 && topResultIndex >= 0 ? classLabels[topResultIndex] : null;
+
+        if (topScore >= confidenceThreshold && topLabel) {
+          labels.push(topLabel);
+        }
+      }
+
+      function getMostFrequentLabel(arr) {
+        if (arr.length === 0) return null;
+        const counts = {};
+        let maxCount = 0;
+        let mostFrequent = null;
+        for (const label of arr) {
+          counts[label] = (counts[label] || 0) + 1;
+          if (counts[label] > maxCount) {
+            maxCount = counts[label];
+            mostFrequent = label;
+          }
+        }
+        return mostFrequent;
+      }
+
+      const finalLabel = getMostFrequentLabel(labels);
+      const finalCount = finalLabel ? labels.filter(l => l === finalLabel).length : 0;
+
+      if (identifiedObject) {
+        identifiedObject.parentNode.removeChild(identifiedObject);
+        identifiedObject = null;
+      }
+
+      const bubbleText = document.getElementById('bubbleText');
+
+      if (finalLabel) {
+        const labelData = labelInfo[finalLabel];
+        const template = `なまえ：${labelData.name}\n種類　：${labelData.category}\n説明　：${labelData.description}\n一致回数：${finalCount}/${totalSamples}回`;
+        infoBubble.setAttribute('visible', true);
+        bubbleText.setAttribute('value', template);
+
+        saveToMyZukan(finalLabel, finalCount, totalSamples);
+
+        if (labelData.show3DObject) {
+          const camera = document.querySelector('#mainCamera');
+          const targetPosition = new THREE.Vector3(0, 0, -1.5);
+          targetPosition.applyQuaternion(camera.object3D.quaternion);
+          targetPosition.add(camera.object3D.position);
+
+          const newObject = document.createElement('a-entity');
+          newObject.setAttribute('id', 'identifiedObject');
+          newObject.setAttribute('position', targetPosition.x + ' ' + targetPosition.y + ' ' + targetPosition.z);
+          newObject.setAttribute('scale', labelData.scale || '0.5 0.5 0.5');
+          if (labelData.model) {
+            newObject.setAttribute('gltf-model', `url(${labelData.model})`);
+          } else {
+            newObject.setAttribute('geometry', 'primitive: box');
+            newObject.setAttribute('material', 'color: #4CAF50');
+          }
+          scene.appendChild(newObject);
+          identifiedObject = newObject;
+
+          const objPos = identifiedObject.getAttribute('position');
+          const offset = labelData.arOffset || {
+            x: 0.3,
+            y: 0.5,
+            z: 0.1
+          };
+          infoBubble.setAttribute('position', {
+            x: objPos.x + offset.x,
+            y: objPos.y + offset.y,
+            z: objPos.z + offset.z
+          });
+        } else {
+          infoBubble.setAttribute('visible', true);
+          const camera = document.querySelector('#mainCamera');
+          const cameraWorldPosition = new THREE.Vector3();
+          camera.object3D.getWorldPosition(cameraWorldPosition);
+          const infoBubblePosition = new THREE.Vector3(0, 0, -1);
+          infoBubblePosition.applyQuaternion(camera.object3D.quaternion);
+          infoBubblePosition.add(cameraWorldPosition);
+          infoBubble.setAttribute('position', infoBubblePosition);
+        }
+      } else {
+        infoBubble.setAttribute('visible', true);
+        bubbleText.setAttribute('value', `分類できませんでした。`);
+        const camera = document.querySelector('#mainCamera');
+        const cameraWorldPosition = new THREE.Vector3();
+        camera.object3D.getWorldPosition(cameraWorldPosition);
+        const infoBubblePosition = new THREE.Vector3(0, 0, -1);
+        infoBubblePosition.applyQuaternion(camera.object3D.quaternion);
+        infoBubblePosition.add(cameraWorldPosition);
+        infoBubble.setAttribute('position', infoBubblePosition);
+      }
+
+      ctx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+      points = [];
+      predictButton.disabled = false;
+    });
+
+    AFRAME.registerComponent('face-camera-y', {
+      tick: function() {
+        const camera = document.querySelector('#mainCamera');
+        const obj3D = this.el.object3D;
+        const cameraPos = new THREE.Vector3();
+        camera.object3D.getWorldPosition(cameraPos);
+        const objPos = new THREE.Vector3();
+        obj3D.getWorldPosition(objPos);
+        const dir = new THREE.Vector3().subVectors(cameraPos, objPos);
+        dir.y = 0;
+        dir.normalize();
+        obj3D.rotation.y = Math.atan2(dir.x, dir.z);
+      }
+    });
+
+    AFRAME.registerComponent('tail-update', {
+      tick: function() {
+        if (!identifiedObject || !infoBubble.getAttribute('visible')) {
+          return;
+        }
+
+        const bubblePos = new THREE.Vector3();
+        infoBubble.object3D.getWorldPosition(bubblePos);
+        const targetPos = new THREE.Vector3();
+        identifiedObject.object3D.getWorldPosition(targetPos);
+
+        const dir = new THREE.Vector3().subVectors(targetPos, bubblePos);
+        dir.y = 0;
+        if (dir.length() < 0.001) {
+          return;
+        }
+        dir.normalize();
+        const angle = Math.atan2(dir.x, dir.z) * (180 / Math.PI);
+        const tailBlack = infoBubble.querySelector('#tailBlack');
+        const tailWhite = infoBubble.querySelector('#tailWhite');
+        if (tailBlack) tailBlack.setAttribute('rotation', `0 ${angle} 0`);
+        if (tailWhite) tailWhite.setAttribute('rotation', `0 ${angle} 0`);
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('infoBubble')?.setAttribute('tail-update', '');
+    });
+
+    function saveToMyZukan(label, count, total) {
+        const now = new Date().toISOString();
+        const labelData = labelInfo[label];
+        const entry = {
+          name: labelData.name,
+          category: labelData.category,
+          description: labelData.description,
+          date: now,
+          matchCount: count,
+          totalSamples: total
+        };
+      
+        let zukan = JSON.parse(localStorage.getItem('myZukan') || '[]');
+      
+        // 同じ名前と日付（同日中）で登録されていたらスキップ
+        const isSameDay = (d1, d2) => {
+          return new Date(d1).toDateString() === new Date(d2).toDateString();
+        };
+        const exists = zukan.some(item => item.name === entry.name && isSameDay(item.date, entry.date));
+      
+        if (!exists) {
+          zukan.push(entry);
+          localStorage.setItem('myZukan', JSON.stringify(zukan));
+          console.log('マイずかんに保存しました:', entry);
+        } else {
+          console.log('すでにマイずかんに同じ名前のデータがあります（同日中）');
+        }
+  }
   </script>
 </body>
 </html>
