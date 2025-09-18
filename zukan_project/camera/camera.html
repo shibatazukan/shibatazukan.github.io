@@ -51,6 +51,7 @@
     }
 
     #predictButton,
+    #saveButton,
     #clearButton {
       padding: 10px 20px;
       font-size: 18px;
@@ -71,6 +72,19 @@
     }
 
     #predictButton:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+    
+    #saveButton {
+      background-color: #007bff;
+    }
+
+    #saveButton:hover {
+      background-color: #0056b3;
+    }
+
+    #saveButton:disabled {
       background-color: #ccc;
       cursor: not-allowed;
     }
@@ -198,6 +212,7 @@
     const drawingCanvas = document.getElementById('drawingCanvas');
     const ctx = drawingCanvas.getContext('2d');
     const predictButton = document.getElementById('predictButton');
+    const saveButton = document.getElementById('saveButton');
     const clearButton = document.getElementById('clearButton');
     const controlPanel = document.getElementById('controlPanel');
     const scene = document.querySelector('a-scene');
@@ -205,6 +220,7 @@
     let isDrawing = false;
     let points = [];
     let identifiedObject = null;
+    let lastPrediction = null;
 
     function resizeCanvas() {
       drawingCanvas.width = video.offsetWidth;
@@ -274,17 +290,20 @@
       ctx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
       points = [];
       predictButton.disabled = true;
+      saveButton.disabled = true;
       infoBubble.setAttribute('visible', false);
       if (identifiedObject) {
         identifiedObject.parentNode.removeChild(identifiedObject);
         identifiedObject = null;
       }
+      lastPrediction = null;
     });
 
     predictButton.addEventListener('click', async () => {
       if (!model || points.length < 2) return;
 
       predictButton.disabled = true;
+      saveButton.disabled = true;
 
       const minX = Math.min(...points.map(p => p.x));
       const minY = Math.min(...points.map(p => p.y));
@@ -294,7 +313,6 @@
       const height = maxY - minY;
       if (width <= 0 || height <= 0) return;
 
-      // ボタンを押した瞬間の静止画を1枚だけキャプチャ
       const originalCanvas = document.createElement('canvas');
       originalCanvas.width = width;
       originalCanvas.height = height;
@@ -306,21 +324,17 @@
       const totalSamples = 30;
 
       for (let i = 0; i < totalSamples; i++) {
-        // 元画像を加工するための新しいキャンバスを作成
         const processedCanvas = document.createElement('canvas');
         processedCanvas.width = width;
         processedCanvas.height = height;
         const processedCtx = processedCanvas.getContext('2d');
 
-        // ランダムな回転角度を生成（例: -5度から+5度）
         const rotationAngle = (Math.random() - 0.5) * 10 * Math.PI / 180;
         
-        // 回転の中心を画像の中心に設定
         processedCtx.translate(width / 2, height / 2);
         processedCtx.rotate(rotationAngle);
         processedCtx.drawImage(originalCanvas, -width / 2, -height / 2, width, height);
         
-        // 加工済みの画像をモデルの入力サイズにリサイズ
         const resizedCanvas = document.createElement('canvas');
         resizedCanvas.width = 224;
         resizedCanvas.height = 224;
@@ -372,7 +386,13 @@
         infoBubble.setAttribute('visible', true);
         bubbleText.setAttribute('value', template);
 
-        saveToMyZukan(finalLabel, finalCount, totalSamples);
+        lastPrediction = {
+          label: finalLabel,
+          count: finalCount,
+          total: totalSamples
+        };
+        saveButton.disabled = false;
+        
 
         if (labelData.show3DObject) {
           const camera = document.querySelector('#mainCamera');
@@ -430,6 +450,40 @@
       points = [];
       predictButton.disabled = false;
     });
+    
+    saveButton.addEventListener('click', () => {
+      if (!lastPrediction) return;
+      const { label, count, total } = lastPrediction;
+      const now = new Date().toISOString();
+      const labelData = labelInfo[label];
+      const entry = {
+        name: labelData.name,
+        category: labelData.category,
+        description: labelData.description,
+        date: now,
+        matchCount: count,
+        totalSamples: total
+      };
+
+      let zukan = JSON.parse(localStorage.getItem('myZukan') || '[]');
+      
+      const isSameDay = (d1, d2) => {
+        return new Date(d1).toDateString() === new Date(d2).toDateString();
+      };
+      
+      const exists = zukan.some(item => item.name === entry.name && isSameDay(item.date, entry.date));
+      
+      if (!exists) {
+        zukan.push(entry);
+        localStorage.setItem('myZukan', JSON.stringify(zukan));
+        console.log('マイずかんに保存しました:', entry);
+        alert('「' + labelData.name + '」をマイずかんに登録しました！');
+      } else {
+        console.log('すでにマイずかんに同じ名前のデータがあります（同日中）');
+        alert('本日すでに「' + labelData.name + '」は登録済みです。');
+      }
+      saveButton.disabled = true;
+    });
 
     AFRAME.registerComponent('face-camera-y', {
       tick: function() {
@@ -474,35 +528,6 @@
     document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('infoBubble')?.setAttribute('tail-update', '');
     });
-
-    function saveToMyZukan(label, count, total) {
-        const now = new Date().toISOString();
-        const labelData = labelInfo[label];
-        const entry = {
-          name: labelData.name,
-          category: labelData.category,
-          description: labelData.description,
-          date: now,
-          matchCount: count,
-          totalSamples: total
-        };
-      
-        let zukan = JSON.parse(localStorage.getItem('myZukan') || '[]');
-      
-        // 同じ名前と日付（同日中）で登録されていたらスキップ
-        const isSameDay = (d1, d2) => {
-          return new Date(d1).toDateString() === new Date(d2).toDateString();
-        };
-        const exists = zukan.some(item => item.name === entry.name && isSameDay(item.date, entry.date));
-      
-        if (!exists) {
-          zukan.push(entry);
-          localStorage.setItem('myZukan', JSON.stringify(zukan));
-          console.log('マイずかんに保存しました:', entry);
-        } else {
-          console.log('すでにマイずかんに同じ名前のデータがあります（同日中）');
-        }
-  }
   </script>
 </body>
 </html>
