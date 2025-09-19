@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>マイずかん - 一覧ビュー</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&display=swap" rel="stylesheet">
   <style>
     * {
       margin: 0;
@@ -13,7 +16,7 @@
     }
 
     body {
-      font-family: 'Hiragino Sans', 'Yu Gothic', sans-serif;
+      font-family: 'Mochiy Pop One', 'Hiragino Sans', 'Yu Gothic', sans-serif;
       background: linear-gradient(135deg, #87CEEB 0%, #98D8E8 50%, #B6E5F0 100%);
       min-height: 100vh;
     }
@@ -466,7 +469,6 @@
   </style>
 </head>
 <body>
-  <!-- ハンバーガーメニュー -->
   <nav class="side-menu" id="sideMenu">
     <div class="menu-title"><i class="fa-solid fa-user"></i> ユーザー名</div>
     <a href="../home/home.html"><i class="fa-solid fa-house"></i> ホーム</a>
@@ -481,11 +483,9 @@
     <i class="fa-solid fa-bars"></i>
   </div>
 
-  <!-- 雲の装飾 -->
   <div class="cloud cloud1"></div>
   <div class="cloud cloud2"></div>
 
-  <!-- ヘッダー -->
   <div class="header">
     <h1>マイずかん</h1>
     <div class="view-toggle">
@@ -494,9 +494,7 @@
     </div>
   </div>
 
-  <!-- メインコンテナ -->
   <div class="main-container">
-    <!-- 統計情報 -->
     <div class="stats" id="stats" style="display: none;">
       <div class="stat-card">
         <div class="stat-number" id="totalCount">0</div>
@@ -516,7 +514,6 @@
       </div>
     </div>
 
-    <!-- フィルター・ソート -->
     <div class="controls" id="controls" style="display: none;">
       <div class="control-group">
         <label for="categoryFilter">カテゴリ:</label>
@@ -540,10 +537,8 @@
       </div>
     </div>
 
-    <!-- 一覧ビュー -->
     <div class="list-view" id="listView"></div>
 
-    <!-- 空の状態 -->
     <div class="empty-state" id="emptyState" style="display: none;">
       <div style="font-size: 64px; margin-bottom: 20px;">📖</div>
       <h2>まだ登録されていません</h2>
