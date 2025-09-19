@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>マイずかん - 一覧ビュー</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
   <style>
     * {
       margin: 0;
@@ -15,6 +16,74 @@
       font-family: 'Hiragino Sans', 'Yu Gothic', sans-serif;
       background: linear-gradient(135deg, #87CEEB 0%, #98D8E8 50%, #B6E5F0 100%);
       min-height: 100vh;
+    }
+
+    /* ハンバーガーメニュー */
+    .menu-toggle {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      font-size: 1.8em;
+      color: white;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 10px 12px;
+      border-radius: 10px;
+      z-index: 1000;
+      cursor: pointer;
+      transition: background 0.3s, left 0.35s ease-in-out;
+    }
+    .menu-toggle:hover {
+      background: rgba(0, 0, 0, 0.6);
+    }
+
+    /* サイドメニュー */
+    .side-menu {
+      position: fixed;
+      top: 0;
+      left: -260px;
+      width: 260px;
+      height: 100%;
+      background: rgba(20, 20, 20, 0.95);
+      box-shadow: 2px 0 10px rgba(0,0,0,0.5);
+      padding: 2em 1em 1em 1em;
+      box-sizing: border-box;
+      z-index: 999;
+      transition: left 0.35s ease-in-out;
+      display: flex;
+      flex-direction: column;
+    }
+    .side-menu.open {
+      left: 0;
+    }
+    /* サイドメニューが開いたとき三本線を右へずらす */
+    .side-menu.open ~ .menu-toggle {
+      left: 280px; /* サイドメニュー幅260px + 余白20px */
+    }
+
+    .side-menu .menu-title {
+      font-size: 1.2em;
+      font-weight: bold;
+      margin-bottom: 1.5em;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 0.6em;
+      margin-left: 0.2em;
+    }
+
+    .side-menu a {
+      color: white;
+      text-decoration: none;
+      padding: 0.6em 0;
+      font-size: 1em;
+      display: flex;
+      align-items: center;
+      gap: 0.8em;
+      transition: background 0.25s;
+      border-radius: 6px;
+    }
+    .side-menu a:hover {
+      background: rgba(255, 255, 255, 0.1);
     }
 
     /* ヘッダー */
@@ -397,6 +466,21 @@
   </style>
 </head>
 <body>
+  <!-- ハンバーガーメニュー -->
+  <nav class="side-menu" id="sideMenu">
+    <div class="menu-title"><i class="fa-solid fa-user"></i> ユーザー名</div>
+    <a href="../home/home.html"><i class="fa-solid fa-house"></i> ホーム</a>
+    <a href="indiv.html"><i class="fa-solid fa-scroll"></i> ずかん</a>
+    <a href="../camera/camera.html"><i class="fa-solid fa-camera"></i> カメラ</a>
+    <a href="../map/re.html"><i class="fa-solid fa-map"></i> マップ</a>
+    <a href="../home/settings.html"><i class="fa-solid fa-gear"></i> せってい</a>
+    <a href="../home/help.html"><i class="fa-solid fa-circle-question"></i> ヘルプ</a>
+  </nav>
+
+  <div class="menu-toggle" id="menuToggle">
+    <i class="fa-solid fa-bars"></i>
+  </div>
+
   <!-- 雲の装飾 -->
   <div class="cloud cloud1"></div>
   <div class="cloud cloud2"></div>
@@ -405,7 +489,7 @@
   <div class="header">
     <h1>マイずかん</h1>
     <div class="view-toggle">
-      <a href="indiv.html" class="toggle-btn">カード</a>
+      <a href="index.html" class="toggle-btn">カード</a>
       <a href="#" class="toggle-btn active">一覧</a>
     </div>
   </div>
@@ -465,7 +549,7 @@
       <h2>まだ登録されていません</h2>
       <p>動植物識別ARアプリで生き物を発見して、<br>あなただけのマイずかんを作りましょう！</p>
       <div class="back-to-scan">
-        <a href="indiv.html">スキャンに戻る</a>
+        <a href="../index.html">スキャンに戻る</a>
       </div>
     </div>
   </div>
@@ -656,6 +740,13 @@
       setupFilters();
       applyFilters();
     }
+
+    // メニュー開閉機能
+    const menuToggle = document.getElementById('menuToggle');
+    const sideMenu = document.getElementById('sideMenu');
+    menuToggle.addEventListener('click', () => {
+      sideMenu.classList.toggle('open');
+    });
 
     // ページ読み込み時に実行
     document.addEventListener('DOMContentLoaded', init);
