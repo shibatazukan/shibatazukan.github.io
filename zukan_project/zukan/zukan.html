@@ -1,38 +1,704 @@
-<!-- my-zukan.html -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>マイずかん</title>
   <style>
-    body { font-family: sans-serif; padding: 20px; }
-    .entry { margin: 10px 0; padding: 10px; border: 1px solid #ccc; border-radius: 8px; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Hiragino Sans', 'Yu Gothic', sans-serif;
+      background: linear-gradient(135deg, #87CEEB 0%, #98D8E8 50%, #B6E5F0 100%);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ヘッダー */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 15px 20px;
+      z-index: 100;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header h1 {
+      font-size: 24px;
+      color: #2c3e50;
+      font-weight: bold;
+    }
+
+    .view-toggle {
+      display: flex;
+      gap: 10px;
+    }
+
+    .toggle-btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 20px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-weight: bold;
+    }
+
+    .toggle-btn.active {
+      background: #3498db;
+      color: white;
+    }
+
+    .toggle-btn:not(.active) {
+      background: rgba(255, 255, 255, 0.7);
+      color: #2c3e50;
+    }
+
+    .toggle-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    /* メインコンテナ */
+    .main-container {
+      margin-top: 80px;
+      padding: 20px;
+      min-height: calc(100vh - 80px);
+    }
+
+    /* カードビュー */
+    .card-view {
+      position: relative;
+      width: 100%;
+      max-width: 400px;
+      margin: 0 auto;
+      height: 600px;
+    }
+
+    .card {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      padding: 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      cursor: grab;
+      overflow: hidden;
+    }
+
+    .card:active {
+      cursor: grabbing;
+    }
+
+    .card.swiping {
+      transition: none;
+    }
+
+    .card-title {
+      font-size: 28px;
+      font-weight: bold;
+      color: #2c3e50;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    .rarity {
+      display: flex;
+      gap: 5px;
+      margin-bottom: 20px;
+    }
+
+    .star {
+      font-size: 24px;
+      color: #f39c12;
+    }
+
+    .star.empty {
+      color: #bdc3c7;
+    }
+
+    .card-image {
+      width: 200px;
+      height: 200px;
+      background: #f8f9fa;
+      border: 3px solid #34495e;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      color: #7f8c8d;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card-image::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 10px,
+        rgba(52, 73, 94, 0.1) 10px,
+        rgba(52, 73, 94, 0.1) 20px
+      );
+    }
+
+    .card-description {
+      background: rgba(236, 240, 241, 0.8);
+      padding: 15px;
+      border-radius: 10px;
+      font-size: 14px;
+      line-height: 1.6;
+      text-align: left;
+      width: 100%;
+      margin-top: auto;
+    }
+
+    .card-meta {
+      font-size: 12px;
+      color: #7f8c8d;
+      margin-top: 10px;
+      text-align: right;
+      width: 100%;
+    }
+
+    /* ナビゲーション */
+    .navigation {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 20px;
+      z-index: 50;
+    }
+
+    .nav-btn {
+      width: 60px;
+      height: 60px;
+      background: white;
+      border: none;
+      border-radius: 50%;
+      font-size: 24px;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .nav-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .nav-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .nav-btn:disabled:hover {
+      transform: none;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    /* カウンター */
+    .counter {
+      position: fixed;
+      bottom: 120px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255, 255, 255, 0.9);
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-weight: bold;
+      color: #2c3e50;
+      backdrop-filter: blur(10px);
+    }
+
+    /* 一覧ビュー */
+    .list-view {
+      display: none;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .list-card {
+      background: white;
+      border-radius: 15px;
+      padding: 20px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s;
+    }
+
+    .list-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .list-card h3 {
+      color: #2c3e50;
+      margin-bottom: 10px;
+      font-size: 20px;
+    }
+
+    .list-card .info {
+      margin-bottom: 8px;
+      color: #34495e;
+    }
+
+    .list-card .label {
+      font-weight: bold;
+      color: #2980b9;
+    }
+
+    /* 空の状態 */
+    .empty-state {
+      text-align: center;
+      padding: 80px 20px;
+      color: #7f8c8d;
+    }
+
+    .empty-state i {
+      font-size: 64px;
+      margin-bottom: 20px;
+      opacity: 0.5;
+    }
+
+    .empty-state h2 {
+      margin-bottom: 10px;
+      font-size: 24px;
+    }
+
+    /* 雲の装飾 */
+    .cloud {
+      position: fixed;
+      background: rgba(255, 255, 255, 0.8);
+      border-radius: 50px;
+      opacity: 0.7;
+      animation: float 20s infinite linear;
+    }
+
+    .cloud::before,
+    .cloud::after {
+      content: '';
+      position: absolute;
+      background: rgba(255, 255, 255, 0.8);
+      border-radius: 50px;
+    }
+
+    .cloud1 {
+      width: 100px;
+      height: 40px;
+      top: 20%;
+      left: -100px;
+    }
+
+    .cloud1::before {
+      width: 50px;
+      height: 50px;
+      top: -25px;
+      left: 10px;
+    }
+
+    .cloud1::after {
+      width: 60px;
+      height: 40px;
+      top: -15px;
+      right: 10px;
+    }
+
+    .cloud2 {
+      width: 80px;
+      height: 30px;
+      top: 60%;
+      left: -80px;
+      animation-delay: -10s;
+    }
+
+    .cloud2::before {
+      width: 40px;
+      height: 40px;
+      top: -20px;
+      left: 15px;
+    }
+
+    .cloud2::after {
+      width: 50px;
+      height: 30px;
+      top: -10px;
+      right: 15px;
+    }
+
+    @keyframes float {
+      from {
+        transform: translateX(-100px);
+      }
+      to {
+        transform: translateX(calc(100vw + 100px));
+      }
+    }
+
+    /* レスポンシブ */
+    @media (max-width: 480px) {
+      .card-view {
+        max-width: 350px;
+        height: 550px;
+      }
+      
+      .card {
+        padding: 20px;
+      }
+      
+      .card-image {
+        width: 150px;
+        height: 150px;
+      }
+      
+      .header h1 {
+        font-size: 20px;
+      }
+    }
   </style>
 </head>
 <body>
-  <h1>マイずかん</h1>
-  <div id="zukanContainer"></div>
+  <!-- 雲の装飾 -->
+  <div class="cloud cloud1"></div>
+  <div class="cloud cloud2"></div>
+
+  <!-- ヘッダー -->
+  <div class="header">
+    <h1>マイずかん</h1>
+    <div class="view-toggle">
+      <button class="toggle-btn active" onclick="switchView('card')">カード</button>
+      <button class="toggle-btn" onclick="switchView('list')">一覧</button>
+    </div>
+  </div>
+
+  <!-- メインコンテナ -->
+  <div class="main-container">
+    <!-- カードビュー -->
+    <div class="card-view" id="cardView">
+      <div id="cardContainer"></div>
+    </div>
+
+    <!-- 一覧ビュー -->
+    <div class="list-view" id="listView"></div>
+
+    <!-- 空の状態 -->
+    <div class="empty-state" id="emptyState" style="display: none;">
+      <div style="font-size: 64px;">📖</div>
+      <h2>まだ登録されていません</h2>
+      <p>動植物を発見して、マイずかんに登録しましょう！</p>
+    </div>
+  </div>
+
+  <!-- カウンター（カードビュー用） -->
+  <div class="counter" id="counter" style="display: none;"></div>
+
+  <!-- ナビゲーション（カードビュー用） -->
+  <div class="navigation" id="navigation" style="display: none;">
+    <button class="nav-btn" id="prevBtn" onclick="prevCard()">←</button>
+    <button class="nav-btn" id="nextBtn" onclick="nextCard()">→</button>
+  </div>
 
   <script>
-    const zukanData = JSON.parse(localStorage.getItem('myZukan')) || [];
+    let zukanData = [];
+    let currentIndex = 0;
+    let currentView = 'card';
+    let startX = 0;
+    let currentX = 0;
+    let isDragging = false;
 
-    const container = document.getElementById('zukanContainer');
-    if (zukanData.length === 0) {
-      container.innerHTML = '<p>まだ登録されていません。</p>';
-    } else {
+    // データ読み込み
+    function loadData() {
+      zukanData = JSON.parse(localStorage.getItem('myZukan')) || [];
+    }
+
+    // レア度を星で表示
+    function getRarityStars(name) {
+      const rarityMap = {
+        'カブトムシ': 5,
+        'クワガタ': 5,
+        'チョウ': 4,
+        'トンボ': 4,
+        'セミ': 3,
+        'てんとう虫': 3,
+        'バッタ': 2,
+        'アリ': 2,
+        'シロツメクサ': 3,
+        'カメムシ': 2,
+        'アブラムシ': 1,
+        'ハチ': 4,
+        '蚊': 1
+      };
+      
+      const rarity = rarityMap[name] || 3;
+      let stars = '';
+      for (let i = 1; i <= 5; i++) {
+        stars += `<span class="star ${i <= rarity ? '' : 'empty'}">★</span>`;
+      }
+      return stars;
+    }
+
+    // カード作成
+    function createCard(entry, index) {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.style.zIndex = zukanData.length - index;
+      
+      const date = new Date(entry.date);
+      const dateStr = date.toLocaleDateString('ja-JP');
+      
+      card.innerHTML = `
+        <div class="card-title">${entry.name}</div>
+        <div class="rarity">${getRarityStars(entry.name)}</div>
+        <div class="card-image">
+          <div style="text-align: center; z-index: 1; position: relative;">
+            <div style="font-size: 48px; margin-bottom: 10px;">🔍</div>
+            <div>写真データなし</div>
+          </div>
+        </div>
+        <div class="card-description">
+          <div style="margin-bottom: 8px;"><strong>これは${entry.name}です。</strong></div>
+          <div style="margin-bottom: 8px;"><strong>種類:</strong> ${entry.category}</div>
+          <div style="margin-bottom: 8px;"><strong>特徴:</strong> ${entry.description}</div>
+          <div style="margin-bottom: 8px;"><strong>一致度:</strong> ${entry.matchCount || 0}/${entry.totalSamples || 30}回</div>
+        </div>
+        <div class="card-meta">発見日: ${dateStr}</div>
+      `;
+
+      // タッチイベント
+      card.addEventListener('touchstart', handleTouchStart, { passive: false });
+      card.addEventListener('touchmove', handleTouchMove, { passive: false });
+      card.addEventListener('touchend', handleTouchEnd);
+
+      // マウスイベント
+      card.addEventListener('mousedown', handleMouseDown);
+      card.addEventListener('mousemove', handleMouseMove);
+      card.addEventListener('mouseup', handleMouseUp);
+      card.addEventListener('mouseleave', handleMouseUp);
+
+      return card;
+    }
+
+    // タッチ/マウスイベント処理
+    function handleTouchStart(e) {
+      if (e.target.closest('.card') !== getTopCard()) return;
+      startX = e.touches[0].clientX;
+      isDragging = true;
+      e.target.closest('.card').classList.add('swiping');
+    }
+
+    function handleMouseDown(e) {
+      if (e.target.closest('.card') !== getTopCard()) return;
+      startX = e.clientX;
+      isDragging = true;
+      e.target.closest('.card').classList.add('swiping');
+      e.preventDefault();
+    }
+
+    function handleTouchMove(e) {
+      if (!isDragging || e.target.closest('.card') !== getTopCard()) return;
+      currentX = e.touches[0].clientX - startX;
+      updateCardPosition(e.target.closest('.card'), currentX);
+      e.preventDefault();
+    }
+
+    function handleMouseMove(e) {
+      if (!isDragging || e.target.closest('.card') !== getTopCard()) return;
+      currentX = e.clientX - startX;
+      updateCardPosition(e.target.closest('.card'), currentX);
+    }
+
+    function handleTouchEnd(e) {
+      handleEnd(e.target.closest('.card'));
+    }
+
+    function handleMouseUp(e) {
+      if (e.target.closest('.card')) {
+        handleEnd(e.target.closest('.card'));
+      }
+    }
+
+    function handleEnd(card) {
+      if (!isDragging || card !== getTopCard()) return;
+      isDragging = false;
+      card.classList.remove('swiping');
+
+      if (Math.abs(currentX) > 100) {
+        if (currentX > 0) {
+          prevCard();
+        } else {
+          nextCard();
+        }
+      } else {
+        card.style.transform = 'translateX(0)';
+      }
+      currentX = 0;
+    }
+
+    function updateCardPosition(card, x) {
+      card.style.transform = `translateX(${x}px) rotate(${x * 0.1}deg)`;
+    }
+
+    function getTopCard() {
+      const cards = document.querySelectorAll('.card');
+      return cards[cards.length - 1 - currentIndex];
+    }
+
+    // ナビゲーション
+    function nextCard() {
+      if (currentIndex < zukanData.length - 1) {
+        currentIndex++;
+        updateCardView();
+      }
+    }
+
+    function prevCard() {
+      if (currentIndex > 0) {
+        currentIndex--;
+        updateCardView();
+      }
+    }
+
+    function updateCardView() {
+      const cards = document.querySelectorAll('.card');
+      cards.forEach((card, index) => {
+        const cardIndex = zukanData.length - 1 - index;
+        if (cardIndex === currentIndex) {
+          card.style.transform = 'translateX(0) scale(1)';
+          card.style.opacity = '1';
+          card.style.zIndex = '10';
+        } else if (cardIndex < currentIndex) {
+          card.style.transform = 'translateX(-100%) scale(0.9)';
+          card.style.opacity = '0';
+          card.style.zIndex = '1';
+        } else {
+          card.style.transform = 'translateX(100%) scale(0.9)';
+          card.style.opacity = '0';
+          card.style.zIndex = '1';
+        }
+      });
+
+      // ボタン状態更新
+      document.getElementById('prevBtn').disabled = currentIndex === 0;
+      document.getElementById('nextBtn').disabled = currentIndex === zukanData.length - 1;
+      
+      // カウンター更新
+      document.getElementById('counter').textContent = `${currentIndex + 1} / ${zukanData.length}`;
+    }
+
+    // ビュー切り替え
+    function switchView(view) {
+      currentView = view;
+      
+      // ボタン状態更新
+      document.querySelectorAll('.toggle-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      event.target.classList.add('active');
+
+      if (view === 'card') {
+        document.getElementById('cardView').style.display = 'block';
+        document.getElementById('listView').style.display = 'none';
+        if (zukanData.length > 0) {
+          document.getElementById('navigation').style.display = 'flex';
+          document.getElementById('counter').style.display = 'block';
+        }
+      } else {
+        document.getElementById('cardView').style.display = 'none';
+        document.getElementById('listView').style.display = 'grid';
+        document.getElementById('navigation').style.display = 'none';
+        document.getElementById('counter').style.display = 'none';
+        renderListView();
+      }
+    }
+
+    // カードビュー描画
+    function renderCardView() {
+      const container = document.getElementById('cardContainer');
+      container.innerHTML = '';
+
+      if (zukanData.length === 0) {
+        document.getElementById('emptyState').style.display = 'block';
+        document.getElementById('navigation').style.display = 'none';
+        document.getElementById('counter').style.display = 'none';
+        return;
+      }
+
+      document.getElementById('emptyState').style.display = 'none';
+      
+      zukanData.forEach((entry, index) => {
+        const card = createCard(entry, index);
+        container.appendChild(card);
+      });
+
+      currentIndex = zukanData.length - 1;
+      updateCardView();
+      document.getElementById('navigation').style.display = 'flex';
+      document.getElementById('counter').style.display = 'block';
+    }
+
+    // 一覧ビュー描画
+    function renderListView() {
+      const container = document.getElementById('listView');
+      container.innerHTML = '';
+
       zukanData.forEach(entry => {
-        const div = document.createElement('div');
-        div.className = 'entry';
-        div.innerHTML = `
-          <strong>なまえ:</strong> ${entry.name}<br>
-          <strong>種類:</strong> ${entry.category}<br>
-          <strong>説明:</strong> ${entry.description}<br>
-          <strong>登録日:</strong> ${entry.date}
+        const card = document.createElement('div');
+        card.className = 'list-card';
+        
+        const date = new Date(entry.date);
+        const dateStr = date.toLocaleDateString('ja-JP');
+        
+        card.innerHTML = `
+          <h3>${entry.name}</h3>
+          <div class="rarity">${getRarityStars(entry.name)}</div>
+          <div class="info"><span class="label">種類:</span> ${entry.category}</div>
+          <div class="info"><span class="label">特徴:</span> ${entry.description}</div>
+          <div class="info"><span class="label">一致度:</span> ${entry.matchCount || 0}/${entry.totalSamples || 30}回</div>
+          <div class="info"><span class="label">発見日:</span> ${dateStr}</div>
         `;
-        container.appendChild(div);
+        container.appendChild(card);
       });
     }
+
+    // 初期化
+    function init() {
+      loadData();
+      renderCardView();
+    }
+
+    // ページ読み込み時に実行
+    document.addEventListener('DOMContentLoaded', init);
   </script>
 </body>
 </html>
-
