@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>マイずかん</title>
+  <title>マイずかん - カードビュー</title>
   <style>
     * {
       margin: 0;
@@ -53,6 +53,8 @@
       cursor: pointer;
       transition: all 0.3s;
       font-weight: bold;
+      text-decoration: none;
+      display: inline-block;
     }
 
     .toggle-btn.active {
@@ -241,44 +243,6 @@
       backdrop-filter: blur(10px);
     }
 
-    /* 一覧ビュー */
-    .list-view {
-      display: none;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 20px;
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-
-    .list-card {
-      background: white;
-      border-radius: 15px;
-      padding: 20px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-      transition: all 0.3s;
-    }
-
-    .list-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-    }
-
-    .list-card h3 {
-      color: #2c3e50;
-      margin-bottom: 10px;
-      font-size: 20px;
-    }
-
-    .list-card .info {
-      margin-bottom: 8px;
-      color: #34495e;
-    }
-
-    .list-card .label {
-      font-weight: bold;
-      color: #2980b9;
-    }
-
     /* 空の状態 */
     .empty-state {
       text-align: center;
@@ -397,8 +361,8 @@
   <div class="header">
     <h1>マイずかん</h1>
     <div class="view-toggle">
-      <button class="toggle-btn active" onclick="switchView('card')">カード</button>
-      <button class="toggle-btn" onclick="switchView('list')">一覧</button>
+      <a href="#" class="toggle-btn active">カード</a>
+      <a href="list-view.html" class="toggle-btn">一覧</a>
     </div>
   </div>
 
@@ -409,9 +373,6 @@
       <div id="cardContainer"></div>
     </div>
 
-    <!-- 一覧ビュー -->
-    <div class="list-view" id="listView"></div>
-
     <!-- 空の状態 -->
     <div class="empty-state" id="emptyState" style="display: none;">
       <div style="font-size: 64px;">📖</div>
@@ -420,10 +381,10 @@
     </div>
   </div>
 
-  <!-- カウンター（カードビュー用） -->
+  <!-- カウンター -->
   <div class="counter" id="counter" style="display: none;"></div>
 
-  <!-- ナビゲーション（カードビュー用） -->
+  <!-- ナビゲーション -->
   <div class="navigation" id="navigation" style="display: none;">
     <button class="nav-btn" id="prevBtn" onclick="prevCard()">←</button>
     <button class="nav-btn" id="nextBtn" onclick="nextCard()">→</button>
@@ -432,7 +393,6 @@
   <script>
     let zukanData = [];
     let currentIndex = 0;
-    let currentView = 'card';
     let startX = 0;
     let currentX = 0;
     let isDragging = false;
@@ -616,34 +576,10 @@
       document.getElementById('counter').textContent = `${currentIndex + 1} / ${zukanData.length}`;
     }
 
-    // ビュー切り替え
-    function switchView(view) {
-      currentView = view;
+    // 初期化
+    function init() {
+      loadData();
       
-      // ボタン状態更新
-      document.querySelectorAll('.toggle-btn').forEach(btn => {
-        btn.classList.remove('active');
-      });
-      event.target.classList.add('active');
-
-      if (view === 'card') {
-        document.getElementById('cardView').style.display = 'block';
-        document.getElementById('listView').style.display = 'none';
-        if (zukanData.length > 0) {
-          document.getElementById('navigation').style.display = 'flex';
-          document.getElementById('counter').style.display = 'block';
-        }
-      } else {
-        document.getElementById('cardView').style.display = 'none';
-        document.getElementById('listView').style.display = 'grid';
-        document.getElementById('navigation').style.display = 'none';
-        document.getElementById('counter').style.display = 'none';
-        renderListView();
-      }
-    }
-
-    // カードビュー描画
-    function renderCardView() {
       const container = document.getElementById('cardContainer');
       container.innerHTML = '';
 
@@ -665,36 +601,6 @@
       updateCardView();
       document.getElementById('navigation').style.display = 'flex';
       document.getElementById('counter').style.display = 'block';
-    }
-
-    // 一覧ビュー描画
-    function renderListView() {
-      const container = document.getElementById('listView');
-      container.innerHTML = '';
-
-      zukanData.forEach(entry => {
-        const card = document.createElement('div');
-        card.className = 'list-card';
-        
-        const date = new Date(entry.date);
-        const dateStr = date.toLocaleDateString('ja-JP');
-        
-        card.innerHTML = `
-          <h3>${entry.name}</h3>
-          <div class="rarity">${getRarityStars(entry.name)}</div>
-          <div class="info"><span class="label">種類:</span> ${entry.category}</div>
-          <div class="info"><span class="label">特徴:</span> ${entry.description}</div>
-          <div class="info"><span class="label">一致度:</span> ${entry.matchCount || 0}/${entry.totalSamples || 30}回</div>
-          <div class="info"><span class="label">発見日:</span> ${dateStr}</div>
-        `;
-        container.appendChild(card);
-      });
-    }
-
-    // 初期化
-    function init() {
-      loadData();
-      renderCardView();
     }
 
     // ページ読み込み時に実行
