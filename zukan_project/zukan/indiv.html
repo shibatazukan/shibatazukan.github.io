@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
   <title>マイずかん - カードビュー</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
@@ -14,7 +16,7 @@
     }
 
     body {
-      font-family: 'Hiragino Sans', 'Yu Gothic', sans-serif;
+      font-family: 'Mochiy Pop One', 'Hiragino Sans', 'Yu Gothic', sans-serif;
       background: linear-gradient(135deg, #87CEEB 0%, #98D8E8 50%, #B6E5F0 100%);
       min-height: 100vh;
       overflow-x: hidden;
@@ -185,6 +187,7 @@
     }
 
     .card-title {
+      font-family: 'Mochiy Pop One', sans-serif;
       font-size: 28px;
       font-weight: bold;
       color: #2c3e50;
@@ -243,6 +246,7 @@
       background: rgba(236, 240, 241, 0.8);
       padding: 15px;
       border-radius: 10px;
+      font-family: 'Noto Sans JP', sans-serif;
       font-size: 14px;
       line-height: 1.6;
       text-align: left;
@@ -251,6 +255,7 @@
     }
 
     .card-meta {
+      font-family: 'Noto Sans JP', sans-serif;
       font-size: 12px;
       color: #7f8c8d;
       margin-top: 10px;
@@ -323,12 +328,14 @@
     }
 
     .empty-state h2 {
+      font-family: 'Mochiy Pop One', sans-serif;
       margin-bottom: 15px;
       font-size: 28px;
       color: #2c3e50;
     }
 
     .empty-state p {
+      font-family: 'Noto Sans JP', sans-serif;
       font-size: 16px;
       line-height: 1.6;
     }
@@ -338,6 +345,7 @@
     }
 
     .back-to-scan a {
+      font-family: 'Mochiy Pop One', sans-serif;
       background: #3498db;
       color: white;
       padding: 12px 24px;
@@ -445,7 +453,6 @@
   </style>
 </head>
 <body>
-  <!-- ハンバーガーメニュー -->
   <nav class="side-menu" id="sideMenu">
     <div class="menu-title"><i class="fa-solid fa-user"></i> ユーザー名</div>
     <a href="../home/home.html"><i class="fa-solid fa-house"></i> ホーム</a>
@@ -460,11 +467,9 @@
     <i class="fa-solid fa-bars"></i>
   </div>
 
-  <!-- 雲の装飾 -->
   <div class="cloud cloud1"></div>
   <div class="cloud cloud2"></div>
 
-  <!-- ヘッダー -->
   <div class="header">
     <h1>マイずかん</h1>
     <div class="view-toggle">
@@ -473,15 +478,12 @@
     </div>
   </div>
 
-  <!-- メインコンテナ -->
   <div class="main-container">
-    <!-- カードビュー -->
     <div class="card-view" id="cardView">
       <div id="cardContainer"></div>
     </div>
 
-   <!-- 空の状態 -->
-    <div class="empty-state" id="emptyState" style="display: none;">
+   <div class="empty-state" id="emptyState" style="display: none;">
       <div style="font-size: 64px; margin-bottom: 20px;">📖</div>
       <h2>まだ登録されていません</h2>
       <p>動植物識別ARアプリで生き物を発見して<br>あなただけのマイずかんを作りましょう！</p>
@@ -491,10 +493,8 @@
     </div>
   </div>
 
-  <!-- カウンター -->
   <div class="counter" id="counter" style="display: none;"></div>
 
-  <!-- ナビゲーション -->
   <div class="navigation" id="navigation" style="display: none;">
     <button class="nav-btn" id="prevBtn" onclick="prevCard()">←</button>
     <button class="nav-btn" id="nextBtn" onclick="nextCard()">→</button>
