@@ -523,7 +523,7 @@
         return new Date(d1).toDateString() === new Date(d2).toDateString();
       };
       
-      const exists = zukan.some(item => item.name === entry.name && isSameDay(item.date, entry.date));
+      const exists = zukan.some(item => item.name === entry.name);
       
       if (!exists) {
         zukan.push(entry);
@@ -531,8 +531,8 @@
         console.log('マイずかんに保存しました:', entry);
         showNotification('「' + labelData.name + '」をマイずかんに登録しました！');
       } else {
-        console.log('すでにマイずかんに同じ名前のデータがあります（同日中）');
-        showNotification('本日すでに「' + labelData.name + '」は登録済みです。', true);
+        console.log('すでにマイずかんに同じ名前のデータがあります');
+        showNotification('「' + labelData.name + '」はすでに登録済みです。', true);
       }
       
       // 保存処理が完了し、通知が表示された後にボタンを無効化する
