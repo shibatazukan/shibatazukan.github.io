@@ -97,6 +97,42 @@
       background-color: #d32f2f;
     }
 
+    /* 通知メッセージのスタイル */
+    #notificationMessage {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(76, 175, 80, 0.95);
+      color: white;
+      padding: 15px 25px;
+      border-radius: 8px;
+      font-family: sans-serif;
+      font-size: 16px;
+      font-weight: bold;
+      z-index: 15;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      display: none;
+      max-width: 80%;
+      text-align: center;
+      animation: slideDown 0.3s ease-out;
+    }
+
+    #notificationMessage.error {
+      background: rgba(244, 67, 54, 0.95);
+    }
+
+    @keyframes slideDown {
+      from {
+        transform: translateX(-50%) translateY(-20px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+      }
+    }
+
     a-scene {
       position: absolute;
       top: 0;
@@ -115,6 +151,9 @@
     <button id="saveButton" disabled>登録する</button>
     <button id="clearButton">消去</button>
   </div>
+
+  <!-- 通知メッセージ -->
+  <div id="notificationMessage"></div>
 
   <a-scene embedded vr-mode-ui="enabled:false" ar-mode="false">
     <a-entity id="cameraRig" position="0 0 0">
@@ -217,10 +256,23 @@
     const controlPanel = document.getElementById('controlPanel');
     const scene = document.querySelector('a-scene');
     const infoBubble = document.getElementById('infoBubble');
+    const notificationMessage = document.getElementById('notificationMessage');
     let isDrawing = false;
     let points = [];
     let identifiedObject = null;
     let lastPrediction = null;
+
+    // 通知メッセージを表示する関数
+    function showNotification(message, isError = false) {
+      notificationMessage.textContent = message;
+      notificationMessage.className = isError ? 'error' : '';
+      notificationMessage.style.display = 'block';
+      
+      // 3秒後に自動的に非表示にする
+      setTimeout(() => {
+        notificationMessage.style.display = 'none';
+      }, 3000);
+    }
 
     function resizeCanvas() {
       drawingCanvas.width = video.offsetWidth;
@@ -245,7 +297,7 @@
           drawingCanvas.style.pointerEvents = "auto";
         });
       } catch (err) {
-        alert("カメラへのアクセスを許可してください。");
+        showNotification("カメラへのアクセスを許可してください。", true);
       }
     }
     setupCamera();
@@ -477,13 +529,13 @@
         zukan.push(entry);
         localStorage.setItem('myZukan', JSON.stringify(zukan));
         console.log('マイずかんに保存しました:', entry);
-        alert('「' + labelData.name + '」をマイずかんに登録しました！');
+        showNotification('「' + labelData.name + '」をマイずかんに登録しました！');
       } else {
         console.log('すでにマイずかんに同じ名前のデータがあります（同日中）');
-        alert('本日すでに「' + labelData.name + '」は登録済みです。');
+        showNotification('本日すでに「' + labelData.name + '」は登録済みです。', true);
       }
       
-      // 保存処理が完了し、アラートが表示された後にボタンを無効化する
+      // 保存処理が完了し、通知が表示された後にボタンを無効化する
       saveButton.disabled = true;
       lastPrediction = null;
     });
