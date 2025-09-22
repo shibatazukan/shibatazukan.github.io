@@ -25,134 +25,83 @@
             background-repeat: no-repeat;
             pointer-events: none;
             user-select: none;
-            transition: background-image 2s cubic-bezier(.4,0,.2,1);
+            transition: background-image 1.5s cubic-bezier(.4,0,.2,1); /* Added transition for background image */
         }
 
-        #background-clear { 
-            z-index: -2; 
-        }
+        #background-clear { z-index: -2; }
         #background-blur {
             z-index: -1;
-            filter: blur(6px) brightness(0.7) saturate(1.2);
+            filter: blur(4px);
             opacity: 0;
-            transition: opacity 1.5s cubic-bezier(.4,0,.2,1), 
-                       background-image 2s cubic-bezier(.4,0,.2,1),
-                       filter 0.5s ease;
+            transition: opacity 1.2s cubic-bezier(.4,0,.2,1), background-image 1.5s cubic-bezier(.4,0,.2,1); /* Added background-image transition */
         }
 
-        /* 動的パーティクル効果 */
-        .particles {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        .particle {
-            position: absolute;
-            background: rgba(255, 255, 255, 0.8);
-            border-radius: 50%;
-            animation: float-particle 15s infinite linear;
-        }
-
-        @keyframes float-particle {
-            0% {
-                transform: translateY(100vh) translateX(0) rotate(0deg);
-                opacity: 0;
-            }
-            10% {
-                opacity: 1;
-            }
-            90% {
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(-20vh) translateX(100px) rotate(360deg);
-                opacity: 0;
-            }
-        }
-
-        /* ハンバーガーメニュー - アップグレード */
+        /* ハンバーガーメニュー */
         .menu-toggle {
             position: absolute;
             top: 20px; left: 20px;
             font-size: 1.8em;
             color: white;
-            background: rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(10px);
-            padding: 12px 14px;
-            border-radius: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.4);
+            padding: 10px 12px;
+            border-radius: 10px;
             z-index: 1000;
             cursor: pointer;
-            transition: all 0.4s cubic-bezier(.4,0,.2,1);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transition: background 0.3s, left 0.35s ease-in-out;
         }
         .menu-toggle:hover {
             background: rgba(0, 0, 0, 0.6);
-            transform: scale(1.1);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
         }
 
-        /* サイドメニュー - アップグレード */
+        /* サイドメニュー */
         .side-menu {
             position: fixed;
-            top: 0; left: -280px;
-            width: 280px; height: 100%;
-            background: rgba(10, 10, 20, 0.95);
-            backdrop-filter: blur(20px);
-            box-shadow: 4px 0 32px rgba(0,0,0,0.6);
-            padding: 2.5em 1.5em 1.5em 1.5em;
+            top: 0; left: -260px;
+            width: 260px; height: 100%;
+            background: rgba(20, 20, 20, 0.95);
+            box-shadow: 2px 0 10px rgba(0,0,0,0.5);
+            padding: 2em 1em 1em 1em;
             box-sizing: border-box;
             z-index: 999;
-            transition: left 0.4s cubic-bezier(.4,0,.2,1);
+            transition: left 0.35s ease-in-out;
             display: flex;
             flex-direction: column;
-            border-right: 1px solid rgba(255, 255, 255, 0.1);
         }
         .side-menu.open {
             left: 0;
         }
+        /* サイドメニューが開いたとき三本線を右へずらす */
         .side-menu.open ~ .menu-toggle {
-            left: 300px;
+            left: 280px; /* サイドメニュー幅260px + 余白20px */
         }
 
         .side-menu .menu-title {
-            font-size: 1.3em;
+            font-size: 1.2em;
             font-weight: bold;
-            margin-bottom: 2em;
+            margin-bottom: 1.5em;
             color: #fff;
             display: flex;
             align-items: center;
-            gap: 0.8em;
-            padding: 0.5em;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            gap: 0.6em;
+            margin-left: 0.2em;
         }
 
         .side-menu a {
-            color: rgba(255, 255, 255, 0.9);
+            color: white;
             text-decoration: none;
-            padding: 0.8em 1em;
-            font-size: 1.1em;
+            padding: 0.6em 0;
+            font-size: 1em;
             display: flex;
             align-items: center;
-            gap: 1em;
-            transition: all 0.3s cubic-bezier(.4,0,.2,1);
-            border-radius: 10px;
-            margin: 0.2em 0;
-            border: 1px solid transparent;
+            gap: 0.8em;
+            transition: background 0.25s;
+            border-radius: 6px;
         }
         .side-menu a:hover {
-            background: rgba(255, 255, 255, 0.15);
-            border-color: rgba(255, 255, 255, 0.3);
-            transform: translateX(5px);
-            color: #fff;
+            background: rgba(255, 255, 255, 0.1);
         }
 
-        /* 中央オーバーレイ - アップグレード */
+        /* 中央オーバーレイ */
         .overlay {
             position: absolute;
             top: 50%; left: 50%;
@@ -160,8 +109,7 @@
             text-align: center;
             opacity: 0;
             pointer-events: none;
-            transition: opacity 1s cubic-bezier(.4,0,.2,1), transform 1s cubic-bezier(.4,0,.2,1);
-            z-index: 10;
+            transition: opacity 0.7s cubic-bezier(.4,0,.2,1);
         }
         .overlay.visible {
             opacity: 1;
@@ -169,83 +117,56 @@
         }
 
         .title-block {
-            margin-bottom: 60px;
+            margin-bottom: 50px;
             transform: translateY(-15px);
-            animation: glow-pulse 4s ease-in-out infinite;
         }
 
-        @keyframes glow-pulse {
-            0%, 100% { filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.3)); }
-            50% { filter: drop-shadow(0 0 40px rgba(255, 255, 255, 0.6)); }
-        }
-
-        /* タイトル - 大幅アップグレード */
-        h1 {
+        /* タイトルを目立たせる */
+       h1 {
             font-family: 'Mochiy Pop One', sans-serif;
-            font-size: 5.5em;
-            font-weight: normal;
+            font-size: 5em;
+            font-weight: normal; /* Mochiy Pop Oneは太さを変更できないためnormalに */
             letter-spacing: 0.1em;
             margin: 0.1em 0 0.2em 0;
             
-            background: linear-gradient(45deg, 
-                #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #ffeaa7, #dda0dd);
-            background-size: 300% 300%;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: #fff; /* 文字色を白に設定 */
             
-            animation: gradient-flow 6s ease infinite;
-            
+            /* 縁取りを追加 */
             text-shadow:
-                0 0 30px rgba(255, 255, 255, 0.5),
-                0 0 60px rgba(255, 255, 255, 0.3);
+                -2px -2px 0 #000,
+                2px -2px 0 #000,
+                -2px 2px 0 #000,
+                2px 2px 0 #000;
                 
             user-select: none;
-            position: relative;
-        }
-
-        @keyframes gradient-flow {
-            0%, 100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-        }
-
-        h1::before {
-            content: attr(data-text);
-            position: absolute;
-            top: 0; left: 0;
-            z-index: -1;
-            background: linear-gradient(45deg, 
-                rgba(0,0,0,0.8), rgba(50,50,50,0.8));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            filter: blur(3px);
+            
+            /* グラデーション関連のプロパティはすべて削除 */
+            background: none;
+            -webkit-background-clip: none;
+            -webkit-text-fill-color: initial;
+            background-clip: none;
         }
         
         .subtitle {
             font-family: 'Mochiy Pop One', sans-serif;
-            font-size: 1.8em;
-            color: rgba(255, 255, 255, 0.95);
+            font-size: 1.7em;
+            color: #fff;
             font-weight: 400;
-            margin-bottom: 2em;
+            margin-bottom: 1.5em;
             line-height: 1.6;
             user-select: none;
+            /* サブタイトルに縁取りを追加 */
             text-shadow:
-                0 2px 10px rgba(0, 0, 0, 0.8),
-                0 0 30px rgba(255, 255, 255, 0.3);
-            animation: subtitle-float 3s ease-in-out infinite;
+                -1px -1px 0 #000,  /* 左上 */
+                1px -1px 0 #000,   /* 右上 */
+                -1px 1px 0 #000,   /* 左下 */
+                1px 1px 0 #000;    /* 右下 */
         }
-
-        @keyframes subtitle-float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-5px); }
-        }
-
-        /* ボタンスタイル - 大幅アップグレード */
+        /* ボタンスタイル */
         .buttons {
             display: flex;
             flex-direction: column;
-            gap: 25px;
+            gap: 20px;
             align-items: center;
             justify-content: center;
         }
@@ -254,151 +175,40 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.8em;
-            padding: 1em 2em;
-            font-size: 1.3em;
+            gap: 0.6em;
+            padding: 0.8em 1.5em;
+            font-size: 1.2em;
             font-weight: bold;
-            letter-spacing: 0.06em;
+            letter-spacing: 0.04em;
             color: #fff;
-            background: linear-gradient(135deg, 
-                rgba(255, 165, 0, 0.9) 0%, 
-                rgba(255, 127, 80, 0.9) 50%,
-                rgba(255, 69, 0, 0.9) 100%);
+            background: linear-gradient(135deg, #FFA500, #FF7F50);
             text-decoration: none;
-            border-radius: 25px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            backdrop-filter: blur(10px);
-            box-shadow: 
-                0 8px 32px rgba(255, 165, 0, 0.4),
-                inset 0 1px 0 rgba(255, 255, 255, 0.3);
-            transition: all 0.4s cubic-bezier(.4,0,.2,1);
-            min-width: 200px;
-            position: relative;
-            overflow: hidden;
+            border-radius: 18px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
+            transition: transform 0.3s, box-shadow 0.3s, background 0.3s;
+            min-width: 170px;
         }
 
-        .buttons .button-link::before {
-            content: '';
-            position: absolute;
-            top: 0; left: -100%;
-            width: 100%; height: 100%;
-            background: linear-gradient(90deg, 
-                transparent, 
-                rgba(255, 255, 255, 0.2), 
-                transparent);
-            transition: left 0.6s;
-        }
-
-        .buttons .button-link:hover::before {
-            left: 100%;
-        }
-
+        /* アイコンの幅を固定して位置を揃える */
         .buttons .button-link i {
-            font-size: 1.4em;
-            width: 2.2em;
+            font-size: 1.35em;
+            width: 2.0em;
             text-align: center;
-            transition: transform 0.3s;
         }
 
         .buttons .button-link:hover {
-            transform: translateY(-8px) scale(1.05);
-            box-shadow: 
-                0 15px 40px rgba(255, 165, 0, 0.6),
-                0 5px 15px rgba(0, 0, 0, 0.3),
-                inset 0 1px 0 rgba(255, 255, 255, 0.4);
-            background: linear-gradient(135deg, 
-                rgba(255, 215, 0, 0.95) 0%, 
-                rgba(255, 165, 0, 0.95) 50%,
-                rgba(255, 140, 0, 0.95) 100%);
-            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-6px) scale(1.04);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(135deg, #FFD580 30%, #FFB347 100%);
         }
 
-        .buttons .button-link:hover i {
-            transform: scale(1.2) rotate(5deg);
-        }
-
-        /* 新機能: ステータス表示 */
-        .status-bar {
-            position: absolute;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 20px;
-            z-index: 100;
-        }
-
-        .status-item {
-            background: rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(10px);
-            padding: 8px 16px;
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            font-size: 0.9em;
-            color: rgba(255, 255, 255, 0.9);
-        }
-
-        /* レスポンシブ - 改良 */
         @media (max-width: 800px) {
-            h1 { 
-                font-size: 3.2em; 
-                margin: 0.2em 0 0.3em 0;
-            }
-            .subtitle { 
-                font-size: 1.2em; 
-                margin-bottom: 1.8em;
-            }
+            h1 { font-size: 2.7em; }
+            .subtitle { font-size: 1em; }
             .button-link {
-                width: 70vw;
-                font-size: 1.1em;
-                padding: 1em 1.2em;
-                min-width: auto;
-            }
-            .side-menu {
-                width: 250px;
-                left: -250px;
-            }
-            .side-menu.open ~ .menu-toggle {
-                left: 270px;
-            }
-            .status-bar {
-                flex-direction: column;
-                align-items: center;
-                gap: 10px;
-            }
-        }
-
-        /* 新機能: 天候アニメーション */
-        .weather-effect {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            pointer-events: none;
-            z-index: 1;
-            opacity: 0.6;
-        }
-
-        .weather-particle {
-            position: absolute;
-            background: rgba(255, 255, 255, 0.7);
-            border-radius: 50%;
-            animation: weather-fall 8s infinite linear;
-        }
-
-        @keyframes weather-fall {
-            0% {
-                transform: translateY(-10vh) translateX(0);
-                opacity: 0;
-            }
-            10% {
-                opacity: 1;
-            }
-            90% {
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(110vh) translateX(50px);
-                opacity: 0;
+                width: 63vw;
+                font-size: 1em;
+                padding: 0.9em 0.7em;
             }
         }
     </style>
@@ -408,7 +218,7 @@
         <div class="menu-title"><i class="fa-solid fa-user"></i> ユーザー名</div>
         <a href="home.html"><i class="fa-solid fa-house"></i> ホーム</a>
         <a href="../zukan/list.html"><i class="fa-solid fa-scroll"></i> ずかん</a>
-        <a href="../camera/camera.html"><i class="fa-solid fa-camera"></i> カメラを開く</a>
+        <a href="../camera/camera.html"><i class="fa-solid fa-camera"></i> カメラ</a>
         <a href="../map/re.html"><i class="fa-solid fa-map"></i> マップ</a>
         <a href="settings.html"><i class="fa-solid fa-gear"></i> せってい</a>
         <a href="help.html"><i class="fa-solid fa-circle-question"></i> ヘルプ</a>
@@ -420,195 +230,61 @@
 
     <div id="background-clear"></div>
     <div id="background-blur"></div>
-    
-    <div class="particles" id="particles"></div>
-    <div class="weather-effect" id="weatherEffect"></div>
 
     <div class="overlay" id="overlay">
         <div class="title-block">
-            <h1 data-text="新発田ずかん">新発田ずかん</h1>
+            <h1>新発田ずかん</h1>
             <div class="subtitle">しばたの自然と文化を楽しむWebアプリ</div>
         </div>
         <div class="buttons">
-            <a href="../zukan/list.html" class="button-link">
-                <i class="fa-solid fa-scroll"></i>ずかんを開く
-            </a>
-            <a href="../camera/camera.html" class="button-link">
-                <i class="fa-solid fa-camera"></i>カメラを開く
-            </a>
-            <a href="../map/re.html" class="button-link">
-                <i class="fa-solid fa-map-location-dot"></i>マップを開く
-            </a>
-            <a href="settings.html" class="button-link">
-                <i class="fa-solid fa-gear"></i>せってい
-            </a>
-            <a href="help.html" class="button-link">
-                <i class="fa-solid fa-circle-question"></i>ヘルプ
-            </a>
-        </div>
-    </div>
-
-    <div class="status-bar" id="statusBar">
-        <div class="status-item">
-            <i class="fa-solid fa-wifi"></i> オンライン
-        </div>
-        <div class="status-item" id="timeStatus">
-            <i class="fa-solid fa-clock"></i> --:--
-        </div>
-        <div class="status-item" id="locationStatus">
-            <i class="fa-solid fa-location-dot"></i> 新発田市
+            <a href="../zukan/list.html" class="button-link"><i class="fa-solid fa-scroll"></i>ずかんを開く </a>
+            <a href="../camera/camera.html" class="button-link"><i class="fa-solid fa-camera"></i>カメラを開く</a>
+            <a href="../map/re.html" class="button-link"><i class="fa-solid fa-map-location-dot"></i>マップを開く</a>
         </div>
     </div>
 
     <script>
-        // 背景画像の配列を拡張
-        const images = [
-            'bg/background1.jpg', 
-            'bg/background2.jpg', 
-            'bg/background3.jpg',
-            'bg/background4.jpg',
-            'bg/background5.jpg'
-        ];
+        // 背景画像
+        const images = ['bg/background1.jpg', 'bg/background2.jpg', 'bg/background3.jpg'];
         let currentIndex = 0;
         const clearBg = document.getElementById('background-clear');
         const blurBg = document.getElementById('background-blur');
 
-        // 背景画像切り替え関数（改良版）
+        //背景画像切り替え関数
         function updateBackground() {
+            // 循環アルゴリズム
             const nextIndex = (currentIndex + 1) % images.length;
             const nextImage = new Image();
             nextImage.src = images[nextIndex];
 
+            // 次画像ローディング
             nextImage.onload = () => {
-                // スムーズな切り替えエフェクト
-                clearBg.style.transition = 'opacity 0.5s ease';
-                clearBg.style.opacity = '0';
-                
-                setTimeout(() => {
-                    clearBg.style.backgroundImage = `url('${images[nextIndex]}')`;
-                    blurBg.style.backgroundImage = `url('${images[nextIndex]}')`;
-                    clearBg.style.opacity = '1';
-                    currentIndex = nextIndex;
-                }, 500);
+                clearBg.style.backgroundImage = `url('${images[nextIndex]}')`;
+                blurBg.style.backgroundImage = `url('${images[nextIndex]}')`;
+                currentIndex = nextIndex;
             };
         }
 
-        // パーティクル生成システム
-        function createParticles() {
-            const particlesContainer = document.getElementById('particles');
-            const particleCount = 15;
-            
-            for (let i = 0; i < particleCount; i++) {
-                setTimeout(() => {
-                    const particle = document.createElement('div');
-                    particle.className = 'particle';
-                    particle.style.left = Math.random() * 100 + '%';
-                    particle.style.width = particle.style.height = (Math.random() * 4 + 2) + 'px';
-                    particle.style.animationDelay = Math.random() * 15 + 's';
-                    particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
-                    particlesContainer.appendChild(particle);
-                    
-                    // パーティクルを定期的に削除・再生成
-                    setTimeout(() => {
-                        if (particle.parentNode) {
-                            particle.parentNode.removeChild(particle);
-                        }
-                    }, 15000);
-                }, i * 1000);
-            }
-        }
+        // 背景画像初期設定
+        clearBg.style.backgroundImage = `url('${images[currentIndex]}')`;
+        blurBg.style.backgroundImage = `url('${images[currentIndex]}')`;
 
-        // 天候エフェクト
-        function createWeatherEffect() {
-            const weatherContainer = document.getElementById('weatherEffect');
-            const hour = new Date().getHours();
-            
-            // 夜間は雪のようなエフェクト、昼間は光の粒子
-            const isNight = hour < 6 || hour > 18;
-            
-            for (let i = 0; i < 8; i++) {
-                setTimeout(() => {
-                    const particle = document.createElement('div');
-                    particle.className = 'weather-particle';
-                    particle.style.left = Math.random() * 100 + '%';
-                    particle.style.width = particle.style.height = isNight ? 
-                        (Math.random() * 3 + 1) + 'px' : 
-                        (Math.random() * 2 + 0.5) + 'px';
-                    particle.style.background = isNight ? 
-                        'rgba(255, 255, 255, 0.8)' : 
-                        'rgba(255, 255, 200, 0.6)';
-                    particle.style.animationDelay = Math.random() * 8 + 's';
-                    particle.style.animationDuration = (Math.random() * 6 + 6) + 's';
-                    weatherContainer.appendChild(particle);
-                    
-                    setTimeout(() => {
-                        if (particle.parentNode) {
-                            particle.parentNode.removeChild(particle);
-                        }
-                    }, 8000);
-                }, i * 1000);
-            }
-        }
-
-        // 時刻表示の更新
-        function updateTime() {
-            const now = new Date();
-            const timeString = now.toLocaleTimeString('ja-JP', {
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-            document.getElementById('timeStatus').innerHTML = 
-                `<i class="fa-solid fa-clock"></i> ${timeString}`;
-        }
-
-        // 初期化処理
-        function initialize() {
-            // 背景画像初期設定
-            clearBg.style.backgroundImage = `url('${images[currentIndex]}')`;
-            blurBg.style.backgroundImage = `url('${images[currentIndex]}')`;
-
-            // アニメーション開始
+        // クロスフェード処理開始
+        setTimeout(() => {
+            blurBg.style.opacity = '1';
             setTimeout(() => {
-                blurBg.style.opacity = '1';
-                setTimeout(() => {
-                    document.getElementById('overlay').classList.add('visible');
-                }, 400);
-            }, 600);
+                document.getElementById('overlay').classList.add('visible');
+            }, 350);
+        }, 500);
 
-            // パーティクルとエフェクト開始
-            createParticles();
-            createWeatherEffect();
-            
-            // 定期的な更新
-            setInterval(updateBackground, 8000);
-            setInterval(createParticles, 16000);
-            setInterval(createWeatherEffect, 12000);
-            setInterval(updateTime, 1000);
-            
-            // 初回時刻更新
-            updateTime();
-        }
+        // 5秒おきに背景切り替え
+        setInterval(updateBackground, 5000);
 
-        // メニュー開閉（改良版）
+        // メニュー開閉
         const menuToggle = document.getElementById('menuToggle');
         const sideMenu = document.getElementById('sideMenu');
-        
         menuToggle.addEventListener('click', () => {
             sideMenu.classList.toggle('open');
-            // メニュー開閉時の効果音やバイブレーション（可能な場合）
-            if ('vibrate' in navigator) {
-                navigator.vibrate(50);
-            }
-        });
-
-        // ページ読み込み完了時に初期化
-        document.addEventListener('DOMContentLoaded', initialize);
-
-        // ページの可視性が変わった時の処理
-        document.addEventListener('visibilitychange', () => {
-            if (!document.hidden) {
-                updateTime();
-            }
         });
     </script>
 </body>
