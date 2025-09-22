@@ -202,39 +202,6 @@
             background: linear-gradient(135deg, #FFD580 30%, #FFB347 100%);
         }
 
-        /* 横並びボタンのスタイル */
-        .horizontal-buttons {
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .horizontal-buttons .button-link {
-            width: 56px;
-            height: 56px;
-            min-width: auto;
-            font-size: 1.6em;
-            padding: 0;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            /* タッチターゲットを確保 */
-            position: relative;
-        }
-
-        .horizontal-buttons .button-link::before {
-            content: '';
-            position: absolute;
-            top: -8px;
-            left: -8px;
-            right: -8px;
-            bottom: -8px;
-            border-radius: 50%;
-            /* タッチエリアを拡張（視覚的には見えない） */
-        }
-
         @media (max-width: 800px) {
             h1 { font-size: 2.7em; }
             .subtitle { font-size: 1em; }
@@ -242,13 +209,6 @@
                 width: 63vw;
                 font-size: 1em;
                 padding: 0.9em 0.7em;
-            }
-            .horizontal-buttons {
-                flex-direction: column;
-                gap: 15px;
-            }
-            .horizontal-buttons .button-link {
-                width: 63vw;
             }
         }
     </style>
@@ -280,10 +240,6 @@
             <a href="../zukan/list.html" class="button-link"><i class="fa-solid fa-scroll"></i>ずかんを開く </a>
             <a href="../camera/camera.html" class="button-link"><i class="fa-solid fa-camera"></i>カメラを開く</a>
             <a href="../map/re.html" class="button-link"><i class="fa-solid fa-map-location-dot"></i>マップを開く</a>
-            <div class="horizontal-buttons">
-                <a href="settings.html" class="button-link">⚙</a>
-                <a href="help.html" class="button-link">？</a>
-            </div>
         </div>
     </div>
 
