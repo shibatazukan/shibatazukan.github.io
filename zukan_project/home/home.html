@@ -445,10 +445,11 @@
             
             document.body.removeChild(textArea);
         }
+        // データをJSONファイルとしてダウンロードする関数
         function saveZukanData() {
             try {
-                // 実際のアプリでは図鑑データを取得
-                const zukanData = getSampleZukanData();
+                // 実際の図鑑データを取得（関数名を修正）
+                const zukanData = getZukanData();
                 
                 // JSONを文字列に変換（見やすくフォーマット）
                 const dataStr = JSON.stringify(zukanData, null, 2);
@@ -473,7 +474,8 @@
                     document.body.removeChild(link);
                 }, 100);
                 
-                showNotification('データをダウンロードしました！ダウンロードフォルダまたはファイルアプリをご確認ください。');
+                const stats = zukanData.statistics;
+                showNotification(`データをセーブしました！（発見数: ${stats.totalDiscoveries}件、種類: ${stats.uniqueSpecies}種類）`);
                 
             } catch (error) {
                 console.error('セーブエラー:', error);
