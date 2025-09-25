@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Mochiy Pop Oneのみを読み込み -->
     <link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&display=swap" rel="stylesheet">
+    <!-- 最新Font Awesome CDN（無料アイコンのみ利用可能） -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
         html, body {
@@ -61,6 +62,7 @@
             transition: left 0.35s ease-in-out;
             display: flex;
             flex-direction: column;
+            font-family: 'Mochiy Pop One', sans-serif !important;
         }
         .side-menu.open {
             left: 0;
@@ -93,6 +95,7 @@
             background: none;
             width: 100%;
             text-align: left;
+            font-family: 'Mochiy Pop One', sans-serif !important;
         }
         .side-menu a:hover, .side-menu .menu-item:hover {
             background: rgba(255, 255, 255, 0.1);
@@ -112,6 +115,7 @@
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.7s cubic-bezier(.4,0,.2,1);
+            font-family: 'Mochiy Pop One', sans-serif;
         }
         .overlay.visible {
             opacity: 1;
@@ -159,6 +163,7 @@
             gap: 20px;
             align-items: center;
             justify-content: center;
+            font-family: 'Mochiy Pop One', sans-serif;
         }
         .buttons .button-link {
             display: flex;
@@ -225,10 +230,6 @@
             margin-left: 0.5em;
             font-family: 'Mochiy Pop One', sans-serif;
         }
-        /* サイドメニュー全体のフォントも統一 */
-        .side-menu, .side-menu * {
-            font-family: 'Mochiy Pop One', sans-serif !important;
-        }
     </style>
 </head>
 <body>
@@ -268,7 +269,7 @@
         <div class="buttons">
             <a href="../zukan/list.html" class="button-link"><i class="fa-solid fa-scroll"></i>ずかんを開く </a>
             <a href="../camera/camera.html" class="button-link"><i class="fa-solid fa-camera"></i>カメラを開く</a>
-            <a href="../map/re.html" class="button-link"><i class="fa-solid fa-map-location-dot"></i>マップを開く</a>
+            <a href="../map/re.html" class="button-link"><i class="fa-solid fa-map"></i>マップを開く</a>
         </div>
     </div>
     <div class="notification" id="notification"></div>
