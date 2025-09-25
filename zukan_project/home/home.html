@@ -216,7 +216,6 @@
                 padding: 0.9em 0.7em;
             }
         }
-        /* おすすめ強調 */
         .recommend-badge {
             color: #FFD700;
             font-size: 0.95em;
@@ -234,13 +233,10 @@
         
         <div class="menu-divider"></div>
 
-        <!-- 共有を先に。おすすめ強調 -->
+        <!-- 「共有/ファイルに保存」のみを残す -->
         <button class="menu-item" id="shareData">
             <i class="fa-solid fa-share"></i> データを共有/ファイルに保存
             <span class="recommend-badge">おすすめ</span>
-        </button>
-        <button class="menu-item" id="saveData">
-            <i class="fa-solid fa-download"></i> データをセーブ
         </button>
         <button class="menu-item" id="loadData">
             <i class="fa-solid fa-upload"></i> データをロード
@@ -415,33 +411,6 @@
             }
             document.body.removeChild(textArea);
         }
-        // セーブ（ダウンロード）機能
-        function saveZukanData() {
-            try {
-                const zukanData = getZukanData();
-                const dataStr = JSON.stringify(zukanData, null, 2);
-                const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
-                const link = document.createElement('a');
-                link.href = dataUri;
-                link.download = `shibata-zukan-data-${new Date().toISOString().split('T')[0]}.json`;
-                link.style.display = 'none';
-                document.body.appendChild(link);
-                link.click();
-                setTimeout(() => {
-                    document.body.removeChild(link);
-                }, 100);
-                const stats = zukanData.statistics;
-                showNotification(`データをセーブしました！（発見数: ${stats.totalDiscoveries}件、種類: ${stats.uniqueSpecies}種類）`);
-            } catch (error) {
-                console.error('セーブエラー:', error);
-                showNotification('セーブに失敗しました', true);
-            }
-        }
-        // PWA判定
-        function isPWA() {
-            return (window.matchMedia('(display-mode: standalone)').matches) ||
-                   (window.navigator.standalone === true);
-        }
         // ロード
         function loadZukanData(file) {
             if (!file) {
@@ -502,7 +471,6 @@
             };
             reader.readAsText(file);
         }
-        //背景画像切り替え
         function updateBackground() {
             const nextIndex = (currentIndex + 1) % images.length;
             const nextImage = new Image();
@@ -529,20 +497,10 @@
             sideMenu.classList.toggle('open');
         });
 
-        // 「共有/ファイルに保存」ボタンを推奨
+        // 「共有/ファイルに保存」ボタンのみ
         document.getElementById('shareData').addEventListener('click', () => {
             showNotification('「ファイルに保存」や他アプリでバックアップできます（推奨）', false);
             shareZukanData();
-        });
-
-        // セーブボタンはPWA時に注意喚起
-        document.getElementById('saveData').addEventListener('click', () => {
-            if (isPWA()) {
-                showNotification('アプリ版では「データを共有/ファイルに保存」ボタンから「ファイルに保存」をご利用ください！', true);
-                saveZukanData();
-            } else {
-                saveZukanData();
-            }
         });
 
         // ロード
