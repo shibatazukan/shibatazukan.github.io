@@ -33,7 +33,6 @@
             opacity: 0;
             transition: opacity 1.2s cubic-bezier(.4,0,.2,1), background-image 1.5s cubic-bezier(.4,0,.2,1);
         }
-        /* ハンバーガーメニュー */
         .menu-toggle {
             position: absolute;
             top: 20px; left: 20px;
@@ -49,7 +48,6 @@
         .menu-toggle:hover {
             background: rgba(0, 0, 0, 0.6);
         }
-        /* サイドメニュー */
         .side-menu {
             position: fixed;
             top: 0; left: -260px;
@@ -66,7 +64,6 @@
         .side-menu.open {
             left: 0;
         }
-        /* サイドメニューが開いたとき三本線を右へずらす */
         .side-menu.open ~ .menu-toggle {
             left: 280px;
         }
@@ -99,16 +96,13 @@
         .side-menu a:hover, .side-menu .menu-item:hover {
             background: rgba(255, 255, 255, 0.1);
         }
-        /* ファイル入力を隠すスタイル */
         .file-input {
             display: none;
         }
-        /* データセクションの区切り線 */
         .menu-divider {
             border-top: 1px solid rgba(255, 255, 255, 0.2);
             margin: 1em 0;
         }
-        /* 中央オーバーレイ */
         .overlay {
             position: absolute;
             top: 50%; left: 50%;
@@ -126,31 +120,24 @@
             margin-bottom: 50px;
             transform: translateY(-15px);
         }
-        /* タイトルを目立たせる */
-       h1 {
+        h1 {
             font-family: 'Mochiy Pop One', sans-serif;
             font-size: 5em;
             font-weight: normal;
             letter-spacing: 0.1em;
             margin: 0.1em 0 0.2em 0;
-            
             color: #fff;
-            
-            /* 縁取りを追加 */
             text-shadow:
                 -2px -2px 0 #000,
                 2px -2px 0 #000,
                 -2px 2px 0 #000,
                 2px 2px 0 #000;
-                
             user-select: none;
-            
             background: none;
             -webkit-background-clip: none;
             -webkit-text-fill-color: initial;
             background-clip: none;
         }
-        
         .subtitle {
             font-family: 'Mochiy Pop One', sans-serif;
             font-size: 1.7em;
@@ -159,14 +146,12 @@
             margin-bottom: 1.5em;
             line-height: 1.6;
             user-select: none;
-            /* サブタイトルに縁取りを追加 */
             text-shadow:
                 -1px -1px 0 #000,
                 1px -1px 0 #000,
                 -1px 1px 0 #000,
                 1px 1px 0 #000;
         }
-        /* ボタンスタイル */
         .buttons {
             display: flex;
             flex-direction: column;
@@ -191,7 +176,6 @@
             transition: transform 0.3s, box-shadow 0.3s, background 0.3s;
             min-width: 170px;
         }
-        /* アイコンの幅を固定して位置を揃える */
         .buttons .button-link i {
             font-size: 1.35em;
             width: 2.0em;
@@ -202,7 +186,6 @@
             box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
             background: linear-gradient(135deg, #FFD580 30%, #FFB347 100%);
         }
-        /* 通知メッセージ */
         .notification {
             position: fixed;
             top: 20px;
@@ -233,6 +216,12 @@
                 padding: 0.9em 0.7em;
             }
         }
+        /* おすすめ強調 */
+        .recommend-badge {
+            color: #FFD700;
+            font-size: 0.95em;
+            margin-left: 0.5em;
+        }
     </style>
 </head>
 <body>
@@ -244,10 +233,18 @@
         <a href="../map/re.html"><i class="fa-solid fa-map"></i> マップ</a>
         
         <div class="menu-divider"></div>
-        
-        <button class="menu-item" id="saveData"><i class="fa-solid fa-download"></i> データをセーブ</button>
-        <button class="menu-item" id="shareData"><i class="fa-solid fa-share"></i> データを共有</button>
-        <button class="menu-item" id="loadData"><i class="fa-solid fa-upload"></i> データをロード</button>
+
+        <!-- 共有を先に。おすすめ強調 -->
+        <button class="menu-item" id="shareData">
+            <i class="fa-solid fa-share"></i> データを共有/ファイルに保存
+            <span class="recommend-badge">おすすめ</span>
+        </button>
+        <button class="menu-item" id="saveData">
+            <i class="fa-solid fa-download"></i> データをセーブ
+        </button>
+        <button class="menu-item" id="loadData">
+            <i class="fa-solid fa-upload"></i> データをロード
+        </button>
         <input type="file" id="fileInput" class="file-input" accept=".json">
         
         <div class="menu-divider"></div>
@@ -271,10 +268,7 @@
             <a href="../map/re.html" class="button-link"><i class="fa-solid fa-map-location-dot"></i>マップを開く</a>
         </div>
     </div>
-    
-    <!-- 通知メッセージ -->
     <div class="notification" id="notification"></div>
-
     <script>
         // 背景画像
         const images = ['bg/background1.jpg', 'bg/background2.jpg', 'bg/background3.jpg'];
@@ -287,33 +281,24 @@
             const notification = document.getElementById('notification');
             notification.textContent = message;
             notification.className = 'notification show' + (isError ? ' error' : '');
-            
             setTimeout(() => {
                 notification.classList.remove('show');
             }, 3000);
         }
-        
-        // 実際の図鑑データを取得する関数
+        // 図鑑データ取得
         function getZukanData() {
             try {
-                // localStorageから図鑑データを取得
                 const zukanArray = JSON.parse(localStorage.getItem('myZukan')) || [];
-                
-                // ユーザー設定の取得（設定ページがある場合）
                 const userSettings = JSON.parse(localStorage.getItem('userSettings')) || {
                     username: "ユーザー名",
                     completedMissions: [],
                     preferences: {}
                 };
-
-                // 統計情報の計算
                 const uniqueNames = new Set(zukanArray.map(item => item.name));
                 const categories = zukanArray.reduce((acc, item) => {
                     acc[item.category] = (acc[item.category] || 0) + 1;
                     return acc;
                 }, {});
-
-                // エクスポート用のデータ構造を作成
                 return {
                     version: "1.0",
                     exportDate: new Date().toISOString(),
@@ -352,56 +337,47 @@
                 };
             }
         }
-        
-        // データを共有する関数（iOS対応）
+        // 共有機能
         function shareZukanData() {
             try {
                 const zukanData = getZukanData();
                 const dataStr = JSON.stringify(zukanData, null, 2);
                 const fileName = `shibata-zukan-data-${new Date().toISOString().split('T')[0]}.json`;
-                
-                // Web Share APIが利用可能かチェック
+                // Web Share API
                 if (navigator.share && navigator.canShare) {
-                    // Fileオブジェクトを作成
                     const file = new File([dataStr], fileName, {
                         type: 'application/json',
                     });
-                    
-                    // 共有可能かチェック
                     if (navigator.canShare({ files: [file] })) {
                         navigator.share({
                             files: [file],
                             title: '新発田ずかんデータ',
                             text: `図鑑データ（${zukanData.statistics.totalDiscoveries}件の発見）をバックアップしました`
                         }).then(() => {
-                            showNotification('データを共有しました！');
+                            showNotification('データを他アプリやファイルに保存できます！');
                         }).catch((error) => {
                             console.log('共有がキャンセルされました:', error);
                         });
                         return;
                     }
                 }
-                
-                // Web Share APIが使えない場合の代替手段
-                // クリップボードにコピー
+                // Web Share API非対応 → クリップボード
                 if (navigator.clipboard && navigator.clipboard.writeText) {
                     navigator.clipboard.writeText(dataStr).then(() => {
                         const stats = zukanData.statistics;
-                        showNotification(`データをクリップボードにコピーしました！（発見数: ${stats.totalDiscoveries}件）メモアプリなどに貼り付けて保存してください。`);
+                        showNotification(`データをクリップボードにコピーしました！（発見数: ${stats.totalDiscoveries}件）メモアプリなどに貼り付けて保存してください`);
                     }).catch(() => {
                         fallbackCopyMethod(dataStr, zukanData.statistics);
                     });
                 } else {
                     fallbackCopyMethod(dataStr, zukanData.statistics);
                 }
-                
             } catch (error) {
                 console.error('共有エラー:', error);
                 showNotification('データの共有に失敗しました', true);
             }
         }
-        
-        // クリップボードコピーの代替手段
+        // クリップボード失敗時のフォールバック
         function fallbackCopyMethod(text, stats) {
             const textArea = document.createElement('textarea');
             textArea.value = text;
@@ -411,12 +387,10 @@
             document.body.appendChild(textArea);
             textArea.focus();
             textArea.select();
-            
             try {
                 document.execCommand('copy');
-                showNotification(`データをクリップボードにコピーしました！（発見数: ${stats.totalDiscoveries}件）メモアプリなどに貼り付けて保存してください。`);
+                showNotification(`データをクリップボードにコピーしました！（発見数: ${stats.totalDiscoveries}件）メモアプリなどに貼り付けて保存してください`);
             } catch (err) {
-                // 最後の手段：テキストエリアに表示
                 textArea.style.position = 'fixed';
                 textArea.style.top = '50px';
                 textArea.style.left = '50px';
@@ -428,8 +402,6 @@
                 textArea.style.border = '2px solid #333';
                 textArea.style.padding = '10px';
                 showNotification('データを表示しました。全選択してコピーし、メモアプリに保存してください。画面外をタップすると閉じます。');
-                
-                // 画面外クリックで閉じる
                 const closeHandler = (e) => {
                     if (e.target !== textArea) {
                         document.body.removeChild(textArea);
@@ -439,81 +411,54 @@
                 setTimeout(() => {
                     document.addEventListener('click', closeHandler);
                 }, 500);
-                
                 return;
             }
-            
             document.body.removeChild(textArea);
         }
-        // データをJSONファイルとしてダウンロードする関数
+        // セーブ（ダウンロード）機能
         function saveZukanData() {
             try {
-                // 実際の図鑑データを取得（関数名を修正）
                 const zukanData = getZukanData();
-                
-                // JSONを文字列に変換（見やすくフォーマット）
                 const dataStr = JSON.stringify(zukanData, null, 2);
-                
-                // 全ての環境で動作する方法：data URIを使用
                 const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
-                
-                // ダウンロードリンクを作成
                 const link = document.createElement('a');
                 link.href = dataUri;
                 link.download = `shibata-zukan-data-${new Date().toISOString().split('T')[0]}.json`;
-                
-                // リンクを一時的にDOMに追加してクリック
                 link.style.display = 'none';
                 document.body.appendChild(link);
-                
-                // クリックイベントを発火
                 link.click();
-                
-                // リンクを削除
                 setTimeout(() => {
                     document.body.removeChild(link);
                 }, 100);
-                
                 const stats = zukanData.statistics;
                 showNotification(`データをセーブしました！（発見数: ${stats.totalDiscoveries}件、種類: ${stats.uniqueSpecies}種類）`);
-                
             } catch (error) {
                 console.error('セーブエラー:', error);
                 showNotification('セーブに失敗しました', true);
             }
         }
-        
-        // JSONファイルからデータをロードして図鑑に反映する関数
+        // PWA判定
+        function isPWA() {
+            return (window.matchMedia('(display-mode: standalone)').matches) ||
+                   (window.navigator.standalone === true);
+        }
+        // ロード
         function loadZukanData(file) {
             if (!file) {
                 showNotification('ファイルが選択されていません', true);
                 return;
             }
-            
-            // ファイル形式チェック
             if (!file.name.endsWith('.json')) {
                 showNotification('JSONファイルを選択してください', true);
                 return;
             }
-            
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
                     const data = JSON.parse(e.target.result);
-                    
-                    // データ形式の検証
-                    if (!data.version) {
-                        throw new Error('バージョン情報が見つかりません');
-                    }
-                    
-                    if (!data.discoveries || !Array.isArray(data.discoveries)) {
-                        throw new Error('発見データが正しい形式ではありません');
-                    }
-
-                    // 現在のデータを取得
+                    if (!data.version) throw new Error('バージョン情報が見つかりません');
+                    if (!data.discoveries || !Array.isArray(data.discoveries)) throw new Error('発見データが正しい形式ではありません');
                     const currentData = JSON.parse(localStorage.getItem('myZukan')) || [];
-                    
-                    // インポートするデータを図鑑の形式に変換
                     const importData = data.discoveries.map(item => ({
                         name: item.name,
                         category: item.category,
@@ -523,116 +468,92 @@
                         totalSamples: item.totalSamples || 30,
                         id: item.id || `imported_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
                     }));
-
-                    // 重複チェック（名前と日付で判定）
                     const existingKeys = new Set(currentData.map(item => `${item.name}-${item.date}`));
                     const newItems = importData.filter(item => 
                         !existingKeys.has(`${item.name}-${item.date}`)
                     );
-
-                    // データをマージ
                     const mergedData = [...currentData, ...newItems];
-                    
-                    // localStorageに保存
                     localStorage.setItem('myZukan', JSON.stringify(mergedData));
-                    
-                    // ユーザー設定も復元（存在する場合）
                     if (data.settings) {
                         const currentSettings = JSON.parse(localStorage.getItem('userSettings')) || {};
                         const mergedSettings = { ...currentSettings, ...data.settings };
                         localStorage.setItem('userSettings', JSON.stringify(mergedSettings));
                     }
-                    
-                    // 結果通知
                     const totalImported = data.discoveries.length;
                     const newDiscoveries = newItems.length;
                     const duplicates = totalImported - newDiscoveries;
-                    
                     let message = `データをロードしました！\n`;
                     message += `- 新規追加: ${newDiscoveries}件\n`;
                     if (duplicates > 0) {
                         message += `- 重複スキップ: ${duplicates}件\n`;
                     }
                     message += `- 現在の総発見数: ${mergedData.length}件`;
-                    
                     showNotification(message);
-                    
-                    // 図鑑ページが開いている場合は更新をトリガー
                     if (typeof init === 'function') {
                         setTimeout(() => init(), 1000);
                     }
-                    
                 } catch (error) {
                     console.error('ロードエラー:', error);
                     showNotification(`ファイルの読み込みに失敗しました: ${error.message}`, true);
                 }
             };
-            
             reader.onerror = function() {
                 showNotification('ファイルの読み込みに失敗しました', true);
             };
-            
             reader.readAsText(file);
         }
-        
-        //背景画像切り替え関数
+        //背景画像切り替え
         function updateBackground() {
-            // 循環アルゴリズム
             const nextIndex = (currentIndex + 1) % images.length;
             const nextImage = new Image();
             nextImage.src = images[nextIndex];
-            // 次画像ローディング
             nextImage.onload = () => {
                 clearBg.style.backgroundImage = `url('${images[nextIndex]}')`;
                 blurBg.style.backgroundImage = `url('${images[nextIndex]}')`;
                 currentIndex = nextIndex;
             };
         }
-        
-        // 背景画像初期設定
         clearBg.style.backgroundImage = `url('${images[currentIndex]}')`;
         blurBg.style.backgroundImage = `url('${images[currentIndex]}')`;
-        
-        // クロスフェード処理開始
         setTimeout(() => {
             blurBg.style.opacity = '1';
             setTimeout(() => {
                 document.getElementById('overlay').classList.add('visible');
             }, 350);
         }, 500);
-        
-        // 5秒おきに背景切り替え
         setInterval(updateBackground, 5000);
-        
         // メニュー開閉
         const menuToggle = document.getElementById('menuToggle');
         const sideMenu = document.getElementById('sideMenu');
         menuToggle.addEventListener('click', () => {
             sideMenu.classList.toggle('open');
         });
-        
-        // セーブボタンのイベントリスナー
-        document.getElementById('saveData').addEventListener('click', () => {
-            saveZukanData();
-        });
-        
-        // 共有ボタンのイベントリスナー
+
+        // 「共有/ファイルに保存」ボタンを推奨
         document.getElementById('shareData').addEventListener('click', () => {
+            showNotification('「ファイルに保存」や他アプリでバックアップできます（推奨）', false);
             shareZukanData();
         });
-        
-        // ロードボタンのイベントリスナー
+
+        // セーブボタンはPWA時に注意喚起
+        document.getElementById('saveData').addEventListener('click', () => {
+            if (isPWA()) {
+                showNotification('アプリ版では「データを共有/ファイルに保存」ボタンから「ファイルに保存」をご利用ください！', true);
+                saveZukanData();
+            } else {
+                saveZukanData();
+            }
+        });
+
+        // ロード
         document.getElementById('loadData').addEventListener('click', () => {
             document.getElementById('fileInput').click();
         });
-        
-        // ファイル選択のイベントリスナー
         document.getElementById('fileInput').addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (file) {
                 loadZukanData(file);
             }
-            // ファイル選択をリセット
             e.target.value = '';
         });
     </script>
