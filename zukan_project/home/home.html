@@ -246,6 +246,7 @@
         <div class="menu-divider"></div>
         
         <button class="menu-item" id="saveData"><i class="fa-solid fa-download"></i> データをセーブ</button>
+        <button class="menu-item" id="shareData"><i class="fa-solid fa-share"></i> データを共有</button>
         <button class="menu-item" id="loadData"><i class="fa-solid fa-upload"></i> データをロード</button>
         <input type="file" id="fileInput" class="file-input" accept=".json">
         
@@ -325,66 +326,126 @@
             };
         }
         
-        // デバイス判定
-        function isIOS() {
-            return /iPad|iPhone|iPod/.test(navigator.userAgent) || 
-                   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        // データを共有する関数（iOS対応）
+        function shareZukanData() {
+            try {
+                const zukanData = getSampleZukanData();
+                const dataStr = JSON.stringify(zukanData, null, 2);
+                const fileName = `shibata-zukan-data-${new Date().toISOString().split('T')[0]}.json`;
+                
+                // Web Share APIが利用可能かチェック
+                if (navigator.share && navigator.canShare) {
+                    // Fileオブジェクトを作成
+                    const file = new File([dataStr], fileName, {
+                        type: 'application/json',
+                    });
+                    
+                    // 共有可能かチェック
+                    if (navigator.canShare({ files: [file] })) {
+                        navigator.share({
+                            files: [file],
+                            title: '新発田ずかんデータ',
+                            text: '図鑑のデータをバックアップしました'
+                        }).then(() => {
+                            showNotification('データを共有しました！');
+                        }).catch((error) => {
+                            console.log('共有がキャンセルされました:', error);
+                        });
+                        return;
+                    }
+                }
+                
+                // Web Share APIが使えない場合の代替手段
+                // クリップボードにコピー
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(dataStr).then(() => {
+                        showNotification('データをクリップボードにコピーしました！メモアプリなどに貼り付けて保存してください。');
+                    }).catch(() => {
+                        fallbackCopyMethod(dataStr);
+                    });
+                } else {
+                    fallbackCopyMethod(dataStr);
+                }
+                
+            } catch (error) {
+                console.error('共有エラー:', error);
+                showNotification('データの共有に失敗しました', true);
+            }
         }
         
-        // データをJSONファイルとしてダウンロードする関数
+        // クリップボードコピーの代替手段
+        function fallbackCopyMethod(text) {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-9999px';
+            textArea.style.top = '-9999px';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            
+            try {
+                document.execCommand('copy');
+                showNotification('データをクリップボードにコピーしました！メモアプリなどに貼り付けて保存してください。');
+            } catch (err) {
+                // 最後の手段：テキストエリアに表示
+                textArea.style.position = 'fixed';
+                textArea.style.top = '50px';
+                textArea.style.left = '50px';
+                textArea.style.width = '80%';
+                textArea.style.height = '80%';
+                textArea.style.zIndex = '10000';
+                textArea.style.background = 'white';
+                textArea.style.color = 'black';
+                textArea.style.border = '2px solid #333';
+                textArea.style.padding = '10px';
+                showNotification('データを表示しました。全選択してコピーし、メモアプリに保存してください。画面外をタップすると閉じます。');
+                
+                // 画面外クリックで閉じる
+                const closeHandler = (e) => {
+                    if (e.target !== textArea) {
+                        document.body.removeChild(textArea);
+                        document.removeEventListener('click', closeHandler);
+                    }
+                };
+                setTimeout(() => {
+                    document.addEventListener('click', closeHandler);
+                }, 500);
+                
+                return;
+            }
+            
+            document.body.removeChild(textArea);
+        }
         function saveZukanData() {
             try {
                 // 実際のアプリでは図鑑データを取得
                 const zukanData = getSampleZukanData();
                 
-                // JSONを文字列に変換
+                // JSONを文字列に変換（見やすくフォーマット）
                 const dataStr = JSON.stringify(zukanData, null, 2);
                 
-                if (isIOS()) {
-                    // iOS用：新しいタブでJSONデータを表示
-                    const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
-                    const newWindow = window.open(dataUri, '_blank');
-                    
-                    if (newWindow) {
-                        showNotification('新しいタブでデータを表示しました。長押しして「ファイルに保存」を選択してください');
-                    } else {
-                        // ポップアップがブロックされた場合の代替手段
-                        const textarea = document.createElement('textarea');
-                        textarea.value = dataStr;
-                        textarea.style.position = 'fixed';
-                        textarea.style.top = '0';
-                        textarea.style.left = '0';
-                        textarea.style.width = '100%';
-                        textarea.style.height = '100%';
-                        textarea.style.zIndex = '9999';
-                        textarea.style.background = 'white';
-                        textarea.style.color = 'black';
-                        document.body.appendChild(textarea);
-                        textarea.select();
-                        showNotification('データが表示されました。コピーしてメモアプリなどに保存してください');
-                        
-                        // 10秒後に自動で閉じる
-                        setTimeout(() => {
-                            document.body.removeChild(textarea);
-                        }, 10000);
-                    }
-                } else {
-                    // PC・Android用：従来の方法
-                    const blob = new Blob([dataStr], { type: 'application/json' });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `shibata-zukan-data-${new Date().toISOString().split('T')[0]}.json`;
-                    
-                    // ユーザーアクションが必要なので、少し待ってからクリック
-                    document.body.appendChild(a);
-                    setTimeout(() => {
-                        a.click();
-                        document.body.removeChild(a);
-                        URL.revokeObjectURL(url);
-                        showNotification('データをセーブしました！');
-                    }, 100);
-                }
+                // 全ての環境で動作する方法：data URIを使用
+                const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+                
+                // ダウンロードリンクを作成
+                const link = document.createElement('a');
+                link.href = dataUri;
+                link.download = `shibata-zukan-data-${new Date().toISOString().split('T')[0]}.json`;
+                
+                // リンクを一時的にDOMに追加してクリック
+                link.style.display = 'none';
+                document.body.appendChild(link);
+                
+                // クリックイベントを発火
+                link.click();
+                
+                // リンクを削除
+                setTimeout(() => {
+                    document.body.removeChild(link);
+                }, 100);
+                
+                showNotification('データをダウンロードしました！ダウンロードフォルダまたはファイルアプリをご確認ください。');
                 
             } catch (error) {
                 console.error('セーブエラー:', error);
@@ -479,6 +540,11 @@
         // セーブボタンのイベントリスナー
         document.getElementById('saveData').addEventListener('click', () => {
             saveZukanData();
+        });
+        
+        // 共有ボタンのイベントリスナー
+        document.getElementById('shareData').addEventListener('click', () => {
+            shareZukanData();
         });
         
         // ロードボタンのイベントリスナー
