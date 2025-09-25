@@ -325,6 +325,12 @@
             };
         }
         
+        // デバイス判定
+        function isIOS() {
+            return /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        }
+        
         // データをJSONファイルとしてダウンロードする関数
         function saveZukanData() {
             try {
@@ -334,24 +340,51 @@
                 // JSONを文字列に変換
                 const dataStr = JSON.stringify(zukanData, null, 2);
                 
-                // Blobオブジェクトを作成
-                const blob = new Blob([dataStr], { type: 'application/json' });
-                
-                // ダウンロード用のリンクを作成
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `shibata-zukan-data-${new Date().toISOString().split('T')[0]}.json`;
-                
-                // ダウンロードを実行
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                
-                // メモリを解放
-                URL.revokeObjectURL(url);
-                
-                showNotification('データをセーブしました！');
+                if (isIOS()) {
+                    // iOS用：新しいタブでJSONデータを表示
+                    const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+                    const newWindow = window.open(dataUri, '_blank');
+                    
+                    if (newWindow) {
+                        showNotification('新しいタブでデータを表示しました。長押しして「ファイルに保存」を選択してください');
+                    } else {
+                        // ポップアップがブロックされた場合の代替手段
+                        const textarea = document.createElement('textarea');
+                        textarea.value = dataStr;
+                        textarea.style.position = 'fixed';
+                        textarea.style.top = '0';
+                        textarea.style.left = '0';
+                        textarea.style.width = '100%';
+                        textarea.style.height = '100%';
+                        textarea.style.zIndex = '9999';
+                        textarea.style.background = 'white';
+                        textarea.style.color = 'black';
+                        document.body.appendChild(textarea);
+                        textarea.select();
+                        showNotification('データが表示されました。コピーしてメモアプリなどに保存してください');
+                        
+                        // 10秒後に自動で閉じる
+                        setTimeout(() => {
+                            document.body.removeChild(textarea);
+                        }, 10000);
+                    }
+                } else {
+                    // PC・Android用：従来の方法
+                    const blob = new Blob([dataStr], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `shibata-zukan-data-${new Date().toISOString().split('T')[0]}.json`;
+                    
+                    // ユーザーアクションが必要なので、少し待ってからクリック
+                    document.body.appendChild(a);
+                    setTimeout(() => {
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                        showNotification('データをセーブしました！');
+                    }, 100);
+                }
                 
             } catch (error) {
                 console.error('セーブエラー:', error);
