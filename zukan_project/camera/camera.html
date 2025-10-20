@@ -310,24 +310,7 @@
         });
         
         startScreen.style.display = 'none';
-        
-        updateDebug('A-Frameシーン初期化済み');
-        
         await new Promise(resolve => setTimeout(resolve, 1500));
-        
-        updateDebug('カメラ初期化待機完了');
-        
-        const camera = document.querySelector('#mainCamera');
-        const infoBubbleEl = document.getElementById('infoBubble');
-        
-        updateDebug('カメラ: ' + (camera ? 'OK' : 'NG'));
-        updateDebug('吹き出し: ' + (infoBubbleEl ? 'OK' : 'NG'));
-        
-        if (camera && camera.object3D) {
-          updateDebug('カメラobject3D: OK');
-        } else {
-          updateDebug('カメラobject3D: NG');
-        }
         
         controlPanel.style.display = 'flex';
         drawingCanvas.style.pointerEvents = "auto";
