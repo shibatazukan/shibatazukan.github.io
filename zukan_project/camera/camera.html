@@ -305,9 +305,10 @@
         
         startScreen.style.display = 'none';
         
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
         scene.style.display = 'block';
+        
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
         controlPanel.style.display = 'flex';
         drawingCanvas.style.pointerEvents = "auto";
         
@@ -454,6 +455,17 @@
       if (finalLabel) {
         const labelData = labelInfo[finalLabel];
         const template = `なまえ：${labelData.name}\n種類　：${labelData.category}\n説明　：${labelData.description}\n一致回数：${finalCount}/${totalSamples}回`;
+        
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        const camera = document.querySelector('#mainCamera');
+        if (!camera || !camera.object3D) {
+          console.error('カメラが見つかりません');
+          infoBubble.setAttribute('visible', false);
+          predictButton.disabled = false;
+          return;
+        }
+        
         infoBubble.setAttribute('visible', true);
         bubbleText.setAttribute('value', template);
 
@@ -465,7 +477,6 @@
         saveButton.disabled = false;
 
         if (labelData.show3DObject) {
-          const camera = document.querySelector('#mainCamera');
           const targetPosition = new THREE.Vector3(0, 0, -1.5);
           targetPosition.applyQuaternion(camera.object3D.quaternion);
           targetPosition.add(camera.object3D.position);
@@ -495,22 +506,26 @@
             z: objPos.z + offset.z
           });
         } else {
-          infoBubble.setAttribute('visible', true);
-          const camera = document.querySelector('#mainCamera');
           const cameraWorldPosition = new THREE.Vector3();
           camera.object3D.getWorldPosition(cameraWorldPosition);
-          const infoBubblePosition = new THREE.Vector3(0, 0, -1);
+          const infoBubblePosition = new THREE.Vector3(0, 0, -1.5);
           infoBubblePosition.applyQuaternion(camera.object3D.quaternion);
           infoBubblePosition.add(cameraWorldPosition);
           infoBubble.setAttribute('position', infoBubblePosition);
         }
       } else {
+        const camera = document.querySelector('#mainCamera');
+        if (!camera || !camera.object3D) {
+          console.error('カメラが見つかりません');
+          predictButton.disabled = false;
+          return;
+        }
+        
         infoBubble.setAttribute('visible', true);
         bubbleText.setAttribute('value', `分類できませんでした。`);
-        const camera = document.querySelector('#mainCamera');
         const cameraWorldPosition = new THREE.Vector3();
         camera.object3D.getWorldPosition(cameraWorldPosition);
-        const infoBubblePosition = new THREE.Vector3(0, 0, -1);
+        const infoBubblePosition = new THREE.Vector3(0, 0, -1.5);
         infoBubblePosition.applyQuaternion(camera.object3D.quaternion);
         infoBubblePosition.add(cameraWorldPosition);
         infoBubble.setAttribute('position', infoBubblePosition);
@@ -593,4 +608,4 @@
     });
   </script>
 </body>
-</htm
+</html>
