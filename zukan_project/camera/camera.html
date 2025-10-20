@@ -2,6 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>動植物識別AR</title>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.0.0/dist/tf.min.js"></script>
   <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
@@ -10,6 +11,38 @@
     body {
       margin: 0;
       overflow: hidden;
+    }
+
+    #startScreen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.9);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 100;
+      color: white;
+      font-family: sans-serif;
+    }
+
+    #startButton {
+      padding: 20px 40px;
+      font-size: 20px;
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+      margin-top: 20px;
+    }
+
+    #startButton:hover {
+      background-color: #45a049;
     }
 
     #webcam {
@@ -97,7 +130,6 @@
       background-color: #d32f2f;
     }
 
-    /* 通知メッセージのスタイル */
     #notificationMessage {
       position: absolute;
       top: 20px;
@@ -140,10 +172,17 @@
       width: 100vw;
       height: 100vh;
       z-index: 1;
+      display: none;
     }
   </style>
 </head>
 <body>
+  <div id="startScreen">
+    <h2>動植物識別AR</h2>
+    <p>カメラへのアクセスを許可してください</p>
+    <button id="startButton">開始</button>
+  </div>
+
   <video id="webcam" autoplay playsinline muted></video>
   <canvas id="drawingCanvas"></canvas>
   <div id="controlPanel">
@@ -152,7 +191,6 @@
     <button id="clearButton">消去</button>
   </div>
 
-  <!-- 通知メッセージ -->
   <div id="notificationMessage"></div>
 
   <a-scene embedded vr-mode-ui="enabled:false" ar-mode="false">
@@ -212,7 +250,6 @@
         show3DObject: false,
         model: 'model/model.json'
       }
-      
     };
 
     let model;
@@ -226,18 +263,18 @@
     const scene = document.querySelector('a-scene');
     const infoBubble = document.getElementById('infoBubble');
     const notificationMessage = document.getElementById('notificationMessage');
+    const startScreen = document.getElementById('startScreen');
+    const startButton = document.getElementById('startButton');
     let isDrawing = false;
     let points = [];
     let identifiedObject = null;
     let lastPrediction = null;
 
-    // 通知メッセージを表示する関数
     function showNotification(message, isError = false) {
       notificationMessage.textContent = message;
       notificationMessage.className = isError ? 'error' : '';
       notificationMessage.style.display = 'block';
       
-      // 3秒後に自動的に非表示にする
       setTimeout(() => {
         notificationMessage.style.display = 'none';
       }, 3000);
@@ -261,15 +298,28 @@
           audio: false
         });
         video.srcObject = stream;
-        video.addEventListener('loadedmetadata', () => {
-          controlPanel.style.display = 'flex';
-          drawingCanvas.style.pointerEvents = "auto";
+        
+        await new Promise((resolve) => {
+          video.addEventListener('loadedmetadata', resolve, { once: true });
         });
+        
+        startScreen.style.display = 'none';
+        
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        scene.style.display = 'block';
+        controlPanel.style.display = 'flex';
+        drawingCanvas.style.pointerEvents = "auto";
+        
       } catch (err) {
         showNotification("カメラへのアクセスを許可してください。", true);
+        startScreen.style.display = 'flex';
       }
     }
-    setupCamera();
+
+    startButton.addEventListener('click', () => {
+      setupCamera();
+    });
 
     ctx.strokeStyle = '#007bff';
     ctx.lineWidth = 5;
@@ -488,23 +538,16 @@
 
       let zukan = JSON.parse(localStorage.getItem('myZukan') || '[]');
       
-      const isSameDay = (d1, d2) => {
-        return new Date(d1).toDateString() === new Date(d2).toDateString();
-      };
-      
       const exists = zukan.some(item => item.name === entry.name);
       
       if (!exists) {
         zukan.push(entry);
         localStorage.setItem('myZukan', JSON.stringify(zukan));
-        console.log('マイずかんに保存しました:', entry);
         showNotification('「' + labelData.name + '」をマイずかんに登録しました！');
       } else {
-        console.log('すでにマイずかんに同じ名前のデータがあります');
         showNotification('「' + labelData.name + '」はすでに登録済みです。', true);
       }
       
-      // 保存処理が完了し、通知が表示された後にボタンを無効化する
       saveButton.disabled = true;
       lastPrediction = null;
     });
@@ -548,10 +591,6 @@
         if (tailWhite) tailWhite.setAttribute('rotation', `0 ${angle} 0`);
       }
     });
-
-    document.addEventListener('DOMContentLoaded', () => {
-      document.getElementById('infoBubble')?.setAttribute('tail-update', '');
-    });
   </script>
 </body>
-</html>
+</htm
