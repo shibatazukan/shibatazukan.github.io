@@ -186,7 +186,6 @@
       width: 100vw;
       height: 100vh;
       z-index: 1;
-      display: none;
     }
   </style>
 </head>
@@ -326,11 +325,9 @@
         
         startScreen.style.display = 'none';
         
-        scene.style.display = 'block';
+        updateDebug('A-Frameシーン初期化済み');
         
-        updateDebug('A-Frameシーン表示');
-        
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 1500));
         
         updateDebug('カメラ初期化待機完了');
         
