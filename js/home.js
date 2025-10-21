@@ -1,5 +1,5 @@
 // 背景画像
-const images = ['../img/background1.jpg', '../img/background2.jpg', '../img/background3.jpg'];
+const images = ['../img/home_bg1.jpg', '../img/home_bg2.jpg', '../img/home_bg3.jpg'];
 let currentIndex = 0;
 const clearBg = document.getElementById('background-clear');
 const blurBg = document.getElementById('background-blur');
