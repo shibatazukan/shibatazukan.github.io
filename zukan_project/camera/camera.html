@@ -645,13 +645,20 @@
       }
 
       const bubbleText = document.getElementById('bubbleText');
-      const rawConfidence = Math.round((finalCount / totalSamples) * 100);
+      const rawConfidence = finalCount > 0 ? Math.round((finalCount / totalSamples) * 100) : 0;
+      
+      console.log('Final Label:', finalLabel);
+      console.log('Final Count:', finalCount);
+      console.log('Raw Confidence:', rawConfidence);
       
       if (finalLabel && rawConfidence >= 50) {
         const labelData = labelInfo[finalLabel];
         // 50%以上の場合、50～100%を0～100%に変換
         const convertedConfidence = Math.round(((rawConfidence - 50) / 50) * 100);
         const template = `なまえ：${labelData.name}\n種類　：${labelData.category}\n説明　：${labelData.description}\n一致回数：${finalCount}/${totalSamples}回\n信頼度：${convertedConfidence}%`;
+        
+        console.log('Converted Confidence:', convertedConfidence);
+        console.log('Template:', template);
         
         await new Promise(resolve => setTimeout(resolve, 200));
         
@@ -660,6 +667,7 @@
         const bubbleTextEl = document.getElementById('bubbleText');
         
         if (!camera || !camera.object3D) {
+          console.error('Camera not found');
           predictButton.disabled = false;
           return;
         }
@@ -680,7 +688,7 @@
           label: finalLabel,
           count: finalCount,
           total: totalSamples,
-          confidence: maxWeightedScore
+          confidence: rawConfidence
         };
         saveButton.disabled = false;
 
