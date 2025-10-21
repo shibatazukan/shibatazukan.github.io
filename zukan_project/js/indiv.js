@@ -9,37 +9,37 @@ function loadData() {
   // 実際にはAPIやデータベースから取得しますが、ここではlocalStorageを使用
   // デモデータを用意
   const demoData = [
-    { 
-      name: 'オナガガモ', 
-      category: '鳥類', 
-      description: '特徴的な長い尾羽を持つカモ。冬の間に日本に飛来する。', 
-      date: new Date().toISOString(), 
-      matchCount: 28, 
-      totalSamples: 30 
+    {
+      name: 'オナガガモ',
+      category: '鳥類',
+      description: '特徴的な長い尾羽を持つカモ。冬の間に日本に飛来する。',
+      date: new Date().toISOString(),
+      matchCount: 28,
+      totalSamples: 30
     },
-    { 
-      name: 'キンクロハジロ', 
-      category: '鳥類', 
-      description: '頭の後ろから垂れ下がる冠羽と、黄色い瞳が特徴の潜水ガモ。', 
+    {
+      name: 'キンクロハジロ',
+      category: '鳥類',
+      description: '頭の後ろから垂れ下がる冠羽と、黄色い瞳が特徴の潜水ガモ。',
       date: new Date(Date.now() - 86400000 * 3).toISOString(), // 3日前
-      matchCount: 30, 
-      totalSamples: 30 
+      matchCount: 30,
+      totalSamples: 30
     },
-    { 
-      name: 'コハクチョウ', 
-      category: '鳥類', 
-      description: '白い羽毛と優雅な姿を持つ大型の鳥。シベリアから渡来する。', 
+    {
+      name: 'コハクチョウ',
+      category: '鳥類',
+      description: '白い羽毛と優雅な姿を持つ大型の鳥。シベリアから渡来する。',
       date: new Date(Date.now() - 86400000 * 7).toISOString(), // 7日前
-      matchCount: 25, 
-      totalSamples: 30 
+      matchCount: 25,
+      totalSamples: 30
     },
   ];
-  
+
   // localStorageにデータがなければデモデータを設定
   if (!localStorage.getItem('myZukan')) {
-      localStorage.setItem('myZukan', JSON.stringify(demoData));
+    localStorage.setItem('myZukan', JSON.stringify(demoData));
   }
-  
+
   zukanData = JSON.parse(localStorage.getItem('myZukan')) || [];
 }
 
@@ -50,7 +50,7 @@ function getRarityStars(name) {
     'キンクロハジロ': 3,
     'コハクチョウ': 4 // 例として4に変更
   };
-  
+
   const rarity = rarityMap[name] || 3;
   let stars = '';
   for (let i = 1; i <= 5; i++) {
@@ -64,10 +64,10 @@ function createCard(entry, index) {
   const card = document.createElement('div');
   card.className = 'card';
   card.style.zIndex = zukanData.length - index;
-  
+
   const date = new Date(entry.date);
   const dateStr = date.toLocaleDateString('ja-JP');
-  
+
   card.innerHTML = `
     <div class="card-title">${entry.name}</div>
     <div class="rarity">${getRarityStars(entry.name)}</div>
@@ -146,11 +146,11 @@ function handleEnd(card) {
   if (!isDragging || card !== getTopCard()) {
     // スワイプ中でない場合も念のためswipingクラスを削除
     if (card) {
-        card.classList.remove('swiping');
+      card.classList.remove('swiping');
     }
     return;
   }
-  
+
   isDragging = false;
   card.classList.remove('swiping');
 
@@ -179,14 +179,14 @@ function getTopCard() {
 }
 
 // グローバル関数として公開
-window.nextCard = function() {
+window.nextCard = function () {
   if (currentIndex < zukanData.length - 1) {
     currentIndex++;
     updateCardView();
   }
 }
 
-window.prevCard = function() {
+window.prevCard = function () {
   if (currentIndex > 0) {
     currentIndex--;
     updateCardView();
@@ -218,7 +218,7 @@ function updateCardView() {
   // ボタン状態更新
   document.getElementById('prevBtn').disabled = currentIndex === 0;
   document.getElementById('nextBtn').disabled = currentIndex === zukanData.length - 1;
-  
+
   // カウンター更新
   document.getElementById('counter').textContent = `${currentIndex + 1} / ${zukanData.length}`;
 }
@@ -226,7 +226,7 @@ function updateCardView() {
 // 初期化
 function init() {
   loadData();
-  
+
   const container = document.getElementById('cardContainer');
   container.innerHTML = '';
 
@@ -238,7 +238,7 @@ function init() {
   }
 
   document.getElementById('emptyState').style.display = 'none';
-  
+
   // カードを全て生成
   zukanData.forEach((entry, index) => {
     const card = createCard(entry, index);

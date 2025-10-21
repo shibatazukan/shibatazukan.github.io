@@ -5,52 +5,52 @@ let filteredData = [];
 function loadData() {
   // localStorageからデータを読み込み。存在しない場合はデモデータを設定。
   const demoData = [
-    { 
-      name: 'オナガガモ', 
-      category: '鳥類', 
-      description: '特徴的な長い尾羽を持つカモ。冬の間に日本に飛来する。', 
-      date: new Date().toISOString(), 
-      matchCount: 28, 
-      totalSamples: 30 
+    {
+      name: 'オナガガモ',
+      category: '鳥類',
+      description: '特徴的な長い尾羽を持つカモ。冬の間に日本に飛来する。',
+      date: new Date().toISOString(),
+      matchCount: 28,
+      totalSamples: 30
     },
-    { 
-      name: 'キンクロハジロ', 
-      category: '鳥類', 
-      description: '頭の後ろから垂れ下がる冠羽と、黄色い瞳が特徴の潜水ガモ。', 
+    {
+      name: 'キンクロハジロ',
+      category: '鳥類',
+      description: '頭の後ろから垂れ下がる冠羽と、黄色い瞳が特徴の潜水ガモ。',
       date: new Date(Date.now() - 86400000 * 3).toISOString(), // 3日前
-      matchCount: 30, 
-      totalSamples: 30 
+      matchCount: 30,
+      totalSamples: 30
     },
-    { 
-      name: 'コハクチョウ', 
-      category: '鳥類', 
-      description: '白い羽毛と優雅な姿を持つ大型の鳥。シベリアから渡来する。', 
+    {
+      name: 'コハクチョウ',
+      category: '鳥類',
+      description: '白い羽毛と優雅な姿を持つ大型の鳥。シベリアから渡来する。',
       date: new Date(Date.now() - 86400000 * 7).toISOString(), // 7日前
-      matchCount: 25, 
-      totalSamples: 30 
+      matchCount: 25,
+      totalSamples: 30
     },
-    { 
-      name: 'アオムシ', 
-      category: '昆虫', 
-      description: '小さな体に緑色の体色を持つ、チョウやガの幼虫の総称。', 
+    {
+      name: 'アオムシ',
+      category: '昆虫',
+      description: '小さな体に緑色の体色を持つ、チョウやガの幼虫の総称。',
       date: new Date(Date.now() - 86400000 * 15).toISOString(),
-      matchCount: 15, 
-      totalSamples: 30 
+      matchCount: 15,
+      totalSamples: 30
     },
-    { 
-      name: 'トノサマガエル', 
-      category: '両生類', 
-      description: '水田や湿地に生息する比較的大型のカエル。体色は緑色や褐色。', 
+    {
+      name: 'トノサマガエル',
+      category: '両生類',
+      description: '水田や湿地に生息する比較的大型のカエル。体色は緑色や褐色。',
       date: new Date(Date.now() - 86400000 * 1).toISOString(), // 昨日
-      matchCount: 20, 
-      totalSamples: 30 
+      matchCount: 20,
+      totalSamples: 30
     },
   ];
-  
+
   if (!localStorage.getItem('myZukan')) {
-      localStorage.setItem('myZukan', JSON.stringify(demoData));
+    localStorage.setItem('myZukan', JSON.stringify(demoData));
   }
-  
+
   zukanData = JSON.parse(localStorage.getItem('myZukan')) || [];
   filteredData = [...zukanData];
 }
@@ -64,7 +64,7 @@ function getRarityStars(name) {
     'アオムシ': 2,
     'トノサマガエル': 3
   };
-  
+
   const rarity = rarityMap[name] || 3;
   let stars = '';
   for (let i = 1; i <= 5; i++) {
@@ -105,12 +105,12 @@ function updateStats() {
 function setupFilters() {
   const categoryFilter = document.getElementById('categoryFilter');
   const categories = new Set(zukanData.map(item => item.category));
-  
+
   // 既存のオプションをクリア（「すべて」以外）
   while (categoryFilter.children.length > 1) {
     categoryFilter.removeChild(categoryFilter.lastChild);
   }
-  
+
   // カテゴリオプションを追加
   categories.forEach(category => {
     const option = document.createElement('option');
@@ -121,7 +121,7 @@ function setupFilters() {
 }
 
 // フィルター・ソートを適用
-window.applyFilters = function() { // HTMLから呼び出されるためwindowに公開
+window.applyFilters = function () { // HTMLから呼び出されるためwindowに公開
   const categoryFilter = document.getElementById('categoryFilter').value;
   const sortBy = document.getElementById('sortBy').value;
   const searchTerm = document.getElementById('searchInput').value.toLowerCase();
@@ -166,17 +166,17 @@ function renderListView() {
   filteredData.forEach(entry => {
     const card = document.createElement('div');
     card.className = 'list-card';
-    
+
     const date = new Date(entry.date);
     const dateStr = date.toLocaleDateString('ja-JP', {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
     });
-    
+
     const rarity = getRarityStars(entry.name);
     const accuracy = Math.round((entry.matchCount || 0) / (entry.totalSamples || 30) * 100);
-    
+
     card.innerHTML = `
       <div class="list-card-header">
         <div>
@@ -199,7 +199,7 @@ function renderListView() {
       
       <div class="date-badge">📅 ${dateStr}</div>
     `;
-    
+
     container.appendChild(card);
   });
 }

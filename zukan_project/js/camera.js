@@ -400,8 +400,8 @@ predictButton.addEventListener('click', async () => {
         label: topLabel,
         confidence: topScore,
         tier: topScore >= highConfidenceThreshold ? 'high' :
-              topScore >= mediumConfidenceThreshold ? 'medium' :
-              topScore >= lowConfidenceThreshold ? 'low' : 'verylow'
+          topScore >= mediumConfidenceThreshold ? 'medium' :
+            topScore >= lowConfidenceThreshold ? 'low' : 'verylow'
       });
     }
   }
@@ -413,8 +413,8 @@ predictButton.addEventListener('click', async () => {
   predictions.forEach(p => {
     // 確信度階層に応じて重み付け
     const weight = p.tier === 'high' ? 1.0 :
-                   p.tier === 'medium' ? 0.7 :
-                   p.tier === 'low' ? 0.4 : 0.1;
+      p.tier === 'medium' ? 0.7 :
+        p.tier === 'low' ? 0.4 : 0.1;
 
     if (!weightedScores[p.label]) {
       weightedScores[p.label] = 0;
@@ -564,7 +564,7 @@ saveButton.addEventListener('click', () => {
 
 // バブルをカメラのY軸回転に合わせて常に正面に向かせるコンポーネント
 AFRAME.registerComponent('face-camera-y', {
-  tick: function() {
+  tick: function () {
     const camera = document.querySelector('#mainCamera');
     const obj3D = this.el.object3D;
     const cameraPos = new THREE.Vector3();
@@ -581,7 +581,7 @@ AFRAME.registerComponent('face-camera-y', {
 
 // バブルの尻尾を識別対象の3Dオブジェクトに向けるコンポーネント
 AFRAME.registerComponent('tail-update', {
-  tick: function() {
+  tick: function () {
     if (!identifiedObject || !infoBubble.getAttribute('visible')) {
       return;
     }

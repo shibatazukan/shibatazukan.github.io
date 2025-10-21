@@ -1,5 +1,5 @@
 // 背景画像
-const images = ['bg/background1.jpg', 'bg/background2.jpg', 'bg/background3.jpg'];
+const images = ['../img/background1.jpg', '../img/background2.jpg', '../img/background3.jpg'];
 let currentIndex = 0;
 const clearBg = document.getElementById('background-clear');
 const blurBg = document.getElementById('background-blur');
@@ -62,8 +62,8 @@ function getZukanData() {
                 totalDiscoveries: zukanArray.length,
                 uniqueSpecies: uniqueNames.size,
                 categories: categories,
-                averageAccuracy: zukanArray.length > 0 ? 
-                    Math.round(zukanArray.reduce((sum, item) => 
+                averageAccuracy: zukanArray.length > 0 ?
+                    Math.round(zukanArray.reduce((sum, item) =>
                         sum + ((item.matchCount || 0) / (item.totalSamples || 30) * 100), 0
                     ) / zukanArray.length) : 0
             }
@@ -172,7 +172,7 @@ function loadZukanData(file) {
         return;
     }
     const reader = new FileReader();
-    reader.onload = function(e) {
+    reader.onload = function (e) {
         try {
             const data = JSON.parse(e.target.result);
             if (!data.version) throw new Error('バージョン情報が見つかりません');
@@ -188,7 +188,7 @@ function loadZukanData(file) {
                 id: item.id || `imported_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
             }));
             const existingKeys = new Set(currentData.map(item => `${item.name}-${item.date}`));
-            const newItems = importData.filter(item => 
+            const newItems = importData.filter(item =>
                 !existingKeys.has(`${item.name}-${item.date}`)
             );
             const mergedData = [...currentData, ...newItems];
@@ -216,7 +216,7 @@ function loadZukanData(file) {
             showNotification(`ファイルの読み込みに失敗しました: ${error.message}`, true);
         }
     };
-    reader.onerror = function() {
+    reader.onerror = function () {
         showNotification('ファイルの読み込みに失敗しました', true);
     };
     reader.readAsText(file);

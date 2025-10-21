@@ -54,9 +54,10 @@ body {
   width: 100vw;
   height: 100vh;
   z-index: 5;
-  pointer-events: none; /* 初期状態では無効 */
+  pointer-events: none;
+  /* 初期状態では無効 */
 }
- 
+
 /* コントロールパネル */
 #controlPanel {
   position: absolute;
@@ -71,7 +72,8 @@ body {
   width: 90%;
   max-width: 500px;
   text-align: center;
-  display: none; /* 初期状態では非表示 */
+  display: none;
+  /* 初期状態では非表示 */
   justify-content: space-around;
   gap: 10px;
 }
@@ -87,7 +89,8 @@ body {
   cursor: pointer;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   transition: background-color 0.3s;
-  flex-grow: 1; /* ボタンが等幅になるように調整 */
+  flex-grow: 1;
+  /* ボタンが等幅になるように調整 */
 }
 
 #predictButton {
@@ -102,7 +105,7 @@ body {
   background-color: #ccc;
   cursor: not-allowed;
 }
- 
+
 #saveButton {
   background-color: #007bff;
 }
@@ -159,6 +162,7 @@ body {
     transform: translateX(-50%) translateY(-20px);
     opacity: 0;
   }
+
   to {
     transform: translateX(-50%) translateY(0);
     opacity: 1;
