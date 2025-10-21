@@ -648,7 +648,7 @@
 
       if (finalLabel && maxWeightedScore > 0.3) {
         const labelData = labelInfo[finalLabel];
-        const confidence = Math.round((maxWeightedScore / totalSamples) * 100);
+        const confidence = Math.round((finalCount / totalSamples) * 100);
         const template = `なまえ：${labelData.name}\n種類　：${labelData.category}\n説明　：${labelData.description}\n一致回数：${finalCount}/${totalSamples}回\n信頼度：${confidence}%`;
         
         await new Promise(resolve => setTimeout(resolve, 200));
