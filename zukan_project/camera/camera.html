@@ -7,11 +7,16 @@
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.0.0/dist/tf.min.js"></script>
   <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
   <script src="https://unpkg.com/aframe-troika-text/dist/aframe-troika-text.min.js"></script>
+  
   <style>
-    /* ... (CSSスタイルは省略 - 変更なし) ... */
+    /* ---------------------------------------------------------------------- */
+    /* CSS STYLE START */
+    /* ---------------------------------------------------------------------- */
     body {
       margin: 0;
       overflow: hidden;
+      /* ARモードの背景としてビデオを表示するために背景を透明にする */
+      background-color: transparent; 
     }
 
     /* Start / Loading screen */
@@ -119,7 +124,7 @@
       width: 100vw;
       height: 100vh;
       object-fit: cover;
-      z-index: 0;
+      z-index: 0; /* A-Frameシーンより下に配置 */
     }
 
     #drawingCanvas {
@@ -274,14 +279,16 @@
       left: 0;
       width: 100vw;
       height: 100vh;
-      z-index: 1;
+      z-index: 1; /* ビデオの上、キャンバスの下 */
     }
 
-    /* small responsive */
     @media (max-width: 420px) {
       #loadingList { width: 85vw; }
       #title { font-size: 20px; }
     }
+    /* ---------------------------------------------------------------------- */
+    /* CSS STYLE END */
+    /* ---------------------------------------------------------------------- */
   </style>
 </head>
 <body>
@@ -326,9 +333,17 @@
 
   <div id="notificationMessage"></div>
 
-    <a-scene embedded vr-mode-ui="enabled: false" ar-mode="false"> 
+    <a-scene embedded 
+             vr-mode-ui="enabled: false" 
+             ar-mode="false"
+             webgl-renderer="antialias: true; alpha: true; preserveDrawingBuffer: true"> 
+      
       <a-entity id="cameraRig" position="0 0 0">
-        <a-entity id="mainCamera" camera look-controls position="0 1.6 0"></a-entity>
+        <a-entity id="mainCamera" camera look-controls position="0 1.6 0" wasd-controls="enabled: false">
+          <a-entity id="video-background" geometry="primitive: plane; width: 10000; height: 10000" 
+                    material="shader: flat; transparent: true; opacity: 0;" 
+                    position="0 0 0" visible="false"></a-entity>
+        </a-entity>
       </a-entity>
 
     <a-assets>
@@ -345,45 +360,15 @@
   </a-scene>
 
   <script>
-    // ---- 定数 / 変数 ----
-    const modelPath = 'model/model.json';
+    // ---- 定数 / 変数 (変更なし) ----
+    const modelPath = 'model/model.json'; 
     const classLabels = ['あやめ', 'さくら', 'とんぼ', 'カブトムシ', 'クワガタ'];
     const labelInfo = {
-      'あやめ': {
-        name: 'あやめ',
-        category: '草花',
-        description: '紫色や青い花が\n咲く春の花。\n水辺が好きです。',
-        show3DObject: false,
-        model: 'model/model.json'
-      },
-      'さくら': {
-        name: 'さくら',
-        category: '木の花',
-        description: 'ピンク色の\nきれいな花。\n春の代表的な花です。',
-        show3DObject: false,
-        model: 'model/model.json'
-      },
-      'とんぼ': {
-        name: 'とんぼ',
-        category: '昆虫',
-        description: '大きな羽をもつ\n夏の虫。空をすばやく\n飛ぶことができます。',
-        show3DObject: false,
-        model: 'model/model.json'
-      },
-      'カブトムシ': {
-        name: 'カブトムシ',
-        category: '昆虫',
-        description: '黒い体と角が\n特徴の昆虫。夏に\nクワガタと一緒に活動します。',
-        show3DObject: false,
-        model: 'model/model.json'
-      },
-      'クワガタ': {
-        name: 'クワガタ',
-        category: '昆虫',
-        description: '大きなあごが\n特徴の昆虫。\n夏に活躍します。',
-        show3DObject: false,
-        model: 'model/json' 
-      }
+      'あやめ': { name: 'あやめ', category: '草花', description: '紫色や青い花が\n咲く春の花。\n水辺が好きです。', show3DObject: false, model: 'model/model.json' },
+      'さくら': { name: 'さくら', category: '木の花', description: 'ピンク色の\nきれいな花。\n春の代表的な花です。', show3DObject: false, model: 'model/model.json' },
+      'とんぼ': { name: 'とんぼ', category: '昆虫', description: '大きな羽をもつ\n夏の虫。空をすばやく\n飛ぶことができます。', show3DObject: false, model: 'model/model.json' },
+      'カブトムシ': { name: 'カブトムシ', category: '昆虫', description: '黒い体と角が\n特徴の昆虫。夏に\nクワガタと一緒に活動します。', show3DObject: false, model: 'model/model.json' },
+      'クワガタ': { name: 'クワガタ', category: '昆虫', description: '大きなあごが\n特徴の昆虫。\n夏に活躍します。', show3DObject: false, model: 'model/json' }
     };
 
     let model = null;
@@ -408,6 +393,7 @@
     const startScreen = document.getElementById('startScreen');
     const startButton = document.getElementById('startButton');
     const loaderSpinner = document.getElementById('loaderSpinner');
+    const videoBackground = document.getElementById('video-background'); 
 
     const itemTfjs = document.getElementById('item-tfjs');
     const itemAframe = document.getElementById('item-aframe');
@@ -418,9 +404,6 @@
     let identifiedObject = null;
     let lastPrediction = null;
 
-    // We'll reassign proper tensors after tf is ready
-    // 適切なTensorFlow定数は、initLoadingSequenceのtfReady後に設定されます
-    
     function showNotification(message, isError = false, isWarning = false) {
       notificationMessage.textContent = message;
       notificationMessage.className = '';
@@ -539,7 +522,7 @@
         markItemError(itemTfjs);
         document.getElementById('loadingMessage').textContent = 'TensorFlow.js の読み込みに失敗しました。';
         console.error(err);
-        throw err; // タイムアウト処理に渡す
+        throw err; 
       }
 
       try {
@@ -559,7 +542,7 @@
         markItemError(itemAframe);
         document.getElementById('loadingMessage').textContent = 'A-Frame の初期化に失敗しました。';
         console.error(err);
-        throw err; // タイムアウト処理に渡す
+        throw err; 
       }
 
       // Step3: Load model
@@ -574,7 +557,7 @@
         markItemError(itemModel);
         document.getElementById('loadingMessage').textContent = 'モデルの読み込みに失敗しました。';
         console.error('Model loading failed:', err);
-        throw err; // タイムアウト処理に渡す
+        throw err;
       }
 
       // All good: reveal start button and update UI
@@ -617,9 +600,10 @@
       });
     });
 
-    // ---- カメラ設定など既存処理 (修正2: AR/VR UIの有効化を削除) ----
+    // ---- カメラ設定 ( 修正 ) ----
     async function setupCamera() {
       try {
+        // ここでブラウザにカメラアクセス許可を求める 
         const stream = await navigator.mediaDevices.getUserMedia({
           video: {
             facingMode: 'environment',
@@ -634,17 +618,24 @@
         await new Promise((resolve) => {
           video.addEventListener('loadedmetadata', resolve, { once: true });
         });
+
+        // 修正: カメラ映像をA-Frameの背景テクスチャとして手動で設定 
+        // これにより、A-FrameはARモードへ移行せずにビデオ映像を認識する。
+        if (scene) {
+            videoBackground.setAttribute('material', `shader: flat; src: #webcam; transparent: false; opacity: 1;`);
+            videoBackground.setAttribute('visible', true);
+            // Three.js のワールド座標で背景を調整（常にカメラの前に来るように）
+            videoBackground.object3D.position.set(0, 0, -0.1); 
+            videoBackground.object3D.scale.set(1000, 1000, 1);
+            
+            // ビデオ要素自体を非表示にする（A-Frameに描画を任せる）
+            video.style.display = 'none';
+        }
         
         // UIの切り替え
         startScreen.style.display = 'none';
-        
         controlPanel.style.display = 'flex';
         drawingCanvas.style.pointerEvents = "auto";
-        
-        // 修正2: A-FrameのVR/AR UIを有効にする処理はここから削除 
-        // if (scene) {
-        //      scene.setAttribute('vr-mode-ui', 'enabled: true'); 
-        // }
         
       } catch (err) {
         showNotification("カメラへのアクセスを許可してください。", true);
@@ -798,7 +789,6 @@
       return strategies[sampleIndex % strategies.length];
     }
 
-    // 画像品質評価関数
     function evaluateImageQuality(canvas) {
       const ctx = canvas.getContext('2d');
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -821,18 +811,23 @@
       };
     }
 
-    // ---- 予測処理 (修正3: ARモードの有効化をここに追加) ----
+    // ---- 予測処理 (修正) ----
     predictButton.addEventListener('click', async () => {
         
+      // 修正3: ARモードが有効化されていない場合、ここで enterAR() を呼び出す 
       // これが「This immersive website...」のポップアップをトリガーする。
       if (scene && !scene.is('ar-mode')) {
-          // enterAR() は非同期であり、成功するとシーンがARモードに入る
-          // ARモードに入れない場合（ユーザーが拒否した場合など）は、そのまま処理を進める
           try {
-              await scene.enterAR();
+              // ARモードへの移行を試行
+              await scene.enterAR(); 
+              // ARモードに入れたら、A-Frameが背景のビデオストリームを処理するようになるので、
+              // 手動で設定したビデオ背景エンティティを非表示に戻す（保険）
+              videoBackground.setAttribute('visible', false);
+              video.style.display = 'none'; // WebXRがビデオを制御するため
           } catch(e) {
               console.warn("Failed to enter AR mode, proceeding without AR overlay.", e);
-              showNotification("ARモードの許可が必要です。", false, true);
+              // 拒否された場合、手動のビデオ背景でARなしの識別を継続
+              showNotification("ARモードの許可が必要です。許可しない場合はARオーバーレイは表示されません。", false, true);
           }
       }
 
@@ -865,7 +860,8 @@
       originalCanvas.width = width;
       originalCanvas.height = height;
       const originalCtx = originalCanvas.getContext('2d');
-      originalCtx.drawImage(video, minX, minY, width, height, 0, 0, width, height);
+      // ここで判定のために再度ビデオ映像を使用する
+      originalCtx.drawImage(video.style.display === 'none' ? scene.components['webxr'].session : video, minX, minY, width, height, 0, 0, width, height);
 
       const quality = evaluateImageQuality(originalCanvas);
       
@@ -909,7 +905,7 @@
           tempCanvas.height = height;
           const tempCtx = tempCanvas.getContext('2d');
           tempCtx.drawImage(processedCanvas, 0, 0);
-          applyHorizontalFlip(processedCtx, processedCanvas, tempCanvas);
+          applyHorizontalFlip(processedCtx, processedCanvas, tempCtx);
         }
         
         // ズームを適用
@@ -960,7 +956,6 @@
         let predictionArray;
         try {
           const out = model.predict(tensor);
-          // ensure promise resolution if model returns tensor
           if (out.array) {
             predictionArray = await out.array();
           } else {
@@ -1067,7 +1062,8 @@
         };
         saveButton.disabled = false;
 
-        if (labelData.show3DObject) {
+        // ARモードの場合のみ3Dオブジェクトと追跡機能を使用
+        if (scene.is('ar-mode') && labelData.show3DObject) {
           const targetPosition = new THREE.Vector3(0, 0, -1.5);
           targetPosition.applyQuaternion(camera.object3D.quaternion);
           targetPosition.add(camera.object3D.position);
@@ -1172,6 +1168,10 @@
       tick: function() {
         if (!identifiedObject || !infoBubble.getAttribute('visible')) {
           return;
+        }
+        // ARモードでのみ正確な追跡を行う
+        if (!this.el.sceneEl.is('ar-mode')) {
+             return;
         }
 
         const bubblePos = new THREE.Vector3();
