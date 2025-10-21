@@ -619,11 +619,11 @@
         processedCanvas.height = height;
         const processedCtx = processedCanvas.getContext('2d');
 
-        const strategy = getAugmentationStrategy(i);
+        const strategy = getAdvancedAugmentationStrategy(i);
         
         // 回転を適用
-        if (strategy.rotation) {
-          const rotationAngle = (Math.random() - 0.5) * 15 * Math.PI / 180;
+        if (strategy.rotation !== 0) {
+          const rotationAngle = strategy.rotation * Math.PI / 180;
           processedCtx.translate(width / 2, height / 2);
           processedCtx.rotate(rotationAngle);
           processedCtx.drawImage(originalCanvas, -width / 2, -height / 2, width, height);
@@ -642,6 +642,28 @@
           applyHorizontalFlip(processedCtx, processedCanvas, tempCanvas);
         }
         
+        // ズームを適用
+        if (strategy.zoom !== 1.0) {
+          const tempCanvas = document.createElement('canvas');
+          tempCanvas.width = width;
+          tempCanvas.height = height;
+          const tempCtx = tempCanvas.getContext('2d');
+          tempCtx.drawImage(processedCanvas, 0, 0);
+          processedCtx.clearRect(0, 0, width, height);
+          applyZoom(processedCtx, processedCanvas, tempCanvas, strategy.zoom);
+        }
+        
+        // 位置シフトを適用
+        if (strategy.translateX !== 0 || strategy.translateY !== 0) {
+          const tempCanvas = document.createElement('canvas');
+          tempCanvas.width = width;
+          tempCanvas.height = height;
+          const tempCtx = tempCanvas.getContext('2d');
+          tempCtx.drawImage(processedCanvas, 0, 0);
+          processedCtx.clearRect(0, 0, width, height);
+          applySmallTranslation(processedCtx, processedCanvas, tempCanvas, strategy.translateX, strategy.translateY);
+        }
+        
         // リサイズ
         const resizedCanvas = document.createElement('canvas');
         resizedCanvas.width = 224;
@@ -649,10 +671,10 @@
         const resizedCtx = resizedCanvas.getContext('2d');
         resizedCtx.drawImage(processedCanvas, 0, 0, 224, 224);
 
-        // 明度調整を適用
-        if (strategy.brightness !== 1.0) {
-          applyBrightnessAdjustment(resizedCtx, resizedCanvas, strategy.brightness);
-        }
+        // 高度な画像調整を適用
+        applyAdaptiveBrightnessAdjustment(resizedCtx, resizedCanvas, strategy.brightness);
+        applyContrastAdjustment(resizedCtx, resizedCanvas, strategy.contrast);
+        applySaturationAdjustment(resizedCtx, resizedCanvas, strategy.saturation);
 
         const resizedImageData = resizedCtx.getImageData(0, 0, 224, 224);
         
