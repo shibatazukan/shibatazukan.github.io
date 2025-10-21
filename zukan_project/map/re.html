@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 
 <html>
@@ -297,35 +296,7 @@
 										alert("位置情報が取得できませんでした");
 						             };
 			            
-			            			(async function(){
-													const image = await je.getImage({
-												//利用するデータセットのcollection.jsonのURLを記載します。
-												collection: "https://s3.ap-northeast-1.wasabisys.com/je-pds/cog/v1/JAXA.EORC_ALOS.PRISM_AW3D30.v3.2_global/collection.json",
-											
-												//利用するデータセットのバンドを指定します。
-												band: "DSM",
-											
-												//データを取得する緯度経度範囲を記載します。
-												//[最小経度(西), 最小緯度(南), 最大経度(東), 最大緯度(北)]
-												bbox: [-180, -90, 180, 90],
-											
-												//データを取得する画像のサイズをピクセル数で記載します。
-												width: 1000,
-												height: 500,
-											
-												//可視化用のカラーマップを指定します。
-												colorMap: {
-													//最小値
-													min: 0,
-													//最大値
-													max: 6000,
-													//最小値～最大値をjet（青～緑～黄～赤の虹色）で塗りつぶします。
-													colors: "jet"
-												}
-											});											
-											//可視化した結果をHTMLCanvasElementとして取得し、HTML上に追加します。
-											document.body.appendChild(image.getCanvas());		//ここにコードを記載します。
-									})();
+			            			
 			       </script>
 			      
 			      
