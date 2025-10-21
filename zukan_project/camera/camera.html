@@ -280,13 +280,26 @@
     }
 
     function resizeCanvas() {
-      drawingCanvas.width = video.offsetWidth;
-      drawingCanvas.height = video.offsetHeight;
+      // use devicePixelRatio to sharpen canvas on high-DPI displays
+      const rect = video.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      drawingCanvas.style.width = rect.width + 'px';
+      drawingCanvas.style.height = rect.height + 'px';
+      drawingCanvas.width = Math.floor(rect.width * dpr);
+      drawingCanvas.height = Math.floor(rect.height * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
     window.addEventListener('resize', resizeCanvas);
     video.addEventListener('loadedmetadata', resizeCanvas);
 
-    tf.loadLayersModel(modelPath).then(m => model = m);
+    // load model
+    tf.loadLayersModel(modelPath).then(m => {
+      model = m;
+      console.log('Model loaded');
+    }).catch(err => {
+      console.error('Model load error', err);
+      showNotification('モデルの読み込みに失敗しました', true);
+    });
 
     async function setupCamera() {
       try {
@@ -367,171 +380,268 @@
       lastPrediction = null;
     });
 
+    // Helper: map client (screen) coordinates to video intrinsic pixels
+    function clientToVideoCoords(clientX, clientY) {
+      const rect = video.getBoundingClientRect();
+      const x = (clientX - rect.left) * (video.videoWidth / rect.width);
+      const y = (clientY - rect.top) * (video.videoHeight / rect.height);
+      return { x, y };
+    }
+
     predictButton.addEventListener('click', async () => {
       if (!model || points.length < 2) return;
 
       predictButton.disabled = true;
       saveButton.disabled = true;
 
-      const minX = Math.min(...points.map(p => p.x));
-      const minY = Math.min(...points.map(p => p.y));
-      const maxX = Math.max(...points.map(p => p.x));
-      const maxY = Math.max(...points.map(p => p.y));
-      const width = maxX - minX;
-      const height = maxY - minY;
-      if (width <= 0 || height <= 0) return;
+      // Compute bounding box in client coordinates
+      const minX_client = Math.min(...points.map(p => p.x));
+      const minY_client = Math.min(...points.map(p => p.y));
+      const maxX_client = Math.max(...points.map(p => p.x));
+      const maxY_client = Math.max(...points.map(p => p.y));
+      let width_client = maxX_client - minX_client;
+      let height_client = maxY_client - minY_client;
+      if (width_client <= 0 || height_client <= 0) {
+        predictButton.disabled = false;
+        return;
+      }
 
+      // Map to video pixels (intrinsic video resolution)
+      const topLeft = clientToVideoCoords(minX_client, minY_client);
+      const bottomRight = clientToVideoCoords(maxX_client, maxY_client);
+      let videoMinX = Math.max(0, Math.floor(topLeft.x));
+      let videoMinY = Math.max(0, Math.floor(topLeft.y));
+      let videoMaxX = Math.min(video.videoWidth, Math.floor(bottomRight.x));
+      let videoMaxY = Math.min(video.videoHeight, Math.floor(bottomRight.y));
+      let videoWidth = videoMaxX - videoMinX;
+      let videoHeight = videoMaxY - videoMinY;
+      if (videoWidth <= 0 || videoHeight <= 0) {
+        predictButton.disabled = false;
+        return;
+      }
+
+      // Ensure reasonable minimum size
+      const MIN_SIZE = 32;
+      if (videoWidth < MIN_SIZE || videoHeight < MIN_SIZE) {
+        // expand box slightly
+        const expand = 20;
+        videoMinX = Math.max(0, videoMinX - expand);
+        videoMinY = Math.max(0, videoMinY - expand);
+        videoMaxX = Math.min(video.videoWidth, videoMaxX + expand);
+        videoMaxY = Math.min(video.videoHeight, videoMaxY + expand);
+        videoWidth = videoMaxX - videoMinX;
+        videoHeight = videoMaxY - videoMinY;
+      }
+
+      // Create original crop canvas
       const originalCanvas = document.createElement('canvas');
-      originalCanvas.width = width;
-      originalCanvas.height = height;
+      originalCanvas.width = videoWidth;
+      originalCanvas.height = videoHeight;
       const originalCtx = originalCanvas.getContext('2d');
-      originalCtx.drawImage(video, minX, minY, width, height, 0, 0, width, height);
+      originalCtx.drawImage(video, videoMinX, videoMinY, videoWidth, videoHeight, 0, 0, videoWidth, videoHeight);
 
-      const labels = [];
-      const confidenceThreshold = 0.95;
-      const totalSamples = 30;
+      // Augmentation & batching strategy:
+      // - generate multiple transforms (rotation, flip, brightness)
+      // - stack into a batch and run model.predict once for the batch
+      const totalSamples = 24; // number of augmented samples
+      const inputSize = 224;
+      const tensors = [];
 
-      for (let i = 0; i < totalSamples; i++) {
-        const processedCanvas = document.createElement('canvas');
-        processedCanvas.width = width;
-        processedCanvas.height = height;
-        const processedCtx = processedCanvas.getContext('2d');
+      try {
+        for (let i = 0; i < totalSamples; i++) {
+          const processedCanvas = document.createElement('canvas');
+          processedCanvas.width = videoWidth;
+          processedCanvas.height = videoHeight;
+          const pctx = processedCanvas.getContext('2d');
 
-        const rotationAngle = (Math.random() - 0.5) * 10 * Math.PI / 180;
-        
-        processedCtx.translate(width / 2, height / 2);
-        processedCtx.rotate(rotationAngle);
-        processedCtx.drawImage(originalCanvas, -width / 2, -height / 2, width, height);
-        
-        const resizedCanvas = document.createElement('canvas');
-        resizedCanvas.width = 224;
-        resizedCanvas.height = 224;
-        const resizedCtx = resizedCanvas.getContext('2d');
-        resizedCtx.drawImage(processedCanvas, 0, 0, 224, 224);
+          // random small rotation
+          const rotationAngle = (Math.random() - 0.5) * 14 * Math.PI / 180; // +/-7 deg
+          // brightness variation
+          const brightness = 1 + (Math.random() - 0.5) * 0.2; // 0.9 - 1.1
+          // occasionally flip
+          const doFlip = Math.random() < 0.5;
 
-        const resizedImageData = resizedCtx.getImageData(0, 0, 224, 224);
-        const tensor = tf.browser.fromPixels(resizedImageData).toFloat().div(tf.scalar(255)).expandDims();
+          pctx.save();
+          pctx.translate(videoWidth / 2, videoHeight / 2);
+          if (doFlip) pctx.scale(-1, 1);
+          pctx.rotate(rotationAngle);
+          pctx.filter = `brightness(${brightness})`;
+          pctx.drawImage(originalCanvas, -videoWidth / 2, -videoHeight / 2, videoWidth, videoHeight);
+          pctx.restore();
+          pctx.filter = 'none';
 
-        const predictions = await model.predict(tensor).array();
-        const scores = predictions ? predictions.flat() : [];
-        const topResultIndex = scores.indexOf(Math.max(...scores));
-        const topScore = scores[topResultIndex];
-        const topLabel = classLabels.length > 0 && topResultIndex >= 0 ? classLabels[topResultIndex] : null;
+          // Resize to model input
+          const resizedCanvas = document.createElement('canvas');
+          resizedCanvas.width = inputSize;
+          resizedCanvas.height = inputSize;
+          const rctx = resizedCanvas.getContext('2d');
+          // center-crop to square before resizing to preserve aspect ratio
+          const side = Math.min(videoWidth, videoHeight);
+          const sx = Math.floor((videoWidth - side) / 2);
+          const sy = Math.floor((videoHeight - side) / 2);
+          rctx.drawImage(processedCanvas, sx, sy, side, side, 0, 0, inputSize, inputSize);
 
-        if (topScore >= confidenceThreshold && topLabel) {
-          labels.push(topLabel);
-        }
-      }
-
-      function getMostFrequentLabel(arr) {
-        if (arr.length === 0) return null;
-        const counts = {};
-        let maxCount = 0;
-        let mostFrequent = null;
-        for (const label of arr) {
-          counts[label] = (counts[label] || 0) + 1;
-          if (counts[label] > maxCount) {
-            maxCount = counts[label];
-            mostFrequent = label;
-          }
-        }
-        return mostFrequent;
-      }
-
-      const finalLabel = getMostFrequentLabel(labels);
-      const finalCount = finalLabel ? labels.filter(l => l === finalLabel).length : 0;
-
-      if (identifiedObject) {
-        identifiedObject.parentNode.removeChild(identifiedObject);
-        identifiedObject = null;
-      }
-
-      const bubbleText = document.getElementById('bubbleText');
-
-      if (finalLabel) {
-        const labelData = labelInfo[finalLabel];
-        const template = `なまえ：${labelData.name}\n種類　：${labelData.category}\n説明　：${labelData.description}\n一致回数：${finalCount}/${totalSamples}回`;
-        
-        await new Promise(resolve => setTimeout(resolve, 200));
-        
-        const camera = document.querySelector('#mainCamera');
-        const bubble = document.getElementById('infoBubble');
-        const bubbleTextEl = document.getElementById('bubbleText');
-        
-        if (!camera || !camera.object3D) {
-          predictButton.disabled = false;
-          return;
-        }
-        
-        bubbleTextEl.setAttribute('value', template);
-        
-        const cameraWorldPosition = new THREE.Vector3();
-        camera.object3D.getWorldPosition(cameraWorldPosition);
-        
-        const infoBubblePosition = new THREE.Vector3(0, 0, -2);
-        infoBubblePosition.applyQuaternion(camera.object3D.quaternion);
-        infoBubblePosition.add(cameraWorldPosition);
-        
-        bubble.setAttribute('position', infoBubblePosition);
-        bubble.setAttribute('visible', true);
-
-        lastPrediction = {
-          label: finalLabel,
-          count: finalCount,
-          total: totalSamples
-        };
-        saveButton.disabled = false;
-
-        if (labelData.show3DObject) {
-          const targetPosition = new THREE.Vector3(0, 0, -1.5);
-          targetPosition.applyQuaternion(camera.object3D.quaternion);
-          targetPosition.add(camera.object3D.position);
-
-          const newObject = document.createElement('a-entity');
-          newObject.setAttribute('id', 'identifiedObject');
-          newObject.setAttribute('position', targetPosition.x + ' ' + targetPosition.y + ' ' + targetPosition.z);
-          newObject.setAttribute('scale', labelData.scale || '0.5 0.5 0.5');
-          if (labelData.model) {
-            newObject.setAttribute('gltf-model', `url(${labelData.model})`);
-          } else {
-            newObject.setAttribute('geometry', 'primitive: box');
-            newObject.setAttribute('material', 'color: #4CAF50');
-          }
-          scene.appendChild(newObject);
-          identifiedObject = newObject;
-
-          const objPos = identifiedObject.getAttribute('position');
-          const offset = labelData.arOffset || {
-            x: 0.3,
-            y: 0.5,
-            z: 0.1
-          };
-          bubble.setAttribute('position', {
-            x: objPos.x + offset.x,
-            y: objPos.y + offset.y,
-            z: objPos.z + offset.z
+          // Convert to tensor and normalize [0,1]
+          const imgTensor = tf.tidy(() => {
+            const t = tf.browser.fromPixels(resizedCanvas).toFloat().div(tf.scalar(255));
+            return t;
           });
+          tensors.push(imgTensor);
         }
-      } else {
-        const camera = document.querySelector('#mainCamera');
-        if (!camera || !camera.object3D) {
+
+        if (tensors.length === 0) {
           predictButton.disabled = false;
           return;
         }
-        
-        infoBubble.setAttribute('visible', true);
-        bubbleText.setAttribute('value', `分類できませんでした。`);
-        const cameraWorldPosition = new THREE.Vector3();
-        camera.object3D.getWorldPosition(cameraWorldPosition);
-        const infoBubblePosition = new THREE.Vector3(0, 0, -2);
-        infoBubblePosition.applyQuaternion(camera.object3D.quaternion);
-        infoBubblePosition.add(cameraWorldPosition);
-        infoBubble.setAttribute('position', infoBubblePosition);
-      }
 
-      ctx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
-      points = [];
-      predictButton.disabled = false;
+        // Run prediction on batch
+        const results = await tf.tidy(async () => {
+          const batch = tf.stack(tensors); // shape [N,224,224,3]
+          // If model expects different normalization (mean/std), apply here.
+          const logits = model.predict(batch);
+          // if logits is array / model with outputs as Tensor, handle accordingly
+          const probTensor = Array.isArray(logits) ? tf.softmax(logits[0]) : tf.softmax(logits);
+          // per-sample top idx
+          const perSampleTop = probTensor.argMax(1);
+          // average probabilities across samples
+          const meanProbs = probTensor.mean(0);
+          // return required tensors (we will .array() them outside tidy)
+          return {
+            meanProbs,
+            perSampleTop,
+            probTensor
+          };
+        });
+
+        // Extract arrays (these are plain arrays, tensors inside results were returned out of tidy so they are not disposed yet)
+        const meanProbsArr = await results.meanProbs.data(); // Float32Array length == numClasses
+        const perSampleTopArr = await results.perSampleTop.data(); // Int32Array length == totalSamples
+
+        // determine top label over mean probs
+        let topIndex = 0;
+        let topProb = meanProbsArr[0];
+        for (let i = 1; i < meanProbsArr.length; i++) {
+          if (meanProbsArr[i] > topProb) {
+            topProb = meanProbsArr[i];
+            topIndex = i;
+          }
+        }
+
+        // Count how many augmented samples had that label as top prediction
+        let topCount = 0;
+        for (let i = 0; i < perSampleTopArr.length; i++) {
+          if (perSampleTopArr[i] === topIndex) topCount++;
+        }
+
+        // Cleanup tensors we created
+        tensors.forEach(t => t.dispose());
+        // dispose result tensors (they are Tensors from tidy returned - need disposal)
+        if (results.meanProbs) results.meanProbs.dispose();
+        if (results.perSampleTop) results.perSampleTop.dispose();
+        if (results.probTensor) results.probTensor.dispose();
+
+        // Confidence thresholding using averaged probability
+        const confidenceThreshold = 0.65; // lowered because we use averaged probs over augmentations
+        const finalLabel = (topProb >= confidenceThreshold && classLabels[topIndex]) ? classLabels[topIndex] : null;
+
+        // Remove previous object if any
+        if (identifiedObject) {
+          identifiedObject.parentNode.removeChild(identifiedObject);
+          identifiedObject = null;
+        }
+
+        const bubbleText = document.getElementById('bubbleText');
+
+        if (finalLabel) {
+          const labelData = labelInfo[finalLabel];
+          const template = `なまえ：${labelData.name}\n種類　：${labelData.category}\n説明　：${labelData.description}\n一致回数：${topCount}/${totalSamples}回\n確信度：${(topProb*100).toFixed(1)}%`;
+          
+          await new Promise(resolve => setTimeout(resolve, 200));
+          
+          const camera = document.querySelector('#mainCamera');
+          const bubble = document.getElementById('infoBubble');
+          const bubbleTextEl = document.getElementById('bubbleText');
+          
+          if (!camera || !camera.object3D) {
+            predictButton.disabled = false;
+            return;
+          }
+          
+          bubbleTextEl.setAttribute('value', template);
+          
+          const cameraWorldPosition = new THREE.Vector3();
+          camera.object3D.getWorldPosition(cameraWorldPosition);
+          
+          const infoBubblePosition = new THREE.Vector3(0, 0, -2);
+          infoBubblePosition.applyQuaternion(camera.object3D.quaternion);
+          infoBubblePosition.add(cameraWorldPosition);
+          
+          bubble.setAttribute('position', infoBubblePosition);
+          bubble.setAttribute('visible', true);
+
+          lastPrediction = {
+            label: finalLabel,
+            count: topCount,
+            total: totalSamples
+          };
+          saveButton.disabled = false;
+
+          if (labelData.show3DObject) {
+            const targetPosition = new THREE.Vector3(0, 0, -1.5);
+            targetPosition.applyQuaternion(camera.object3D.quaternion);
+            targetPosition.add(camera.object3D.position);
+
+            const newObject = document.createElement('a-entity');
+            newObject.setAttribute('id', 'identifiedObject');
+            newObject.setAttribute('position', targetPosition.x + ' ' + targetPosition.y + ' ' + targetPosition.z);
+            newObject.setAttribute('scale', labelData.scale || '0.5 0.5 0.5');
+            if (labelData.model) {
+              newObject.setAttribute('gltf-model', `url(${labelData.model})`);
+            } else {
+              newObject.setAttribute('geometry', 'primitive: box');
+              newObject.setAttribute('material', 'color: #4CAF50');
+            }
+            scene.appendChild(newObject);
+            identifiedObject = newObject;
+
+            const objPos = identifiedObject.getAttribute('position');
+            const offset = labelData.arOffset || {
+              x: 0.3,
+              y: 0.5,
+              z: 0.1
+            };
+            bubble.setAttribute('position', {
+              x: objPos.x + offset.x,
+              y: objPos.y + offset.y,
+              z: objPos.z + offset.z
+            });
+          }
+        } else {
+          const camera = document.querySelector('#mainCamera');
+          if (!camera || !camera.object3D) {
+            predictButton.disabled = false;
+            return;
+          }
+          
+          infoBubble.setAttribute('visible', true);
+          bubbleText.setAttribute('value', `分類できませんでした。`);
+          const cameraWorldPosition = new THREE.Vector3();
+          camera.object3D.getWorldPosition(cameraWorldPosition);
+          const infoBubblePosition = new THREE.Vector3(0, 0, -2);
+          infoBubblePosition.applyQuaternion(camera.object3D.quaternion);
+          infoBubblePosition.add(cameraWorldPosition);
+          infoBubble.setAttribute('position', infoBubblePosition);
+        }
+
+      } catch (err) {
+        console.error('Prediction error:', err);
+        showNotification('分類中にエラーが発生しました', true);
+      } finally {
+        // clear drawing and restore UI
+        ctx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+        points = [];
+        predictButton.disabled = false;
+      }
     });
     
     saveButton.addEventListener('click', () => {
