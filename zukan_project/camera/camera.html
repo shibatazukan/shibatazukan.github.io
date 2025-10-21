@@ -54,6 +54,11 @@
       background-color: #d32f2f;
     }
 
+    #startButton:disabled, #rejectButton:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+
     #webcam {
       position: absolute;
       top: 0;
@@ -237,8 +242,8 @@
     <div id="initialContainer">
       <p>カメラへのアクセスを許可してください</p>
       <div style="display: flex; justify-content: center; gap: 10px;">
-        <button id="startButton" style="padding: 20px 40px; font-size: 20px; background-color: #4caf50; color: white; border: none; border-radius: 8px; cursor: pointer; margin-top: 20px;">開始</button>
-        <button id="rejectButton" style="padding: 20px 40px; font-size: 20px; background-color: #f44336; color: white; border: none; border-radius: 8px; cursor: pointer; margin-top: 20px;">キャンセル</button>
+        <button id="startButton">開始</button>
+        <button id="rejectButton">キャンセル</button>
       </div>
     </div>
   </div>
@@ -457,11 +462,9 @@
     }
 
     startButton.addEventListener('click', async () => {
-      if (!modelLoaded) {
-        await simulateModelLoading();
-      } else {
-        setupCamera();
-      }
+      startButton.disabled = true;
+      rejectButton.disabled = true;
+      await simulateModelLoading();
     });
 
     readyStartButton.addEventListener('click', () => {
@@ -469,7 +472,10 @@
     });
 
     rejectButton.addEventListener('click', () => {
-      console.log('User cancelled');
+      showNotification('キャンセルしました', false, true);
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
     });
 
     ctx.strokeStyle = '#007bff';
@@ -733,4 +739,9 @@
         }
         
         if (strategy.flip) {
-          const tempCanvas
+          const tempCanvas = document.createElement('canvas');
+          tempCanvas.width = width;
+          tempCanvas.height = height;
+          const tempCtx = tempCanvas.getContext('2d');
+          tempCtx.drawImage(processedCanvas, 0, 0);
+          processedCtx.clearRect(0, 0,
