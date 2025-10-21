@@ -581,50 +581,14 @@
       const minY = Math.min(...points.map(p => p.y));
       const maxX = Math.max(...points.map(p => p.x));
       const maxY = Math.max(...points.map(p => p.y));
-      
-      let width = maxX - minX;
-      let height = maxY - minY;
+      const width = maxX - minX;
+      const height = maxY - minY;
       
       if (width <= 0 || height <= 0) {
         showProgressIndicator(false);
         predictButton.disabled = false;
         return;
       }
-      
-      // パディング（描画領域の周辺を含める）
-      const padding = Math.max(width, height) * 0.1;
-      let startX = Math.max(0, minX - padding);
-      let startY = Math.max(0, minY - padding);
-      let endX = Math.min(drawingCanvas.width, maxX + padding);
-      let endY = Math.min(drawingCanvas.height, maxY + padding);
-      
-      width = endX - startX;
-      height = endY - startY;
-      
-      // アスペクト比を正方形に調整（224x224の要件に合わせ）
-      const maxDim = Math.max(width, height);
-      const squareSize = maxDim * 1.1;
-      
-      // 中心を基準に正方形にする
-      const centerX = (startX + endX) / 2;
-      const centerY = (startY + endY) / 2;
-      startX = Math.max(0, centerX - squareSize / 2);
-      startY = Math.max(0, centerY - squareSize / 2);
-      endX = Math.min(drawingCanvas.width, startX + squareSize);
-      endY = Math.min(drawingCanvas.height, startY + squareSize);
-      
-      // キャンバスからはみ出ないように調整
-      if (endX - startX > drawingCanvas.width) {
-        startX = 0;
-        endX = drawingCanvas.width;
-      }
-      if (endY - startY > drawingCanvas.height) {
-        startY = 0;
-        endY = drawingCanvas.height;
-      }
-      
-      width = endX - startX;
-      height = endY - startY;
 
       // 画像品質チェック
       const originalCanvas = document.createElement('canvas');
