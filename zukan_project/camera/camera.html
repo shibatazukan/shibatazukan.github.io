@@ -288,9 +288,7 @@
   <div id="startScreen" aria-live="polite">
     <div id="title">動植物識別AR</div>
     <div id="loadingMessage">読み込み中...しばらくお待ちください</div>
-    <div class="loader" aria-hidden="true"></div>
-
-    <div id="loadingList" role="status">
+    <div class="loader" id="loaderSpinner" aria-hidden="true"></div> <div id="loadingList" role="status">
       <div class="loading-item" id="item-tfjs">
         <div class="status" aria-hidden="true">…</div>
         <div>TensorFlow.js の読み込み</div>
@@ -382,7 +380,7 @@
         category: '昆虫',
         description: '大きなあごが\n特徴の昆虫。\n夏に活躍します。',
         show3DObject: false,
-        model: 'model/model.json'
+        model: 'model/json' // 実際にはgltfなどの3Dモデルファイルを指す
       }
     };
 
@@ -407,6 +405,7 @@
     const progressFill = document.querySelector('.progress-fill');
     const startScreen = document.getElementById('startScreen');
     const startButton = document.getElementById('startButton');
+    const loaderSpinner = document.getElementById('loaderSpinner');
 
     const itemTfjs = document.getElementById('item-tfjs');
     const itemAframe = document.getElementById('item-aframe');
@@ -417,9 +416,8 @@
     let identifiedObject = null;
     let lastPrediction = null;
 
-    // ImageNet標準化用の定数
-    const IMAGENET_MEAN = tf ? tf.tensor1d ? (typeof tf !== 'undefined' ? null : null) : null : null; // placeholder (will set after tf ready)
     // We'll reassign proper tensors after tf is ready
+    // 適切なTensorFlow定数は、initLoadingSequenceのtfReady後に設定されます
 
     function showNotification(message, isError = false, isWarning = false) {
       notificationMessage.textContent = message;
@@ -540,7 +538,7 @@
         markItemError(itemTfjs);
         document.getElementById('loadingMessage').textContent = 'TensorFlow.js の読み込みに失敗しました。';
         console.error(err);
-        return;
+        throw err; // タイムアウト処理に渡す
       }
 
       // After tf is ready, initialize ImageNet normalization constants
@@ -562,8 +560,7 @@
         markItemError(itemAframe);
         document.getElementById('loadingMessage').textContent = 'A-Frame の初期化に失敗しました。';
         console.error(err);
-        // We do not return here necessarily; but typically A-Frame failing is fatal.
-        return;
+        throw err; // タイムアウト処理に渡す
       }
 
       // Step3: Load model
@@ -578,20 +575,54 @@
         markItemError(itemModel);
         document.getElementById('loadingMessage').textContent = 'モデルの読み込みに失敗しました。';
         console.error('Model loading failed:', err);
-        return;
+        throw err; // タイムアウト処理に渡す
       }
 
       // All good: reveal start button and update UI
       document.getElementById('loadingMessage').textContent = '準備完了。開始ボタンを押してください。';
       startButton.style.display = 'inline-block';
       startButton.disabled = false;
+      // 🌟 ご要望の修正: ローディング完了時にスピナーを非表示にする
+      loaderSpinner.style.display = 'none';
     }
 
     // 実行開始（DOMContentLoaded）
     document.addEventListener('DOMContentLoaded', () => {
-      // Kick off loading monitor
-      initLoadingSequence().catch(err => {
+      
+      // 🌟 ご要望の追加: 15秒のタイムアウト設定 (15000ms)
+      const TIMEOUT_MS = 15000;
+
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => {
+          reject(new Error("Loading Timeout"));
+        }, TIMEOUT_MS);
+      });
+
+      // ロード処理とタイムアウトを競合させる
+      Promise.race([
+          initLoadingSequence(),
+          timeoutPromise
+      ]).catch(err => {
+        // タイムアウトまたはその他のエラーが発生した場合
         console.error('initLoadingSequence error:', err);
+        
+        // スピナーを停止
+        loaderSpinner.style.display = 'none';
+
+        // エラーメッセージの表示
+        const loadingMessage = document.getElementById('loadingMessage');
+        loadingMessage.textContent = '読み込みに失敗しました。ネットワークを確認して、ページを再読み込みしてください。';
+        
+        // 進行中のステータスがあればエラー表示に切り替え
+        const items = [itemTfjs, itemAframe, itemModel];
+        items.forEach(item => {
+            if (!item.classList.contains('done') && !item.classList.contains('error')) {
+                markItemError(item);
+            }
+        });
+        
+        // エラー時は開始ボタンを表示せず、失敗状態を明示
+        startButton.style.display = 'none';
       });
     });
 
@@ -621,6 +652,8 @@
       } catch (err) {
         showNotification("カメラへのアクセスを許可してください。", true);
         startScreen.style.display = 'flex';
+        // エラー時は startButton を再度有効化してリトライを促す（ただし、ブラウザの権限設定が必要）
+        startButton.disabled = false; 
       }
     }
 
@@ -681,7 +714,7 @@
       showProgressIndicator(false);
     });
 
-    // ---- 画像加工関数群（そのまま） ----
+    // ---- 画像加工関数群 ----
     function applyAdaptiveBrightnessAdjustment(ctx, canvas, factor) {
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       const data = imageData.data;
@@ -762,7 +795,9 @@
         { rotation: -5, brightness: 0.85, contrast: -15, saturation: 1.0, flip: false, translateX: -2, translateY: 0, zoom: 1.05 },
         { rotation: 2, brightness: 1.05, contrast: 5, saturation: 1.05, flip: false, translateX: 0, translateY: 2, zoom: 1.0 },
         { rotation: -2, brightness: 0.95, contrast: -5, saturation: 0.95, flip: false, translateX: 0, translateY: -2, zoom: 1.0 },
-        { rotation: 0, brightness: 1.2, contrast: 20, saturation: 0.8, flip: false, translateX: 0, translateY: 0, zoom: 1.0 }
+        { rotation: 0, brightness: 1.2, contrast: 20, saturation: 0.8, flip: false, translateX: 0, translateY: 0, zoom: 1.0 },
+        { rotation: -1, brightness: 1.0, contrast: 0, saturation: 1.2, flip: false, translateX: 1, translateY: -1, zoom: 1.02 },
+        { rotation: 1, brightness: 1.0, contrast: 0, saturation: 0.8, flip: true, translateX: -1, translateY: 1, zoom: 0.98 }
       ];
       
       return strategies[sampleIndex % strategies.length];
@@ -791,7 +826,7 @@
       };
     }
 
-    // ---- 予測処理（テンプレート不具合を修正） ----
+    // ---- 予測処理 ----
     predictButton.addEventListener('click', async () => {
       if (!model || points.length < 2) {
         if (!model) {
@@ -908,6 +943,7 @@
         // ImageNet標準化を適用
         const tensor = tf.tidy(() => {
           const pixelsTensor = tf.browser.fromPixels(resizedImageData).toFloat();
+          // window.IMAGENET_MEAN_TENSOR/IMAGENET_STD_TENSOR は initLoadingSequence で設定済み
           const mean = window.IMAGENET_MEAN_TENSOR || tf.tensor1d([123.68, 116.779, 103.939]);
           const std = window.IMAGENET_STD_TENSOR || tf.tensor1d([58.393, 57.12, 57.375]);
           return pixelsTensor.sub(mean).div(std).expandDims();
@@ -951,8 +987,8 @@
       
       predictions.forEach(p => {
         const weight = p.tier === 'high' ? 1.0 : 
-                      p.tier === 'medium' ? 0.7 : 
-                      p.tier === 'low' ? 0.4 : 0.1;
+                       p.tier === 'medium' ? 0.7 : 
+                       p.tier === 'low' ? 0.4 : 0.1;
         
         if (!weightedScores[p.label]) {
           weightedScores[p.label] = 0;
@@ -987,9 +1023,9 @@
       const bubbleText = document.getElementById('bubbleText');
       const rawConfidence = finalCount > 0 ? Math.round((finalCount / totalSamples) * 100) : 0;
       
-      console.log('Final Label:', finalLabel);
-      console.log('Final Count:', finalCount);
-      console.log('Raw Confidence:', rawConfidence);
+      // console.log('Final Label:', finalLabel);
+      // console.log('Final Count:', finalCount);
+      // console.log('Raw Confidence:', rawConfidence);
       
       if (finalLabel && rawConfidence >= 50) {
         const labelData = labelInfo[finalLabel];
@@ -997,8 +1033,8 @@
         const convertedConfidence = Math.round(((rawConfidence - 50) / 50) * 100);
         const template = `なまえ：${labelData.name}\n種類　：${labelData.category}\n説明　：${labelData.description}\n一致回数：${finalCount}/${totalSamples}回\n信頼度：${convertedConfidence}%`;
         
-        console.log('Converted Confidence:', convertedConfidence);
-        console.log('Template:', template);
+        // console.log('Converted Confidence:', convertedConfidence);
+        // console.log('Template:', template);
         
         await new Promise(resolve => setTimeout(resolve, 200));
         
@@ -1014,9 +1050,11 @@
         
         bubbleTextEl.setAttribute('value', template);
         
+        // カメラのワールド座標を取得
         const cameraWorldPosition = new THREE.Vector3();
         camera.object3D.getWorldPosition(cameraWorldPosition);
         
+        // カメラの前方2mの位置を計算
         const infoBubblePosition = new THREE.Vector3(0, 0, -2);
         infoBubblePosition.applyQuaternion(camera.object3D.quaternion);
         infoBubblePosition.add(cameraWorldPosition);
@@ -1032,6 +1070,7 @@
         };
         saveButton.disabled = false;
 
+        // 3Dオブジェクトを表示する場合の処理
         if (labelData.show3DObject) {
           const targetPosition = new THREE.Vector3(0, 0, -1.5);
           targetPosition.applyQuaternion(camera.object3D.quaternion);
@@ -1056,6 +1095,7 @@
             y: 0.5,
             z: 0.1
           };
+          // 3Dオブジェクトの上に情報バブルを再配置
           bubble.setAttribute('position', {
             x: objPos.x + offset.x,
             y: objPos.y + offset.y,
@@ -1079,12 +1119,13 @@
         infoBubble.setAttribute('position', infoBubblePosition);
       }
 
+      // 描画をクリアしてボタンをリセット
       ctx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
       points = [];
       predictButton.disabled = false;
     });
     
-    // ---- 保存処理（そのまま） ----
+    // ---- 保存処理 ----
     saveButton.addEventListener('click', () => {
       if (!lastPrediction) return;
       
@@ -1142,10 +1183,12 @@
         const bubblePos = new THREE.Vector3();
         infoBubble.object3D.getWorldPosition(bubblePos);
         const targetPos = new THREE.Vector3();
-        identifiedObject.object3D.getWorldPosition(targetPos);
+        // identifiedObjectが3Dオブジェクトではなく、情報バブルのターゲットになっている場合がある
+        // ここではidentifiedObject（3Dモデル）を指していると想定
+        identifiedObject.object3D.getWorldPosition(targetPos); 
 
         const dir = new THREE.Vector3().subVectors(targetPos, bubblePos);
-        dir.y = 0;
+        dir.y = 0; // Y軸回転のみで処理
         if (dir.length() < 0.001) {
           return;
         }
