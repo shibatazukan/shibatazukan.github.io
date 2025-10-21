@@ -10,7 +10,7 @@
   
   <style>
     /* ---------------------------------------------------------------------- */
-    /* CSS STYLE START */
+    /* CSS STYLE START (全スタイルを出力) */
     /* ---------------------------------------------------------------------- */
     body {
       margin: 0;
@@ -124,7 +124,7 @@
       width: 100vw;
       height: 100vh;
       object-fit: cover;
-      z-index: 0; /* A-Frameシーンより下に配置 */
+      z-index: 0; 
     }
 
     #drawingCanvas {
@@ -279,7 +279,7 @@
       left: 0;
       width: 100vw;
       height: 100vh;
-      z-index: 1; /* ビデオの上、キャンバスの下 */
+      z-index: 1; 
     }
 
     @media (max-width: 420px) {
@@ -335,32 +335,27 @@
 
     <a-scene embedded 
              vr-mode-ui="enabled: false" 
-             ar-mode="false"
              webgl-renderer="antialias: true; alpha: true; preserveDrawingBuffer: true"> 
       
+      <a-assets>
+        <a-asset-item id="notojpFont" src="fonts/MPLUSRounded1c-Black.ttf"></a-asset-item>
+      </a-assets>
+
       <a-entity id="cameraRig" position="0 0 0">
-        <a-entity id="mainCamera" camera look-controls position="0 1.6 0" wasd-controls="enabled: false">
-          <a-entity id="video-background" geometry="primitive: plane; width: 10000; height: 10000" 
-                    material="shader: flat; transparent: true; opacity: 0;" 
-                    position="0 0 0" visible="false"></a-entity>
-        </a-entity>
+        <a-entity id="mainCamera" camera look-controls position="0 1.6 0" wasd-controls="enabled: false" video-texture-injector></a-entity>
       </a-entity>
 
-    <a-assets>
-      <a-asset-item id="notojpFont" src="fonts/MPLUSRounded1c-Black.ttf"></a-asset-item>
-    </a-assets>
-
-    <a-entity id="infoBubble" visible="false" scale="0.8 0.8 0.8" face-camera-y tail-update>
-      <a-plane color="#8b5a2b" width="2.1" height="1.1" position="0 0 -0.005" material="shader: flat; opacity: 1"></a-plane>
-      <a-plane color="#34495e" width="2.0" height="1.0" position="0 0 0" material="shader: flat; opacity: 1"></a-plane>
-      <a-troika-text id="bubbleText" font="#notojpFont" value="ここに結果が表示されます" font-size="0.07" color="#FFFFFF" textAlign="center" position="0 0 0.01"></a-troika-text>
-      <a-box id="tailBlack" color="#000000" depth="0.05" height="0.05" width="0.15" position="0 -0.575 0" visible="true"></a-box>
-      <a-box id="tailWhite" color="#FFFFFF" depth="0.05" height="0.05" width="0.45" position="0 -0.525 0" visible="true"></a-box>
-    </a-entity>
+      <a-entity id="infoBubble" visible="false" scale="0.8 0.8 0.8" face-camera-y tail-update>
+        <a-plane color="#8b5a2b" width="2.1" height="1.1" position="0 0 -0.005" material="shader: flat; opacity: 1"></a-plane>
+        <a-plane color="#34495e" width="2.0" height="1.0" position="0 0 0" material="shader: flat; opacity: 1"></a-plane>
+        <a-troika-text id="bubbleText" font="#notojpFont" value="ここに結果が表示されます" font-size="0.07" color="#FFFFFF" textAlign="center" position="0 0 0.01"></a-troika-text>
+        <a-box id="tailBlack" color="#000000" depth="0.05" height="0.05" width="0.15" position="0 -0.575 0" visible="true"></a-box>
+        <a-box id="tailWhite" color="#FFFFFF" depth="0.05" height="0.05" width="0.45" position="0 -0.525 0" visible="true"></a-box>
+      </a-entity>
   </a-scene>
 
   <script>
-    // ---- 定数 / 変数 (変更なし) ----
+    // ---- 定数 / 変数 ----
     const modelPath = 'model/model.json'; 
     const classLabels = ['あやめ', 'さくら', 'とんぼ', 'カブトムシ', 'クワガタ'];
     const labelInfo = {
@@ -375,7 +370,8 @@
     let modelLoaded = false;
     let tfReady = false;
     let aframeReady = false;
-    let modelLoadFailed = false;
+
+    let isArSessionActive = false; // ARセッション状態管理フラグ
 
     const video = document.getElementById('webcam');
     const drawingCanvas = document.getElementById('drawingCanvas');
@@ -393,7 +389,6 @@
     const startScreen = document.getElementById('startScreen');
     const startButton = document.getElementById('startButton');
     const loaderSpinner = document.getElementById('loaderSpinner');
-    const videoBackground = document.getElementById('video-background'); 
 
     const itemTfjs = document.getElementById('item-tfjs');
     const itemAframe = document.getElementById('item-aframe');
@@ -403,7 +398,11 @@
     let points = [];
     let identifiedObject = null;
     let lastPrediction = null;
+    
+    let xrSession = null; 
+    let xrReferenceSpace = null;
 
+    // ---- ユーティリティ関数 ----
     function showNotification(message, isError = false, isWarning = false) {
       notificationMessage.textContent = message;
       notificationMessage.className = '';
@@ -437,64 +436,29 @@
     video.addEventListener('loadedmetadata', resizeCanvas);
 
 
-    // ---- ローディング管理 (変更なし) ----
-    function markItemDone(el) {
-      el.classList.remove('error');
-      el.classList.add('done');
-      const s = el.querySelector('.status');
-      if (s) s.textContent = '✓';
-    }
-
-    function markItemError(el) {
-      el.classList.remove('done');
-      el.classList.add('error');
-      const s = el.querySelector('.status');
-      if (s) s.textContent = '!';
-    }
+    // ---- ローディング管理 ----
+    function markItemDone(el) { el.classList.remove('error'); el.classList.add('done'); const s = el.querySelector('.status'); if (s) s.textContent = '✓'; }
+    function markItemError(el) { el.classList.remove('done'); el.classList.add('error'); const s = el.querySelector('.status'); if (s) s.textContent = '!'; }
 
     function waitForGlobal(name, timeout = 20000) {
       return new Promise((resolve, reject) => {
-        if (window[name]) {
-          resolve();
-          return;
-        }
-        const interval = 100;
-        let waited = 0;
+        if (window[name]) { resolve(); return; }
+        const interval = 100; let waited = 0;
         const id = setInterval(() => {
-          if (window[name]) {
-            clearInterval(id);
-            resolve();
-            return;
-          }
+          if (window[name]) { clearInterval(id); resolve(); return; }
           waited += interval;
-          if (waited >= timeout) {
-            clearInterval(id);
-            reject(new Error(`${name} の読み込みがタイムアウトしました`));
-          }
+          if (waited >= timeout) { clearInterval(id); reject(new Error(`${name} の読み込みがタイムアウトしました`)); }
         }, interval);
       });
     }
 
     function waitForSceneLoaded(timeout = 20000) {
       return new Promise((resolve, reject) => {
-        if (!scene) {
-          reject(new Error('a-scene が見つかりません'));
-          return;
-        }
-        if (scene.hasLoaded) {
-          resolve();
-          return;
-        }
-        const onLoad = () => {
-          scene.removeEventListener('loaded', onLoad);
-          resolve();
-        };
+        if (!scene) { reject(new Error('a-scene が見つかりません')); return; }
+        if (scene.hasLoaded) { resolve(); return; }
+        const onLoad = () => { scene.removeEventListener('loaded', onLoad); resolve(); };
         scene.addEventListener('loaded', onLoad);
-        // timeout safety
-        setTimeout(() => {
-          scene.removeEventListener('loaded', onLoad);
-          reject(new Error('a-scene の初期化がタイムアウトしました'));
-        }, timeout);
+        setTimeout(() => { scene.removeEventListener('loaded', onLoad); reject(new Error('a-scene の初期化がタイムアウトしました')); }, timeout);
       });
     }
 
@@ -512,127 +476,95 @@
       startButton.style.display = 'none';
       startButton.disabled = true;
 
-      // Step1: Wait for tf to be present
       try {
-        await waitForGlobal('tf', 20000);
-        tfReady = true;
-        markItemDone(itemTfjs);
-      } catch (err) {
-        tfReady = false;
-        markItemError(itemTfjs);
-        document.getElementById('loadingMessage').textContent = 'TensorFlow.js の読み込みに失敗しました。';
-        console.error(err);
-        throw err; 
-      }
-
-      try {
+        await waitForGlobal('tf', 20000); tfReady = true; markItemDone(itemTfjs);
         window.IMAGENET_MEAN_TENSOR = tf.tensor1d([123.68, 116.779, 103.939]);
         window.IMAGENET_STD_TENSOR = tf.tensor1d([58.393, 57.12, 57.375]);
-      } catch (e) {
-        console.error('ImageNet tensors creation failed:', e);
-      }
+      } catch (err) { tfReady = false; markItemError(itemTfjs); throw err; }
 
-      // Step2: Wait for A-Frame scene to be ready (assets loaded)
       try {
-        await waitForSceneLoaded(20000);
-        aframeReady = true;
-        markItemDone(itemAframe);
-      } catch (err) {
-        aframeReady = false;
-        markItemError(itemAframe);
-        document.getElementById('loadingMessage').textContent = 'A-Frame の初期化に失敗しました。';
-        console.error(err);
-        throw err; 
-      }
+        await waitForSceneLoaded(20000); aframeReady = true; markItemDone(itemAframe);
+      } catch (err) { aframeReady = false; markItemError(itemAframe); throw err; }
 
-      // Step3: Load model
       try {
         document.getElementById('loadingMessage').textContent = 'モデルを読み込んでいます...';
-        model = await loadModelWithTimeout(modelPath, 60000);
-        modelLoaded = true;
-        markItemDone(itemModel);
-      } catch (err) {
-        modelLoaded = false;
-        modelLoadFailed = true;
-        markItemError(itemModel);
-        document.getElementById('loadingMessage').textContent = 'モデルの読み込みに失敗しました。';
-        console.error('Model loading failed:', err);
-        throw err;
-      }
+        model = await loadModelWithTimeout(modelPath, 60000); modelLoaded = true; markItemDone(itemModel);
+      } catch (err) { modelLoaded = false; markItemError(itemModel); throw err; }
 
-      // All good: reveal start button and update UI
       document.getElementById('loadingMessage').textContent = '準備完了。開始ボタンを押してください。';
       startButton.style.display = 'inline-block';
       startButton.disabled = false;
       loaderSpinner.style.display = 'none';
     }
 
-    // 実行開始（DOMContentLoaded）
     document.addEventListener('DOMContentLoaded', () => {
-      
-      const TIMEOUT_MS = 15000;
-
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => {
-          reject(new Error("Loading Timeout"));
-        }, TIMEOUT_MS);
-      });
-
       Promise.race([
           initLoadingSequence(),
-          timeoutPromise
+          new Promise((_, reject) => setTimeout(() => reject(new Error("Loading Timeout")), 15000))
       ]).catch(err => {
         console.error('initLoadingSequence error:', err);
-        
         loaderSpinner.style.display = 'none';
-
-        const loadingMessage = document.getElementById('loadingMessage');
-        loadingMessage.textContent = '読み込みに失敗しました。ネットワークを確認して、ページを再読み込みしてください。';
-        
-        const items = [itemTfjs, itemAframe, itemModel];
-        items.forEach(item => {
-            if (!item.classList.contains('done') && !item.classList.contains('error')) {
-                markItemError(item);
-            }
-        });
-        
+        document.getElementById('loadingMessage').textContent = '読み込みに失敗しました。';
         startButton.style.display = 'none';
       });
     });
 
-    // ---- カメラ設定 ( 修正 ) ----
+    // ---- A-Frame コンポーネント (ビデオを背景に強制投影) ----
+    AFRAME.registerComponent('video-texture-injector', {
+        init: function() {
+            const el = this.el;
+            const videoEl = document.getElementById('webcam');
+            
+            // WebXRセッション開始前のビデオ投影
+            const handlePlaying = () => {
+                const geometry = new THREE.SphereGeometry(100, 32, 32); 
+                const material = new THREE.MeshBasicMaterial({ map: new THREE.VideoTexture(videoEl), side: THREE.BackSide, depthWrite: false });
+                const mesh = new THREE.Mesh(geometry, material);
+                mesh.name = "VideoBackgroundMesh";
+                el.object3D.add(mesh);
+            };
+
+            videoEl.addEventListener('playing', handlePlaying, { once: true });
+            
+            // WebXRセッション終了時のクリーンアップ
+            scene.addEventListener('exit-vr', () => {
+                const mesh = el.object3D.getObjectByName("VideoBackgroundMesh");
+                if (mesh) {
+                    el.object3D.remove(mesh);
+                    mesh.geometry.dispose();
+                    mesh.material.dispose();
+                }
+                isArSessionActive = false;
+                videoEl.style.display = 'block';
+                predictButton.textContent = '分類する';
+            });
+
+            // WebXRセッション開始時のクリーンアップ
+            scene.addEventListener('enter-vr', () => {
+                const mesh = el.object3D.getObjectByName("VideoBackgroundMesh");
+                if (mesh) {
+                    el.object3D.remove(mesh);
+                }
+                isArSessionActive = true;
+                videoEl.style.display = 'none';
+                predictButton.textContent = '判定を続ける';
+            });
+        }
+    });
+
     async function setupCamera() {
       try {
-        // ここでブラウザにカメラアクセス許可を求める 
         const stream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            facingMode: 'environment',
-            width: { ideal: 640 },
-            height: { ideal: 480 }
-          },
+          video: { facingMode: 'environment' },
           audio: false
         });
         video.srcObject = stream;
         
-        // カメラのロードが完了するまで待機（カメラ許可が完了した時点）
         await new Promise((resolve) => {
           video.addEventListener('loadedmetadata', resolve, { once: true });
         });
-
-        // 修正: カメラ映像をA-Frameの背景テクスチャとして手動で設定 
-        // これにより、A-FrameはARモードへ移行せずにビデオ映像を認識する。
-        if (scene) {
-            videoBackground.setAttribute('material', `shader: flat; src: #webcam; transparent: false; opacity: 1;`);
-            videoBackground.setAttribute('visible', true);
-            // Three.js のワールド座標で背景を調整（常にカメラの前に来るように）
-            videoBackground.object3D.position.set(0, 0, -0.1); 
-            videoBackground.object3D.scale.set(1000, 1000, 1);
-            
-            // ビデオ要素自体を非表示にする（A-Frameに描画を任せる）
-            video.style.display = 'none';
-        }
+        video.play();
         
-        // UIの切り替え
         startScreen.style.display = 'none';
         controlPanel.style.display = 'flex';
         drawingCanvas.style.pointerEvents = "auto";
@@ -649,7 +581,7 @@
       setupCamera();
     });
 
-    // ---- 描画 / タッチ処理 (変更なし) ----
+    // ---- 描画 / タッチ処理 (省略なし) ----
     ctx.strokeStyle = '#007bff';
     ctx.lineWidth = 5;
     ctx.lineCap = 'round';
@@ -660,10 +592,7 @@
       e.preventDefault();
       isDrawing = true;
       const t = e.touches[0];
-      points = [{
-        x: t.clientX,
-        y: t.clientY
-      }];
+      points = [{ x: t.clientX, y: t.clientY }];
       ctx.beginPath();
       ctx.moveTo(t.clientX, t.clientY);
     });
@@ -672,10 +601,7 @@
       if (!isDrawing || e.touches.length !== 1) return;
       e.preventDefault();
       const t = e.touches[0];
-      points.push({
-        x: t.clientX,
-        y: t.clientY
-      });
+      points.push({ x: t.clientX, y: t.clientY });
       ctx.lineTo(t.clientX, t.clientY);
       ctx.stroke();
       predictButton.disabled = false;
@@ -689,7 +615,7 @@
     clearButton.addEventListener('click', () => {
       ctx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
       points = [];
-      predictButton.disabled = true;
+      predictButton.disabled = isArSessionActive ? false : true; 
       saveButton.disabled = true;
       infoBubble.setAttribute('visible', false);
       if (identifiedObject) {
@@ -700,7 +626,7 @@
       showProgressIndicator(false);
     });
 
-    // ---- 画像加工関数群 (変更なし) ----
+    // ---- 画像加工関数群 (省略なし) ----
     function applyAdaptiveBrightnessAdjustment(ctx, canvas, factor) {
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       const data = imageData.data;
@@ -811,311 +737,294 @@
       };
     }
 
-    // ---- 予測処理 (修正) ----
+    // ---- WebXR ARセッション開始関数 (修正版) ----
+    async function startArSession() {
+        if (!navigator.xr) {
+            showNotification("この端末はWebXR (AR) をサポートしていません。", true);
+            return false;
+        }
+
+        try {
+            const supported = await navigator.xr.isSessionSupported('immersive-ar');
+            if (!supported) {
+                showNotification("Immersive ARセッションはサポートされていません。", true);
+                return false;
+            }
+
+            // 🌟 ここでImmersive Popが表示される（ユーザー操作がトリガー） 🌟
+            xrSession = await navigator.xr.requestSession('immersive-ar', {
+                requiredFeatures: ['local-floor'],
+                optionalFeatures: ['dom-overlay'],
+                domOverlay: { root: document.body }
+            });
+
+            // A-FrameのWebXRマネージャーにセッションを渡して、ARモードに移行させる
+            if (scene.components.webxr) {
+                // A-Frameの内部メソッドを使ってARセッションを確立
+                scene.components.webxr.session = xrSession;
+                scene.components.webxr.baseLayer = new THREE.XRWebGLLayer(xrSession, scene.renderer);
+                scene.enterVR(); // A-Frameを強制的にARモード（enter-vr）に移行させる
+                return true;
+            }
+            
+        } catch (e) {
+            console.error('AR session failed:', e);
+            showNotification("ARモードの開始に失敗しました。許可されなかった可能性があります。", true);
+            // 失敗しても、描画がされていれば予測は可能にする（ARオーバーレイなし）
+            return false;
+        }
+    }
+
+    // ---- 予測処理 (修正版) ----
     predictButton.addEventListener('click', async () => {
         
-      // 修正3: ARモードが有効化されていない場合、ここで enterAR() を呼び出す 
-      // これが「This immersive website...」のポップアップをトリガーする。
-      if (scene && !scene.is('ar-mode')) {
-          try {
-              // ARモードへの移行を試行
-              await scene.enterAR(); 
-              // ARモードに入れたら、A-Frameが背景のビデオストリームを処理するようになるので、
-              // 手動で設定したビデオ背景エンティティを非表示に戻す（保険）
-              videoBackground.setAttribute('visible', false);
-              video.style.display = 'none'; // WebXRがビデオを制御するため
-          } catch(e) {
-              console.warn("Failed to enter AR mode, proceeding without AR overlay.", e);
-              // 拒否された場合、手動のビデオ背景でARなしの識別を継続
-              showNotification("ARモードの許可が必要です。許可しない場合はARオーバーレイは表示されません。", false, true);
+        // 1. ARセッションがまだ開始されていなければ、ここで開始を試みる
+        if (!isArSessionActive) {
+            const success = await startArSession();
+            if (!success) {
+                // AR開始に失敗したが、予測は続けられる（オーバーレイなし）
+                showNotification("ARモードはオフです。識別は可能ですが、結果は画面に固定されます。", false, true);
+            }
+            // ARセッションが開始された場合、次のクリックで予測を実行させるため、一旦ここで処理を終える
+            if (isArSessionActive) {
+                predictButton.disabled = false; 
+                return;
+            }
+        }
+        
+        // 2. 描画チェック
+        if (!model || points.length < 2) {
+            if (!model) {
+              showNotification('モデルを読み込み中です。少しお待ちください...', false, true);
+            } else {
+              showNotification('まず画面に認識したい対象を囲んでください。', false, true);
+            }
+            predictButton.disabled = isArSessionActive ? false : true;
+            return;
+        }
+
+        predictButton.disabled = true;
+        saveButton.disabled = true;
+        showProgressIndicator(true);
+
+        const minX = Math.min(...points.map(p => p.x));
+        const minY = Math.min(...points.map(p => p.y));
+        const maxX = Math.max(...points.map(p => p.x));
+        const maxY = Math.max(...points.map(p => p.y));
+        const width = maxX - minX;
+        const height = maxY - minY;
+        
+        if (width <= 0 || height <= 0) {
+          showProgressIndicator(false);
+          predictButton.disabled = false;
+          return;
+        }
+
+        // 画像品質チェック用のベースキャンバス
+        const originalCanvas = document.createElement('canvas');
+        originalCanvas.width = width;
+        originalCanvas.height = height;
+        const originalCtx = originalCanvas.getContext('2d');
+        // ビデオ要素から描画をキャプチャ
+        originalCtx.drawImage(video, minX, minY, width, height, 0, 0, width, height);
+
+        const quality = evaluateImageQuality(originalCanvas);
+        
+        if (quality.brightness < 0.2) {
+            showNotification('もう少し明るい場所で試してください', false, true);
+        } else if (quality.brightness > 0.95) {
+            showNotification('逆光が強すぎます。角度を調整してください', false, true);
+        }
+
+        const predictions = [];
+        const highConfidenceThreshold = 0.98;
+        const mediumConfidenceThreshold = 0.90;
+        const lowConfidenceThreshold = 0.75;
+        const totalSamples = 50;
+
+        for (let i = 0; i < totalSamples; i++) {
+          updateProgress(i + 1, totalSamples);
+          
+          const processedCanvas = document.createElement('canvas');
+          processedCanvas.width = width;
+          processedCanvas.height = height;
+          const processedCtx = processedCanvas.getContext('2d');
+
+          const strategy = getAdvancedAugmentationStrategy(i);
+          
+          // データ拡張処理
+          if (strategy.rotation !== 0) {
+            const rotationAngle = strategy.rotation * Math.PI / 180;
+            processedCtx.translate(width / 2, height / 2);
+            processedCtx.rotate(rotationAngle);
+            processedCtx.drawImage(originalCanvas, -width / 2, -height / 2, width, height);
+            processedCtx.restore();
+          } else {
+            processedCtx.drawImage(originalCanvas, 0, 0);
           }
-      }
+          
+          if (strategy.flip) {
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = width; tempCanvas.height = height;
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCtx.drawImage(processedCanvas, 0, 0);
+            applyHorizontalFlip(processedCtx, processedCanvas, tempCtx);
+          }
+          
+          if (strategy.zoom !== 1.0) {
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = width; tempCanvas.height = height;
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCtx.drawImage(processedCanvas, 0, 0);
+            processedCtx.clearRect(0, 0, width, height);
+            applyZoom(processedCtx, processedCanvas, tempCanvas, strategy.zoom);
+          }
+          
+          if (strategy.translateX !== 0 || strategy.translateY !== 0) {
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = width; tempCanvas.height = height;
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCtx.drawImage(processedCanvas, 0, 0);
+            processedCtx.clearRect(0, 0, width, height);
+            applySmallTranslation(processedCtx, processedCanvas, tempCanvas, strategy.translateX, strategy.translateY);
+          }
+          
+          // リサイズと追加調整
+          const resizedCanvas = document.createElement('canvas');
+          resizedCanvas.width = 224;
+          resizedCanvas.height = 224;
+          const resizedCtx = resizedCanvas.getContext('2d');
+          resizedCtx.drawImage(processedCanvas, 0, 0, 224, 224);
 
-      if (!model || points.length < 2) {
-        if (!model) {
-          showNotification('モデルを読み込み中です。少しお待ちください...', false, true);
+          applyAdaptiveBrightnessAdjustment(resizedCtx, resizedCanvas, strategy.brightness);
+          applyContrastAdjustment(resizedCtx, resizedCanvas, strategy.contrast);
+          applySaturationAdjustment(resizedCtx, resizedCanvas, strategy.saturation);
+
+          const resizedImageData = resizedCtx.getImageData(0, 0, 224, 224);
+          
+          // ImageNet標準化と予測
+          const tensor = tf.tidy(() => {
+            const pixelsTensor = tf.browser.fromPixels(resizedImageData).toFloat();
+            const mean = window.IMAGENET_MEAN_TENSOR;
+            const std = window.IMAGENET_STD_TENSOR;
+            return pixelsTensor.sub(mean).div(std).expandDims();
+          });
+
+          let predictionArray;
+          try {
+            const out = model.predict(tensor);
+            predictionArray = await out.array().then(arr => arr.flat());
+          } catch (err) {
+            console.error('predict error:', err);
+            predictionArray = [];
+          }
+          tensor.dispose();
+          
+          const scores = predictionArray;
+          if (scores.length > 0) {
+            const topResultIndex = scores.indexOf(Math.max(...scores));
+            const topScore = scores[topResultIndex];
+            const topLabel = classLabels[topResultIndex];
+
+            predictions.push({
+              label: topLabel,
+              confidence: topScore,
+              tier: topScore >= highConfidenceThreshold ? 'high' : 
+                    topScore >= mediumConfidenceThreshold ? 'medium' : 
+                    topScore >= lowConfidenceThreshold ? 'low' : 'verylow'
+            });
+          }
         }
-        return;
-      }
 
-      predictButton.disabled = true;
-      saveButton.disabled = true;
-      showProgressIndicator(true);
-
-      const minX = Math.min(...points.map(p => p.x));
-      const minY = Math.min(...points.map(p => p.y));
-      const maxX = Math.max(...points.map(p => p.x));
-      const maxY = Math.max(...points.map(p => p.y));
-      const width = maxX - minX;
-      const height = maxY - minY;
-      
-      if (width <= 0 || height <= 0) {
-        showProgressIndicator(false);
-        predictButton.disabled = false;
-        return;
-      }
-
-      // 画像品質チェック
-      const originalCanvas = document.createElement('canvas');
-      originalCanvas.width = width;
-      originalCanvas.height = height;
-      const originalCtx = originalCanvas.getContext('2d');
-      // ここで判定のために再度ビデオ映像を使用する
-      originalCtx.drawImage(video.style.display === 'none' ? scene.components['webxr'].session : video, minX, minY, width, height, 0, 0, width, height);
-
-      const quality = evaluateImageQuality(originalCanvas);
-      
-      if (quality.brightness < 0.2) {
-        showNotification('もう少し明るい場所で試してください', false, true);
-      } else if (quality.brightness > 0.95) {
-        showNotification('逆光が強すぎます。角度を調整してください', false, true);
-      }
-
-      const predictions = [];
-      const highConfidenceThreshold = 0.98;
-      const mediumConfidenceThreshold = 0.90;
-      const lowConfidenceThreshold = 0.75;
-      const totalSamples = 50;
-
-      for (let i = 0; i < totalSamples; i++) {
-        updateProgress(i + 1, totalSamples);
+        // 加重平均スコアで結果を集計
+        const weightedScores = {};
+        const labelCounts = {};
         
-        const processedCanvas = document.createElement('canvas');
-        processedCanvas.width = width;
-        processedCanvas.height = height;
-        const processedCtx = processedCanvas.getContext('2d');
-
-        const strategy = getAdvancedAugmentationStrategy(i);
-        
-        // 回転を適用
-        if (strategy.rotation !== 0) {
-          const rotationAngle = strategy.rotation * Math.PI / 180;
-          processedCtx.translate(width / 2, height / 2);
-          processedCtx.rotate(rotationAngle);
-          processedCtx.drawImage(originalCanvas, -width / 2, -height / 2, width, height);
-          processedCtx.restore();
-        } else {
-          processedCtx.drawImage(originalCanvas, 0, 0);
-        }
-        
-        // 左右反転を適用
-        if (strategy.flip) {
-          const tempCanvas = document.createElement('canvas');
-          tempCanvas.width = width;
-          tempCanvas.height = height;
-          const tempCtx = tempCanvas.getContext('2d');
-          tempCtx.drawImage(processedCanvas, 0, 0);
-          applyHorizontalFlip(processedCtx, processedCanvas, tempCtx);
-        }
-        
-        // ズームを適用
-        if (strategy.zoom !== 1.0) {
-          const tempCanvas = document.createElement('canvas');
-          tempCanvas.width = width;
-          tempCanvas.height = height;
-          const tempCtx = tempCanvas.getContext('2d');
-          tempCtx.drawImage(processedCanvas, 0, 0);
-          processedCtx.clearRect(0, 0, width, height);
-          applyZoom(processedCtx, processedCanvas, tempCanvas, strategy.zoom);
-        }
-        
-        // 位置シフトを適用
-        if (strategy.translateX !== 0 || strategy.translateY !== 0) {
-          const tempCanvas = document.createElement('canvas');
-          tempCanvas.width = width;
-          tempCanvas.height = height;
-          const tempCtx = tempCanvas.getContext('2d');
-          tempCtx.drawImage(processedCanvas, 0, 0);
-          processedCtx.clearRect(0, 0, width, height);
-          applySmallTranslation(processedCtx, processedCanvas, tempCanvas, strategy.translateX, strategy.translateY);
-        }
-        
-        // リサイズ
-        const resizedCanvas = document.createElement('canvas');
-        resizedCanvas.width = 224;
-        resizedCanvas.height = 224;
-        const resizedCtx = resizedCanvas.getContext('2d');
-        resizedCtx.drawImage(processedCanvas, 0, 0, 224, 224);
-
-        // 高度な画像調整を適用
-        applyAdaptiveBrightnessAdjustment(resizedCtx, resizedCanvas, strategy.brightness);
-        applyContrastAdjustment(resizedCtx, resizedCanvas, strategy.contrast);
-        applySaturationAdjustment(resizedCtx, resizedCanvas, strategy.saturation);
-
-        const resizedImageData = resizedCtx.getImageData(0, 0, 224, 224);
-        
-        // ImageNet標準化を適用
-        const tensor = tf.tidy(() => {
-          const pixelsTensor = tf.browser.fromPixels(resizedImageData).toFloat();
-          // window.IMAGENET_MEAN_TENSOR/IMAGENET_STD_TENSOR は initLoadingSequence で設定済み
-          const mean = window.IMAGENET_MEAN_TENSOR || tf.tensor1d([123.68, 116.779, 103.939]);
-          const std = window.IMAGENET_STD_TENSOR || tf.tensor1d([58.393, 57.12, 57.375]);
-          return pixelsTensor.sub(mean).div(std).expandDims();
+        predictions.forEach(p => {
+          const weight = p.tier === 'high' ? 1.0 : p.tier === 'medium' ? 0.7 : p.tier === 'low' ? 0.4 : 0.1;
+          
+          if (!weightedScores[p.label]) {
+            weightedScores[p.label] = 0;
+            labelCounts[p.label] = 0;
+          }
+          weightedScores[p.label] += p.confidence * weight;
+          labelCounts[p.label]++;
         });
 
-        let predictionArray;
-        try {
-          const out = model.predict(tensor);
-          if (out.array) {
-            predictionArray = await out.array();
-          } else {
-            predictionArray = out;
+        let finalLabel = null;
+        let maxWeightedScore = 0;
+        let finalCount = 0;
+        
+        Object.keys(weightedScores).forEach(label => {
+          const avgWeightedScore = weightedScores[label] / labelCounts[label];
+          if (avgWeightedScore > maxWeightedScore) {
+            maxWeightedScore = avgWeightedScore;
+            finalLabel = label;
+            finalCount = labelCounts[label];
           }
-        } catch (err) {
-          console.error('predict error:', err);
-          tensor.dispose();
-          continue;
-        }
-        tensor.dispose();
-        
-        const scores = predictionArray ? predictionArray.flat() : [];
-        const topResultIndex = scores.indexOf(Math.max(...scores));
-        const topScore = scores[topResultIndex];
-        const topLabel = classLabels.length > 0 && topResultIndex >= 0 ? classLabels[topResultIndex] : null;
+        });
 
-        if (topLabel) {
-          predictions.push({
-            label: topLabel,
-            confidence: topScore,
-            tier: topScore >= highConfidenceThreshold ? 'high' : 
-                  topScore >= mediumConfidenceThreshold ? 'medium' : 
-                  topScore >= lowConfidenceThreshold ? 'low' : 'verylow'
-          });
-        }
-      }
+        showProgressIndicator(false);
 
-      // 加重平均スコアで結果を集計
-      const weightedScores = {};
-      const labelCounts = {};
-      
-      predictions.forEach(p => {
-        const weight = p.tier === 'high' ? 1.0 : 
-                       p.tier === 'medium' ? 0.7 : 
-                       p.tier === 'low' ? 0.4 : 0.1;
+        const bubbleText = document.getElementById('bubbleText');
+        const rawConfidence = finalCount > 0 ? Math.round((finalCount / totalSamples) * 100) : 0;
         
-        if (!weightedScores[p.label]) {
-          weightedScores[p.label] = 0;
-          labelCounts[p.label] = 0;
-        }
+        // --- 結果表示ロジック ---
         
-        weightedScores[p.label] += p.confidence * weight;
-        labelCounts[p.label]++;
-      });
+        if (finalLabel && rawConfidence >= 50) {
+          const labelData = labelInfo[finalLabel];
+          const convertedConfidence = Math.round(((rawConfidence - 50) / 50) * 100);
+          const template = `なまえ：${labelData.name}\n種類　：${labelData.category}\n説明　：${labelData.description}\n一致回数：${finalCount}/${totalSamples}回\n信頼度：${convertedConfidence}%`;
+          
+          await new Promise(resolve => setTimeout(resolve, 200));
+          
+          const camera = document.querySelector('#mainCamera');
+          const bubble = document.getElementById('infoBubble');
+          const bubbleTextEl = document.getElementById('bubbleText');
+          
+          if (!camera || !camera.object3D) { predictButton.disabled = false; return; }
+          
+          bubbleTextEl.setAttribute('value', template);
+          
+          const cameraWorldPosition = new THREE.Vector3();
+          camera.object3D.getWorldPosition(cameraWorldPosition);
+          const infoBubblePosition = new THREE.Vector3(0, 0, -2);
+          infoBubblePosition.applyQuaternion(camera.object3D.quaternion);
+          infoBubblePosition.add(cameraWorldPosition);
+          infoBubble.setAttribute('position', infoBubblePosition);
 
-      // 最終ラベルを決定
-      let finalLabel = null;
-      let maxWeightedScore = 0;
-      let finalCount = 0;
-      
-      Object.keys(weightedScores).forEach(label => {
-        const avgWeightedScore = weightedScores[label] / labelCounts[label];
-        if (avgWeightedScore > maxWeightedScore) {
-          maxWeightedScore = avgWeightedScore;
-          finalLabel = label;
-          finalCount = labelCounts[label];
-        }
-      });
+          bubble.setAttribute('visible', true);
 
-      showProgressIndicator(false);
-
-      if (identifiedObject) {
-        identifiedObject.parentNode.removeChild(identifiedObject);
-        identifiedObject = null;
-      }
-
-      const bubbleText = document.getElementById('bubbleText');
-      const rawConfidence = finalCount > 0 ? Math.round((finalCount / totalSamples) * 100) : 0;
-      
-      if (finalLabel && rawConfidence >= 50) {
-        const labelData = labelInfo[finalLabel];
-        const convertedConfidence = Math.round(((rawConfidence - 50) / 50) * 100);
-        const template = `なまえ：${labelData.name}\n種類　：${labelData.category}\n説明　：${labelData.description}\n一致回数：${finalCount}/${totalSamples}回\n信頼度：${convertedConfidence}%`;
-        
-        await new Promise(resolve => setTimeout(resolve, 200));
-        
-        const camera = document.querySelector('#mainCamera');
-        const bubble = document.getElementById('infoBubble');
-        const bubbleTextEl = document.getElementById('bubbleText');
-        
-        if (!camera || !camera.object3D) {
-          predictButton.disabled = false;
-          return;
-        }
-        
-        bubbleTextEl.setAttribute('value', template);
-        
-        const cameraWorldPosition = new THREE.Vector3();
-        camera.object3D.getWorldPosition(cameraWorldPosition);
-        
-        const infoBubblePosition = new THREE.Vector3(0, 0, -2);
-        infoBubblePosition.applyQuaternion(camera.object3D.quaternion);
-        infoBubblePosition.add(cameraWorldPosition);
-        
-        bubble.setAttribute('position', infoBubblePosition);
-        bubble.setAttribute('visible', true);
-
-        lastPrediction = {
-          label: finalLabel,
-          count: finalCount,
-          total: totalSamples,
-          confidence: rawConfidence
-        };
-        saveButton.disabled = false;
-
-        // ARモードの場合のみ3Dオブジェクトと追跡機能を使用
-        if (scene.is('ar-mode') && labelData.show3DObject) {
-          const targetPosition = new THREE.Vector3(0, 0, -1.5);
-          targetPosition.applyQuaternion(camera.object3D.quaternion);
-          targetPosition.add(camera.object3D.position);
-
-          const newObject = document.createElement('a-entity');
-          newObject.setAttribute('id', 'identifiedObject');
-          newObject.setAttribute('position', targetPosition.x + ' ' + targetPosition.y + ' ' + targetPosition.z);
-          newObject.setAttribute('scale', labelData.scale || '0.5 0.5 0.5');
-          if (labelData.model) {
-            newObject.setAttribute('gltf-model', `url(${labelData.model})`);
-          } else {
-            newObject.setAttribute('geometry', 'primitive: box');
-            newObject.setAttribute('material', 'color: #4CAF50');
-          }
-          scene.appendChild(newObject);
-          identifiedObject = newObject;
-
-          const objPos = identifiedObject.getAttribute('position');
-          const offset = labelData.arOffset || {
-            x: 0.3,
-            y: 0.5,
-            z: 0.1
+          lastPrediction = {
+            label: finalLabel,
+            count: finalCount,
+            total: totalSamples,
+            confidence: rawConfidence
           };
-          bubble.setAttribute('position', {
-            x: objPos.x + offset.x,
-            y: objPos.y + offset.y,
-            z: objPos.z + offset.z
-          });
-        }
-      } else {
-        const camera = document.querySelector('#mainCamera');
-        if (!camera || !camera.object3D) {
-          predictButton.disabled = false;
-          return;
-        }
-        
-        infoBubble.setAttribute('visible', true);
-        bubbleText.setAttribute('value', `分類できませんでした。\n別の角度から試してください。`);
-        const cameraWorldPosition = new THREE.Vector3();
-        camera.object3D.getWorldPosition(cameraWorldPosition);
-        const infoBubblePosition = new THREE.Vector3(0, 0, -2);
-        infoBubblePosition.applyQuaternion(camera.object3D.quaternion);
-        infoBubblePosition.add(cameraWorldPosition);
-        infoBubble.setAttribute('position', infoBubblePosition);
-      }
+          saveButton.disabled = false;
 
-      ctx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
-      points = [];
-      predictButton.disabled = false;
+        } else {
+          // 分類失敗
+          const camera = document.querySelector('#mainCamera');
+          if (!camera || !camera.object3D) { predictButton.disabled = false; return; }
+          
+          infoBubble.setAttribute('visible', true);
+          bubbleText.setAttribute('value', `分類できませんでした。\n別の角度から試してください。`);
+          
+          const cameraWorldPosition = new THREE.Vector3();
+          camera.object3D.getWorldPosition(cameraWorldPosition);
+          const infoBubblePosition = new THREE.Vector3(0, 0, -2);
+          infoBubblePosition.applyQuaternion(camera.object3D.quaternion);
+          infoBubblePosition.add(cameraWorldPosition);
+          infoBubble.setAttribute('position', infoBubblePosition);
+        }
+
+        ctx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+        points = [];
+        predictButton.disabled = false;
     });
     
-    // ---- 保存処理 (変更なし) ----
+    // ---- 保存処理 (省略なし) ----
     saveButton.addEventListener('click', () => {
       if (!lastPrediction) return;
       
@@ -1148,7 +1057,7 @@
       lastPrediction = null;
     });
 
-    // ---- AFRAME コンポーネント (変更なし) ----
+    // ---- AFRAME コンポーネント (省略なし) ----
     AFRAME.registerComponent('face-camera-y', {
       tick: function() {
         const camera = document.querySelector('#mainCamera');
@@ -1166,12 +1075,8 @@
 
     AFRAME.registerComponent('tail-update', {
       tick: function() {
-        if (!identifiedObject || !infoBubble.getAttribute('visible')) {
+        if (!isArSessionActive || !identifiedObject || !infoBubble.getAttribute('visible')) {
           return;
-        }
-        // ARモードでのみ正確な追跡を行う
-        if (!this.el.sceneEl.is('ar-mode')) {
-             return;
         }
 
         const bubblePos = new THREE.Vector3();
