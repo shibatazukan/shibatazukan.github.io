@@ -29,7 +29,7 @@
       font-family: sans-serif;
     }
 
-    #startButton {
+    #startButton, #rejectButton {
       padding: 20px 40px;
       font-size: 20px;
       background-color: #4caf50;
@@ -41,8 +41,17 @@
       margin-top: 20px;
     }
 
+    #rejectButton {
+      background-color: #f44336;
+      margin-left: 10px;
+    }
+
     #startButton:hover {
       background-color: #45a049;
+    }
+
+    #rejectButton:hover {
+      background-color: #d32f2f;
     }
 
     #webcam {
@@ -214,8 +223,24 @@
 <body>
   <div id="startScreen">
     <h2>動植物識別AR</h2>
-    <p>カメラへのアクセスを許可してください</p>
-    <button id="startButton">開始</button>
+    <div id="loadingContainer" style="display: none; text-align: center;">
+      <p>モデルを読み込み中...</p>
+      <div style="width: 200px; height: 20px; background: rgba(255, 255, 255, 0.3); border-radius: 10px; margin: 15px auto; overflow: hidden;">
+        <div id="loadingBar" style="height: 100%; background: #4caf50; width: 0%; transition: width 0.2s ease;"></div>
+      </div>
+      <p id="loadingPercent">0%</p>
+    </div>
+    <div id="readyContainer" style="display: none; text-align: center;">
+      <p>準備完了</p>
+      <button id="readyStartButton" style="padding: 20px 40px; font-size: 20px; background-color: #4caf50; color: white; border: none; border-radius: 8px; cursor: pointer; margin-top: 20px;">開始</button>
+    </div>
+    <div id="initialContainer">
+      <p>カメラへのアクセスを許可してください</p>
+      <div style="display: flex; justify-content: center; gap: 10px;">
+        <button id="startButton" style="padding: 20px 40px; font-size: 20px; background-color: #4caf50; color: white; border: none; border-radius: 8px; cursor: pointer; margin-top: 20px;">開始</button>
+        <button id="rejectButton" style="padding: 20px 40px; font-size: 20px; background-color: #f44336; color: white; border: none; border-radius: 8px; cursor: pointer; margin-top: 20px;">キャンセル</button>
+      </div>
+    </div>
   </div>
 
   <video id="webcam" autoplay playsinline muted></video>
@@ -236,10 +261,10 @@
 
   <div id="notificationMessage"></div>
 
-    <a-scene embedded vr-mode-ui="enabled:false" ar-mode="false">
-      <a-entity id="cameraRig" position="0 0 0">
-        <a-entity id="mainCamera" camera look-controls position="0 1.6 0"></a-entity>
-      </a-entity>
+  <a-scene embedded vr-mode-ui="enabled:false" ar-mode="false">
+    <a-entity id="cameraRig" position="0 0 0">
+      <a-entity id="mainCamera" camera look-controls position="0 1.6 0"></a-entity>
+    </a-entity>
 
     <a-assets>
       <a-asset-item id="notojpFont" src="fonts/MPLUSRounded1c-Black.ttf"></a-asset-item>
@@ -296,6 +321,8 @@
     };
 
     let model;
+    let modelLoaded = false;
+
     const video = document.getElementById('webcam');
     const drawingCanvas = document.getElementById('drawingCanvas');
     const ctx = drawingCanvas.getContext('2d');
@@ -311,13 +338,19 @@
     const progressFill = document.querySelector('.progress-fill');
     const startScreen = document.getElementById('startScreen');
     const startButton = document.getElementById('startButton');
+    const rejectButton = document.getElementById('rejectButton');
+    const readyStartButton = document.getElementById('readyStartButton');
+    const initialContainer = document.getElementById('initialContainer');
+    const loadingContainer = document.getElementById('loadingContainer');
+    const readyContainer = document.getElementById('readyContainer');
+    const loadingBar = document.getElementById('loadingBar');
+    const loadingPercent = document.getElementById('loadingPercent');
     
     let isDrawing = false;
     let points = [];
     let identifiedObject = null;
     let lastPrediction = null;
 
-    // ImageNet標準化用の定数
     const IMAGENET_MEAN = tf.tensor1d([123.68, 116.779, 103.939]);
     const IMAGENET_STD = tf.tensor1d([58.393, 57.12, 57.375]);
 
@@ -353,7 +386,39 @@
     window.addEventListener('resize', resizeCanvas);
     video.addEventListener('loadedmetadata', resizeCanvas);
 
-    let modelLoaded = false;
+    function simulateModelLoading() {
+      return new Promise((resolve) => {
+        let progress = 0;
+        initialContainer.style.display = 'none';
+        loadingContainer.style.display = 'block';
+        
+        const interval = setInterval(() => {
+          progress += Math.random() * 30;
+          if (progress > 90) progress = 90;
+          
+          loadingBar.style.width = progress + '%';
+          loadingPercent.textContent = Math.floor(progress) + '%';
+          
+          if (progress >= 90) {
+            clearInterval(interval);
+          }
+        }, 200);
+        
+        const checkModel = setInterval(() => {
+          if (modelLoaded) {
+            clearInterval(checkModel);
+            loadingBar.style.width = '100%';
+            loadingPercent.textContent = '100%';
+            setTimeout(() => {
+              loadingContainer.style.display = 'none';
+              readyContainer.style.display = 'block';
+              resolve();
+            }, 500);
+          }
+        }, 100);
+      });
+    }
+
     tf.loadLayersModel(modelPath)
       .then(m => {
         model = m;
@@ -391,12 +456,20 @@
       }
     }
 
-    startButton.addEventListener('click', () => {
+    startButton.addEventListener('click', async () => {
       if (!modelLoaded) {
-        showNotification('モデルを読み込み中です。少しお待ちください...', false, true);
-        return;
+        await simulateModelLoading();
+      } else {
+        setupCamera();
       }
+    });
+
+    readyStartButton.addEventListener('click', () => {
       setupCamera();
+    });
+
+    rejectButton.addEventListener('click', () => {
+      console.log('User cancelled');
     });
 
     ctx.strokeStyle = '#007bff';
@@ -449,13 +522,11 @@
       showProgressIndicator(false);
     });
 
-    // 高度な画像加工関数群
     function applyAdaptiveBrightnessAdjustment(ctx, canvas, factor) {
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       const data = imageData.data;
       
       for (let i = 0; i < data.length; i += 4) {
-        // ガンマ補正を適用（より自然な明度調整）
         const r = Math.pow(data[i] / 255, 1 / factor) * 255;
         const g = Math.pow(data[i + 1] / 255, 1 / factor) * 255;
         const b = Math.pow(data[i + 2] / 255, 1 / factor) * 255;
@@ -537,7 +608,6 @@
       return strategies[sampleIndex % strategies.length];
     }
 
-    // 画像品質評価関数
     function evaluateImageQuality(canvas) {
       const ctx = canvas.getContext('2d');
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -581,21 +651,52 @@
       const minY = Math.min(...points.map(p => p.y));
       const maxX = Math.max(...points.map(p => p.x));
       const maxY = Math.max(...points.map(p => p.y));
-      const width = maxX - minX;
-      const height = maxY - minY;
+      
+      let width = maxX - minX;
+      let height = maxY - minY;
       
       if (width <= 0 || height <= 0) {
         showProgressIndicator(false);
         predictButton.disabled = false;
         return;
       }
+      
+      const padding = Math.max(width, height) * 0.1;
+      let startX = Math.max(0, minX - padding);
+      let startY = Math.max(0, minY - padding);
+      let endX = Math.min(drawingCanvas.width, maxX + padding);
+      let endY = Math.min(drawingCanvas.height, maxY + padding);
+      
+      width = endX - startX;
+      height = endY - startY;
+      
+      const maxDim = Math.max(width, height);
+      const squareSize = maxDim * 1.1;
+      
+      const centerX = (startX + endX) / 2;
+      const centerY = (startY + endY) / 2;
+      startX = Math.max(0, centerX - squareSize / 2);
+      startY = Math.max(0, centerY - squareSize / 2);
+      endX = Math.min(drawingCanvas.width, startX + squareSize);
+      endY = Math.min(drawingCanvas.height, startY + squareSize);
+      
+      if (endX - startX > drawingCanvas.width) {
+        startX = 0;
+        endX = drawingCanvas.width;
+      }
+      if (endY - startY > drawingCanvas.height) {
+        startY = 0;
+        endY = drawingCanvas.height;
+      }
+      
+      width = endX - startX;
+      height = endY - startY;
 
-      // 画像品質チェック
       const originalCanvas = document.createElement('canvas');
       originalCanvas.width = width;
       originalCanvas.height = height;
       const originalCtx = originalCanvas.getContext('2d');
-      originalCtx.drawImage(video, minX, minY, width, height, 0, 0, width, height);
+      originalCtx.drawImage(video, startX, startY, width, height, 0, 0, width, height);
 
       const quality = evaluateImageQuality(originalCanvas);
       
@@ -619,11 +720,10 @@
         processedCanvas.height = height;
         const processedCtx = processedCanvas.getContext('2d');
 
-        const strategy = getAugmentationStrategy(i);
+        const strategy = getAdvancedAugmentationStrategy(i);
         
-        // 回転を適用
-        if (strategy.rotation) {
-          const rotationAngle = (Math.random() - 0.5) * 15 * Math.PI / 180;
+        if (strategy.rotation !== 0) {
+          const rotationAngle = strategy.rotation * Math.PI / 180;
           processedCtx.translate(width / 2, height / 2);
           processedCtx.rotate(rotationAngle);
           processedCtx.drawImage(originalCanvas, -width / 2, -height / 2, width, height);
@@ -632,265 +732,5 @@
           processedCtx.drawImage(originalCanvas, 0, 0);
         }
         
-        // 左右反転を適用
         if (strategy.flip) {
-          const tempCanvas = document.createElement('canvas');
-          tempCanvas.width = width;
-          tempCanvas.height = height;
-          const tempCtx = tempCanvas.getContext('2d');
-          tempCtx.drawImage(processedCanvas, 0, 0);
-          applyHorizontalFlip(processedCtx, processedCanvas, tempCanvas);
-        }
-        
-        // リサイズ
-        const resizedCanvas = document.createElement('canvas');
-        resizedCanvas.width = 224;
-        resizedCanvas.height = 224;
-        const resizedCtx = resizedCanvas.getContext('2d');
-        resizedCtx.drawImage(processedCanvas, 0, 0, 224, 224);
-
-        // 明度調整を適用
-        if (strategy.brightness !== 1.0) {
-          applyBrightnessAdjustment(resizedCtx, resizedCanvas, strategy.brightness);
-        }
-
-        const resizedImageData = resizedCtx.getImageData(0, 0, 224, 224);
-        
-        // ImageNet標準化を適用
-        const tensor = tf.tidy(() => {
-          const pixelsTensor = tf.browser.fromPixels(resizedImageData).toFloat();
-          return pixelsTensor.sub(IMAGENET_MEAN).div(IMAGENET_STD).expandDims();
-        });
-
-        const predictionArray = await model.predict(tensor).array();
-        tensor.dispose();
-        
-        const scores = predictionArray ? predictionArray.flat() : [];
-        const topResultIndex = scores.indexOf(Math.max(...scores));
-        const topScore = scores[topResultIndex];
-        const topLabel = classLabels.length > 0 && topResultIndex >= 0 ? classLabels[topResultIndex] : null;
-
-        if (topLabel) {
-          predictions.push({
-            label: topLabel,
-            confidence: topScore,
-            tier: topScore >= highConfidenceThreshold ? 'high' : 
-                  topScore >= mediumConfidenceThreshold ? 'medium' : 
-                  topScore >= lowConfidenceThreshold ? 'low' : 'verylow'
-          });
-        }
-      }
-
-      // 加重平均スコアで結果を集計
-      const weightedScores = {};
-      const labelCounts = {};
-      
-      predictions.forEach(p => {
-        const weight = p.tier === 'high' ? 1.0 : 
-                      p.tier === 'medium' ? 0.7 : 
-                      p.tier === 'low' ? 0.4 : 0.1;
-        
-        if (!weightedScores[p.label]) {
-          weightedScores[p.label] = 0;
-          labelCounts[p.label] = 0;
-        }
-        
-        weightedScores[p.label] += p.confidence * weight;
-        labelCounts[p.label]++;
-      });
-
-      // 最終ラベルを決定
-      let finalLabel = null;
-      let maxWeightedScore = 0;
-      let finalCount = 0;
-      
-      Object.keys(weightedScores).forEach(label => {
-        const avgWeightedScore = weightedScores[label] / labelCounts[label];
-        if (avgWeightedScore > maxWeightedScore) {
-          maxWeightedScore = avgWeightedScore;
-          finalLabel = label;
-          finalCount = labelCounts[label];
-        }
-      });
-
-      showProgressIndicator(false);
-
-      if (identifiedObject) {
-        identifiedObject.parentNode.removeChild(identifiedObject);
-        identifiedObject = null;
-      }
-
-      const bubbleText = document.getElementById('bubbleText');
-      const rawConfidence = finalCount > 0 ? Math.round((finalCount / totalSamples) * 100) : 0;
-      
-      console.log('Final Label:', finalLabel);
-      console.log('Final Count:', finalCount);
-      console.log('Raw Confidence:', rawConfidence);
-      
-      if (finalLabel && rawConfidence >= 50) {
-        const labelData = labelInfo[finalLabel];
-        // 50%以上の場合、50～100%を0～100%に変換
-        const convertedConfidence = Math.round(((rawConfidence - 50) / 50) * 100);
-        const template = `なまえ：${labelData.name}\n種類　：${labelData.category}\n説明　：${labelData.description}\n一致回数：${finalCount}/${totalSamples}回\n信頼度：${convertedConfidence}%`;
-        
-        console.log('Converted Confidence:', convertedConfidence);
-        console.log('Template:', template);
-        
-        await new Promise(resolve => setTimeout(resolve, 200));
-        
-        const camera = document.querySelector('#mainCamera');
-        const bubble = document.getElementById('infoBubble');
-        const bubbleTextEl = document.getElementById('bubbleText');
-        
-        if (!camera || !camera.object3D) {
-          console.error('Camera not found');
-          predictButton.disabled = false;
-          return;
-        }
-        
-        bubbleTextEl.setAttribute('value', template);
-        
-        const cameraWorldPosition = new THREE.Vector3();
-        camera.object3D.getWorldPosition(cameraWorldPosition);
-        
-        const infoBubblePosition = new THREE.Vector3(0, 0, -2);
-        infoBubblePosition.applyQuaternion(camera.object3D.quaternion);
-        infoBubblePosition.add(cameraWorldPosition);
-        
-        bubble.setAttribute('position', infoBubblePosition);
-        bubble.setAttribute('visible', true);
-
-        lastPrediction = {
-          label: finalLabel,
-          count: finalCount,
-          total: totalSamples,
-          confidence: rawConfidence
-        };
-        saveButton.disabled = false;
-
-        if (labelData.show3DObject) {
-          const targetPosition = new THREE.Vector3(0, 0, -1.5);
-          targetPosition.applyQuaternion(camera.object3D.quaternion);
-          targetPosition.add(camera.object3D.position);
-
-          const newObject = document.createElement('a-entity');
-          newObject.setAttribute('id', 'identifiedObject');
-          newObject.setAttribute('position', targetPosition.x + ' ' + targetPosition.y + ' ' + targetPosition.z);
-          newObject.setAttribute('scale', labelData.scale || '0.5 0.5 0.5');
-          if (labelData.model) {
-            newObject.setAttribute('gltf-model', `url(${labelData.model})`);
-          } else {
-            newObject.setAttribute('geometry', 'primitive: box');
-            newObject.setAttribute('material', 'color: #4CAF50');
-          }
-          scene.appendChild(newObject);
-          identifiedObject = newObject;
-
-          const objPos = identifiedObject.getAttribute('position');
-          const offset = labelData.arOffset || {
-            x: 0.3,
-            y: 0.5,
-            z: 0.1
-          };
-          bubble.setAttribute('position', {
-            x: objPos.x + offset.x,
-            y: objPos.y + offset.y,
-            z: objPos.z + offset.z
-          });
-        }
-      } else {
-        const camera = document.querySelector('#mainCamera');
-        if (!camera || !camera.object3D) {
-          predictButton.disabled = false;
-          return;
-        }
-        
-        infoBubble.setAttribute('visible', true);
-        bubbleText.setAttribute('value', `分類できませんでした。\n別の角度から試してください。`);
-        const cameraWorldPosition = new THREE.Vector3();
-        camera.object3D.getWorldPosition(cameraWorldPosition);
-        const infoBubblePosition = new THREE.Vector3(0, 0, -2);
-        infoBubblePosition.applyQuaternion(camera.object3D.quaternion);
-        infoBubblePosition.add(cameraWorldPosition);
-        infoBubble.setAttribute('position', infoBubblePosition);
-      }
-
-      ctx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
-      points = [];
-      predictButton.disabled = false;
-    });
-    
-    saveButton.addEventListener('click', () => {
-      if (!lastPrediction) return;
-      
-      const { label, count, total, confidence } = lastPrediction;
-      const now = new Date().toISOString();
-      const labelData = labelInfo[label];
-      const entry = {
-        name: labelData.name,
-        category: labelData.category,
-        description: labelData.description,
-        date: now,
-        matchCount: count,
-        totalSamples: total,
-        confidence: confidence
-      };
-
-      let zukan = JSON.parse(localStorage.getItem('myZukan') || '[]');
-      
-      const exists = zukan.some(item => item.name === entry.name);
-      
-      if (!exists) {
-        zukan.push(entry);
-        localStorage.setItem('myZukan', JSON.stringify(zukan));
-        showNotification('「' + labelData.name + '」をマイずかんに登録しました！');
-      } else {
-        showNotification('「' + labelData.name + '」はすでに登録済みです。', true);
-      }
-      
-      saveButton.disabled = true;
-      lastPrediction = null;
-    });
-
-    AFRAME.registerComponent('face-camera-y', {
-      tick: function() {
-        const camera = document.querySelector('#mainCamera');
-        const obj3D = this.el.object3D;
-        const cameraPos = new THREE.Vector3();
-        camera.object3D.getWorldPosition(cameraPos);
-        const objPos = new THREE.Vector3();
-        obj3D.getWorldPosition(objPos);
-        const dir = new THREE.Vector3().subVectors(cameraPos, objPos);
-        dir.y = 0;
-        dir.normalize();
-        obj3D.rotation.y = Math.atan2(dir.x, dir.z);
-      }
-    });
-
-    AFRAME.registerComponent('tail-update', {
-      tick: function() {
-        if (!identifiedObject || !infoBubble.getAttribute('visible')) {
-          return;
-        }
-
-        const bubblePos = new THREE.Vector3();
-        infoBubble.object3D.getWorldPosition(bubblePos);
-        const targetPos = new THREE.Vector3();
-        identifiedObject.object3D.getWorldPosition(targetPos);
-
-        const dir = new THREE.Vector3().subVectors(targetPos, bubblePos);
-        dir.y = 0;
-        if (dir.length() < 0.001) {
-          return;
-        }
-        dir.normalize();
-        const angle = Math.atan2(dir.x, dir.z) * (180 / Math.PI);
-        const tailBlack = infoBubble.querySelector('#tailBlack');
-        const tailWhite = infoBubble.querySelector('#tailWhite');
-        if (tailBlack) tailBlack.setAttribute('rotation', `0 ${angle} 0`);
-        if (tailWhite) tailWhite.setAttribute('rotation', `0 ${angle} 0`);
-      }
-    });
-  </script>
-</body>
-</html>
+          const tempCanvas
