@@ -641,7 +641,7 @@
         controlPanel.style.display = 'flex';
         drawingCanvas.style.pointerEvents = "auto";
         
-        // 🌟 修正2: A-FrameのVR/AR UIを有効にする処理はここから削除 🌟
+        // 修正2: A-FrameのVR/AR UIを有効にする処理はここから削除 
         // if (scene) {
         //      scene.setAttribute('vr-mode-ui', 'enabled: true'); 
         // }
@@ -824,7 +824,6 @@
     // ---- 予測処理 (修正3: ARモードの有効化をここに追加) ----
     predictButton.addEventListener('click', async () => {
         
-      // 🌟 修正3: ARモードが有効化されていない場合、ここで enterAR() を呼び出す 🌟
       // これが「This immersive website...」のポップアップをトリガーする。
       if (scene && !scene.is('ar-mode')) {
           // enterAR() は非同期であり、成功するとシーンがARモードに入る
