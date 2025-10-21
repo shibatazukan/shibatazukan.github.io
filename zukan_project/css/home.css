@@ -1,0 +1,221 @@
+html, body {
+    margin: 0; padding: 0;
+    font-family: 'Mochiy Pop One', sans-serif;
+    color: #fff;
+    width: 100vw; height: 100vh;
+    overflow: hidden;
+    background: transparent;
+}
+#background-clear, #background-blur {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    pointer-events: none;
+    user-select: none;
+    transition: background-image 1.5s cubic-bezier(.4,0,.2,1);
+}
+#background-clear { z-index: -2; }
+#background-blur {
+    z-index: -1;
+    filter: blur(4px);
+    opacity: 0;
+    transition: opacity 1.2s cubic-bezier(.4,0,.2,1), background-image 1.5s cubic-bezier(.4,0,.2,1);
+}
+.menu-toggle {
+    position: absolute;
+    top: 20px; left: 20px;
+    font-size: 1.8em;
+    color: white;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 10px 12px;
+    border-radius: 10px;
+    z-index: 1000;
+    cursor: pointer;
+    transition: background 0.3s, left 0.35s ease-in-out;
+}
+.menu-toggle:hover {
+    background: rgba(0, 0, 0, 0.6);
+}
+.side-menu {
+    position: fixed;
+    top: 0; left: -260px;
+    width: 260px; height: 100%;
+    background: rgba(20, 20, 20, 0.95);
+    box-shadow: 2px 0 10px rgba(0,0,0,0.5);
+    padding: 2em 1em 1em 1em;
+    box-sizing: border-box;
+    z-index: 999;
+    transition: left 0.35s ease-in-out;
+    display: flex;
+    flex-direction: column;
+    font-family: 'Mochiy Pop One', sans-serif !important;
+}
+.side-menu.open {
+    left: 0;
+}
+.side-menu.open ~ .menu-toggle {
+    left: 280px;
+}
+.side-menu .menu-title {
+    font-size: 1.2em;
+    font-weight: bold;
+    margin-bottom: 1.5em;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 0.6em;
+    margin-left: 0.2em;
+}
+.side-menu a, .side-menu .menu-item {
+    color: white;
+    text-decoration: none;
+    padding: 0.6em 0;
+    font-size: 0.92em;
+    display: flex;
+    align-items: center;
+    gap: 0.8em;
+    transition: background 0.25s;
+    border-radius: 6px;
+    cursor: pointer;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    font-family: 'Mochiy Pop One', sans-serif !important;
+}
+.side-menu a:hover, .side-menu .menu-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+.file-input {
+    display: none;
+}
+.menu-divider {
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    margin: 1em 0;
+}
+.overlay {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.7s cubic-bezier(.4,0,.2,1);
+    font-family: 'Mochiy Pop One', sans-serif;
+}
+.overlay.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+.title-block {
+    margin-bottom: 50px;
+    transform: translateY(-15px);
+}
+h1 {
+    font-family: 'Mochiy Pop One', sans-serif;
+    font-size: 5em;
+    font-weight: normal;
+    letter-spacing: 0.1em;
+    margin: 0.1em 0 0.2em 0;
+    color: #fff;
+    text-shadow:
+        -2px -2px 0 #000,
+        2px -2px 0 #000,
+        -2px 2px 0 #000,
+        2px 2px 0 #000;
+    user-select: none;
+    background: none;
+    -webkit-background-clip: none;
+    -webkit-text-fill-color: initial;
+    background-clip: none;
+}
+.subtitle {
+    font-family: 'Mochiy Pop One', sans-serif;
+    font-size: 1.7em;
+    color: #fff;
+    font-weight: 400;
+    margin-bottom: 1.5em;
+    line-height: 1.6;
+    user-select: none;
+    text-shadow:
+        -1px -1px 0 #000,
+        1px -1px 0 #000,
+        -1px 1px 0 #000,
+        1px 1px 0 #000;
+}
+.buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Mochiy Pop One', sans-serif;
+}
+.buttons .button-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6em;
+    padding: 0.8em 1.5em;
+    font-size: 1.2em;
+    font-weight: bold;
+    letter-spacing: 0.04em;
+    color: #fff;
+    background: linear-gradient(135deg, #FFA500, #FF7F50);
+    text-decoration: none;
+    border-radius: 18px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
+    transition: transform 0.3s, box-shadow 0.3s, background 0.3s;
+    min-width: 170px;
+    font-family: 'Mochiy Pop One', sans-serif;
+}
+.buttons .button-link i {
+    font-size: 1.35em;
+    width: 2.0em;
+    text-align: center;
+}
+.buttons .button-link:hover {
+    transform: translateY(-6px) scale(1.04);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
+    background: linear-gradient(135deg, #FFD580 30%, #FFB347 100%);
+}
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(0, 200, 0, 0.9);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 0.9em;
+    z-index: 1001;
+    opacity: 0;
+    transform: translateX(100%);
+    transition: all 0.3s ease;
+    font-family: 'Mochiy Pop One', sans-serif;
+}
+.notification.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+.notification.error {
+    background: rgba(200, 0, 0, 0.9);
+}
+@media (max-width: 800px) {
+    h1 { font-size: 2.7em; }
+    .subtitle { font-size: 1em; }
+    .button-link {
+        width: 63vw;
+        font-size: 1em;
+        padding: 0.9em 0.7em;
+    }
+}
+.recommend-badge {
+    color: #FFD700;
+    font-size: 0.95em;
+    margin-left: 0.5em;
+    font-family: 'Mochiy Pop One', sans-serif;
+}
