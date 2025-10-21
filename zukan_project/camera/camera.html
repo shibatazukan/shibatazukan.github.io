@@ -326,7 +326,7 @@
 
   <div id="notificationMessage"></div>
 
-    <a-scene embedded vr-mode-ui="enabled:false"> 
+    <a-scene embedded vr-mode-ui="enabled: false" ar-mode="false"> 
       <a-entity id="cameraRig" position="0 0 0">
         <a-entity id="mainCamera" camera look-controls position="0 1.6 0"></a-entity>
       </a-entity>
@@ -382,7 +382,7 @@
         category: '昆虫',
         description: '大きなあごが\n特徴の昆虫。\n夏に活躍します。',
         show3DObject: false,
-        model: 'model/json' // 実際にはgltfなどの3Dモデルファイルを指す
+        model: 'model/json' 
       }
     };
 
@@ -421,7 +421,6 @@
     // We'll reassign proper tensors after tf is ready
     // 適切なTensorFlow定数は、initLoadingSequenceのtfReady後に設定されます
     
-    // ... (utility functions like showNotification, updateProgress, resizeCanvas, etc. are unchanged) ...
     function showNotification(message, isError = false, isWarning = false) {
       notificationMessage.textContent = message;
       notificationMessage.className = '';
@@ -618,7 +617,7 @@
       });
     });
 
-    // ---- カメラ設定など既存処理 (修正箇所) ----
+    // ---- カメラ設定など既存処理 (修正2: AR/VR UIの有効化を削除) ----
     async function setupCamera() {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
@@ -631,7 +630,7 @@
         });
         video.srcObject = stream;
         
-        // 🌟 修正箇所: カメラのロードが完了するまで待機（最初の許可が完了した時点） 🌟
+        // カメラのロードが完了するまで待機（カメラ許可が完了した時点）
         await new Promise((resolve) => {
           video.addEventListener('loadedmetadata', resolve, { once: true });
         });
@@ -642,11 +641,10 @@
         controlPanel.style.display = 'flex';
         drawingCanvas.style.pointerEvents = "auto";
         
-        // 🌟 修正箇所: カメラ起動後にA-FrameのVR/AR UIを有効化し、フルスクリーン要求を準備させる 🌟
-        // これにより、ブラウザの「This immersive...」ポップアップが遅延する。
-        if (scene) {
-             scene.setAttribute('vr-mode-ui', 'enabled: true'); 
-        }
+        // 🌟 修正2: A-FrameのVR/AR UIを有効にする処理はここから削除 🌟
+        // if (scene) {
+        //      scene.setAttribute('vr-mode-ui', 'enabled: true'); 
+        // }
         
       } catch (err) {
         showNotification("カメラへのアクセスを許可してください。", true);
@@ -660,8 +658,7 @@
       setupCamera();
     });
 
-    // ... (残りの描画、予測、保存、AFRAMEコンポーネントのコードは省略 - 変更なし) ...
-    // ---- 描画 / タッチ処理 ----
+    // ---- 描画 / タッチ処理 (変更なし) ----
     ctx.strokeStyle = '#007bff';
     ctx.lineWidth = 5;
     ctx.lineCap = 'round';
@@ -712,7 +709,7 @@
       showProgressIndicator(false);
     });
 
-    // ---- 画像加工関数群 ----
+    // ---- 画像加工関数群 (変更なし) ----
     function applyAdaptiveBrightnessAdjustment(ctx, canvas, factor) {
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       const data = imageData.data;
@@ -824,8 +821,22 @@
       };
     }
 
-    // ---- 予測処理 ----
+    // ---- 予測処理 (修正3: ARモードの有効化をここに追加) ----
     predictButton.addEventListener('click', async () => {
+        
+      // 🌟 修正3: ARモードが有効化されていない場合、ここで enterAR() を呼び出す 🌟
+      // これが「This immersive website...」のポップアップをトリガーする。
+      if (scene && !scene.is('ar-mode')) {
+          // enterAR() は非同期であり、成功するとシーンがARモードに入る
+          // ARモードに入れない場合（ユーザーが拒否した場合など）は、そのまま処理を進める
+          try {
+              await scene.enterAR();
+          } catch(e) {
+              console.warn("Failed to enter AR mode, proceeding without AR overlay.", e);
+              showNotification("ARモードの許可が必要です。", false, true);
+          }
+      }
+
       if (!model || points.length < 2) {
         if (!model) {
           showNotification('モデルを読み込み中です。少しお待ちください...', false, true);
@@ -1109,7 +1120,7 @@
       predictButton.disabled = false;
     });
     
-    // ---- 保存処理 ----
+    // ---- 保存処理 (変更なし) ----
     saveButton.addEventListener('click', () => {
       if (!lastPrediction) return;
       
@@ -1142,7 +1153,7 @@
       lastPrediction = null;
     });
 
-    // ---- AFRAME コンポーネント ----
+    // ---- AFRAME コンポーネント (変更なし) ----
     AFRAME.registerComponent('face-camera-y', {
       tick: function() {
         const camera = document.querySelector('#mainCamera');
