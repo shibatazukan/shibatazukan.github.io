@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+  <title>マイずかん - カードビュー</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Mochiy Pop One', 'Hiragino Sans', 'Yu Gothic', sans-serif;
+      background: linear-gradient(135deg, #87CEEB 0%, #98D8E8 50%, #B6E5F0 100%);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ハンバーガーメニュー */
+    .menu-toggle {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      font-size: 1.8em;
+      color: white;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 10px 12px;
+      border-radius: 10px;
+      z-index: 1000;
+      cursor: pointer;
+      transition: background 0.3s, left 0.35s ease-in-out;
+    }
+    .menu-toggle:hover {
+      background: rgba(0, 0, 0, 0.6);
+    }
+
+    /* サイドメニュー */
+    .side-menu {
+      position: fixed;
+      top: 0;
+      left: -260px;
+      width: 260px;
+      height: 100%;
+      background: rgba(20, 20, 20, 0.95);
+      box-shadow: 2px 0 10px rgba(0,0,0,0.5);
+      padding: 2em 1em 1em 1em;
+      box-sizing: border-box;
+      z-index: 999;
+      transition: left 0.35s ease-in-out;
+      display: flex;
+      flex-direction: column;
+    }
+    .side-menu.open {
+      left: 0;
+    }
+    /* サイドメニューが開いたとき三本線を右へずらす */
+    .side-menu.open ~ .menu-toggle {
+      left: 280px; /* サイドメニュー幅260px + 余白20px */
+    }
+
+    .side-menu .menu-title {
+      font-size: 1.2em;
+      font-weight: bold;
+      margin-bottom: 1.5em;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 0.6em;
+      margin-left: 0.2em;
+    }
+
+    .side-menu a {
+      color: white;
+      text-decoration: none;
+      padding: 0.6em 0;
+      font-size: 1em;
+      display: flex;
+      align-items: center;
+      gap: 0.8em;
+      transition: background 0.25s;
+      border-radius: 6px;
+    }
+    .side-menu a:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    /* ヘッダー */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 15px 20px;
+      z-index: 100;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header h1 {
+      font-size: 24px;
+      color: #2c3e50;
+      font-weight: bold;
+    }
+
+    .view-toggle {
+      display: flex;
+      gap: 10px;
+    }
+
+    .toggle-btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 20px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-weight: bold;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .toggle-btn.active {
+      background: #3498db;
+      color: white;
+    }
+
+    .toggle-btn:not(.active) {
+      background: rgba(255, 255, 255, 0.7);
+      color: #2c3e50;
+    }
+
+    .toggle-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    /* メインコンテナ */
+    .main-container {
+      margin-top: 80px;
+      padding: 20px;
+      min-height: calc(100vh - 80px);
+    }
+
+    /* カードビュー */
+    .card-view {
+      position: relative;
+      width: 100%;
+      max-width: 400px;
+      margin: 0 auto;
+      height: 600px;
+    }
+
+    .card {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      padding: 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      cursor: grab;
+      overflow: hidden;
+    }
+
+    .card:active {
+      cursor: grabbing;
+    }
+
+    .card.swiping {
+      transition: none;
+    }
+
+    .card-title {
+      font-family: 'Mochiy Pop One', sans-serif;
+      font-size: 28px;
+      font-weight: bold;
+      color: #2c3e50;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    .rarity {
+      display: flex;
+      gap: 5px;
+      margin-bottom: 20px;
+    }
+
+    .star {
+      font-size: 24px;
+      color: #f39c12;
+    }
+
+    .star.empty {
+      color: #bdc3c7;
+    }
+
+    .card-image {
+      width: 200px;
+      height: 200px;
+      background: #f8f9fa;
+      border: 3px solid #34495e;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      color: #7f8c8d;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card-image::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 10px,
+        rgba(52, 73, 94, 0.1) 10px,
+        rgba(52, 73, 94, 0.1) 20px
+      );
+    }
+
+    .card-description {
+      background: rgba(236, 240, 241, 0.8);
+      padding: 15px;
+      border-radius: 10px;
+      font-family: 'Noto Sans JP', sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+      text-align: left;
+      width: 100%;
+      margin-top: auto;
+    }
+
+    .card-meta {
+      font-family: 'Noto Sans JP', sans-serif;
+      font-size: 12px;
+      color: #7f8c8d;
+      margin-top: 10px;
+      text-align: right;
+      width: 100%;
+    }
+
+    /* ナビゲーション */
+    .navigation {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 20px;
+      z-index: 50;
+    }
+
+    .nav-btn {
+      width: 60px;
+      height: 60px;
+      background: white;
+      border: none;
+      border-radius: 50%;
+      font-size: 24px;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .nav-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .nav-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .nav-btn:disabled:hover {
+      transform: none;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    /* カウンター */
+    .counter {
+      position: fixed;
+      bottom: 120px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255, 255, 255, 0.9);
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-weight: bold;
+      color: #2c3e50;
+      backdrop-filter: blur(10px);
+    }
+
+    /* 空の状態 */
+    .empty-state {
+      text-align: center;
+      padding: 80px 20px;
+      color: #7f8c8d;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .empty-state h2 {
+      font-family: 'Mochiy Pop One', sans-serif;
+      margin-bottom: 15px;
+      font-size: 28px;
+      color: #2c3e50;
+    }
+
+    .empty-state p {
+      font-family: 'Noto Sans JP', sans-serif;
+      font-size: 16px;
+      line-height: 1.6;
+    }
+
+    .back-to-scan {
+      margin-top: 30px;
+    }
+
+    .back-to-scan a {
+      font-family: 'Mochiy Pop One', sans-serif;
+      background: #3498db;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 25px;
+      text-decoration: none;
+      font-weight: bold;
+      transition: all 0.3s;
+    }
+
+    .back-to-scan a:hover {
+      background: #2980b9;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+    }
+
+    /* 雲の装飾 */
+    .cloud {
+      position: fixed;
+      background: rgba(255, 255, 255, 0.8);
+      border-radius: 50px;
+      opacity: 0.7;
+      animation: float 20s infinite linear;
+    }
+
+    .cloud::before,
+    .cloud::after {
+      content: '';
+      position: absolute;
+      background: rgba(255, 255, 255, 0.8);
+      border-radius: 50px;
+    }
+
+    .cloud1 {
+      width: 100px;
+      height: 40px;
+      top: 20%;
+      left: -100px;
+    }
+
+    .cloud1::before {
+      width: 50px;
+      height: 50px;
+      top: -25px;
+      left: 10px;
+    }
+
+    .cloud1::after {
+      width: 60px;
+      height: 40px;
+      top: -15px;
+      right: 10px;
+    }
+
+    .cloud2 {
+      width: 80px;
+      height: 30px;
+      top: 60%;
+      left: -80px;
+      animation-delay: -10s;
+    }
+
+    .cloud2::before {
+      width: 40px;
+      height: 40px;
+      top: -20px;
+      left: 15px;
+    }
+
+    .cloud2::after {
+      width: 50px;
+      height: 30px;
+      top: -10px;
+      right: 15px;
+    }
+
+    @keyframes float {
+      from {
+        transform: translateX(-100px);
+      }
+      to {
+        transform: translateX(calc(100vw + 100px));
+      }
+    }
+
+    /* レスポンシブ */
+    @media (max-width: 480px) {
+      .card-view {
+        max-width: 350px;
+        height: 550px;
+      }
+      
+      .card {
+        padding: 20px;
+      }
+      
+      .card-image {
+        width: 150px;
+        height: 150px;
+      }
+      
+      .header h1 {
+        font-size: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav class="side-menu" id="sideMenu">
+    <div class="menu-title"><i class="fa-solid fa-user"></i> ユーザー名</div>
+    <a href="../home/home.html"><i class="fa-solid fa-house"></i> ホーム</a>
+    <a href="list.html"><i class="fa-solid fa-scroll"></i> ずかん</a>
+    <a href="../camera/camera.html"><i class="fa-solid fa-camera"></i> カメラ</a>
+    <a href="../map/re.html"><i class="fa-solid fa-map"></i> マップ</a>
+    <a href="../home/settings.html"><i class="fa-solid fa-gear"></i> せってい</a>
+    <a href="../home/help.html"><i class="fa-solid fa-circle-question"></i> ヘルプ</a>
+  </nav>
+
+  <div class="menu-toggle" id="menuToggle">
+    <i class="fa-solid fa-bars"></i>
+  </div>
+
+  <div class="cloud cloud1"></div>
+  <div class="cloud cloud2"></div>
+
+  <div class="header">
+    <h1>マイずかん</h1>
+    <div class="view-toggle">
+      <a href="#" class="toggle-btn active">カード</a>
+      <a href="list.html" class="toggle-btn">一覧</a>
+    </div>
+  </div>
+
+  <div class="main-container">
+    <div class="card-view" id="cardView">
+      <div id="cardContainer"></div>
+    </div>
+
+   <div class="empty-state" id="emptyState" style="display: none;">
+      <div style="font-size: 64px; margin-bottom: 20px;">📖</div>
+      <h2>まだ登録されていません</h2>
+      <p>動植物識別ARアプリで生き物を発見して<br>あなただけのマイずかんを作りましょう！</p>
+      <div class="back-to-scan">
+        <a href="../camera/camera.html">みつけにいく</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="counter" id="counter" style="display: none;"></div>
+
+  <div class="navigation" id="navigation" style="display: none;">
+    <button class="nav-btn" id="prevBtn" onclick="prevCard()">←</button>
+    <button class="nav-btn" id="nextBtn" onclick="nextCard()">→</button>
+  </div>
+
+  <script>
+    let zukanData = [];
+    let currentIndex = 0;
+    let startX = 0;
+    let currentX = 0;
+    let isDragging = false;
+
+    // データ読み込み
+    function loadData() {
+      zukanData = JSON.parse(localStorage.getItem('myZukan')) || [];
+    }
+
+    // レア度を星で表示
+    function getRarityStars(name) {
+      const rarityMap = {
+        'オナガガモ': 3,
+        'キンクロハジロ': 3,
+        'コハクチョウ': 3
+      };
+      
+      const rarity = rarityMap[name] || 3;
+      let stars = '';
+      for (let i = 1; i <= 5; i++) {
+        stars += `<span class="star ${i <= rarity ? '' : 'empty'}">★</span>`;
+      }
+      return stars;
+    }
+
+    // カード作成
+    function createCard(entry, index) {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.style.zIndex = zukanData.length - index;
+      
+      const date = new Date(entry.date);
+      const dateStr = date.toLocaleDateString('ja-JP');
+      
+      card.innerHTML = `
+        <div class="card-title">${entry.name}</div>
+        <div class="rarity">${getRarityStars(entry.name)}</div>
+        <div class="card-image">
+          <div style="text-align: center; z-index: 1; position: relative;">
+            <div style="font-size: 48px; margin-bottom: 10px;">🔍</div>
+            <div>写真データなし</div>
+          </div>
+        </div>
+        <div class="card-description">
+          <div style="margin-bottom: 8px;"><strong>これは${entry.name}です。</strong></div>
+          <div style="margin-bottom: 8px;"><strong>種類:</strong> ${entry.category}</div>
+          <div style="margin-bottom: 8px;"><strong>特徴:</strong> ${entry.description}</div>
+          <div style="margin-bottom: 8px;"><strong>一致度:</strong> ${entry.matchCount || 0}/${entry.totalSamples || 30}回</div>
+        </div>
+        <div class="card-meta">発見日: ${dateStr}</div>
+      `;
+
+      // タッチイベント
+      card.addEventListener('touchstart', handleTouchStart, { passive: false });
+      card.addEventListener('touchmove', handleTouchMove, { passive: false });
+      card.addEventListener('touchend', handleTouchEnd);
+
+      // マウスイベント
+      card.addEventListener('mousedown', handleMouseDown);
+      card.addEventListener('mousemove', handleMouseMove);
+      card.addEventListener('mouseup', handleMouseUp);
+      card.addEventListener('mouseleave', handleMouseUp);
+
+      return card;
+    }
+
+    // タッチ/マウスイベント処理
+    function handleTouchStart(e) {
+      if (e.target.closest('.card') !== getTopCard()) return;
+      startX = e.touches[0].clientX;
+      isDragging = true;
+      e.target.closest('.card').classList.add('swiping');
+    }
+
+    function handleMouseDown(e) {
+      if (e.target.closest('.card') !== getTopCard()) return;
+      startX = e.clientX;
+      isDragging = true;
+      e.target.closest('.card').classList.add('swiping');
+      e.preventDefault();
+    }
+
+    function handleTouchMove(e) {
+      if (!isDragging || e.target.closest('.card') !== getTopCard()) return;
+      currentX = e.touches[0].clientX - startX;
+      updateCardPosition(e.target.closest('.card'), currentX);
+      e.preventDefault();
+    }
+
+    function handleMouseMove(e) {
+      if (!isDragging || e.target.closest('.card') !== getTopCard()) return;
+      currentX = e.clientX - startX;
+      updateCardPosition(e.target.closest('.card'), currentX);
+    }
+
+    function handleTouchEnd(e) {
+      handleEnd(e.target.closest('.card'));
+    }
+
+    function handleMouseUp(e) {
+      if (e.target.closest('.card')) {
+        handleEnd(e.target.closest('.card'));
+      }
+    }
+
+    function handleEnd(card) {
+      if (!isDragging || card !== getTopCard()) return;
+      isDragging = false;
+      card.classList.remove('swiping');
+
+      if (Math.abs(currentX) > 100) {
+        if (currentX > 0) {
+          prevCard();
+        } else {
+          nextCard();
+        }
+      } else {
+        card.style.transform = 'translateX(0)';
+      }
+      currentX = 0;
+    }
+
+    function updateCardPosition(card, x) {
+      card.style.transform = `translateX(${x}px) rotate(${x * 0.1}deg)`;
+    }
+
+    function getTopCard() {
+      const cards = document.querySelectorAll('.card');
+      return cards[cards.length - 1 - currentIndex];
+    }
+
+    // ナビゲーション
+    function nextCard() {
+      if (currentIndex < zukanData.length - 1) {
+        currentIndex++;
+        updateCardView();
+      }
+    }
+
+    function prevCard() {
+      if (currentIndex > 0) {
+        currentIndex--;
+        updateCardView();
+      }
+    }
+
+    function updateCardView() {
+      const cards = document.querySelectorAll('.card');
+      cards.forEach((card, index) => {
+        const cardIndex = zukanData.length - 1 - index;
+        if (cardIndex === currentIndex) {
+          card.style.transform = 'translateX(0) scale(1)';
+          card.style.opacity = '1';
+          card.style.zIndex = '10';
+        } else if (cardIndex < currentIndex) {
+          card.style.transform = 'translateX(-100%) scale(0.9)';
+          card.style.opacity = '0';
+          card.style.zIndex = '1';
+        } else {
+          card.style.transform = 'translateX(100%) scale(0.9)';
+          card.style.opacity = '0';
+          card.style.zIndex = '1';
+        }
+      });
+
+      // ボタン状態更新
+      document.getElementById('prevBtn').disabled = currentIndex === 0;
+      document.getElementById('nextBtn').disabled = currentIndex === zukanData.length - 1;
+      
+      // カウンター更新
+      document.getElementById('counter').textContent = `${currentIndex + 1} / ${zukanData.length}`;
+    }
+
+    // 初期化
+    function init() {
+      loadData();
+      
+      const container = document.getElementById('cardContainer');
+      container.innerHTML = '';
+
+      if (zukanData.length === 0) {
+        document.getElementById('emptyState').style.display = 'block';
+        document.getElementById('navigation').style.display = 'none';
+        document.getElementById('counter').style.display = 'none';
+        return;
+      }
+
+      document.getElementById('emptyState').style.display = 'none';
+      
+      zukanData.forEach((entry, index) => {
+        const card = createCard(entry, index);
+        container.appendChild(card);
+      });
+
+      currentIndex = zukanData.length - 1;
+      updateCardView();
+      document.getElementById('navigation').style.display = 'flex';
+      document.getElementById('counter').style.display = 'block';
+    }
+
+    // メニュー開閉機能
+    const menuToggle = document.getElementById('menuToggle');
+    const sideMenu = document.getElementById('sideMenu');
+    menuToggle.addEventListener('click', () => {
+      sideMenu.classList.toggle('open');
+    });
+
+    // ページ読み込み時に実行
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
