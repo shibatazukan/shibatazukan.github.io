@@ -236,10 +236,10 @@
 
   <div id="notificationMessage"></div>
 
-  <a-scene embedded vr-mode-ui="enabled:false" ar-mode="false">
-    <a-entity id="cameraRig" position="0 0 0">
-      <a-entity id="mainCamera" camera look-controls position="0 1.6 0"></a-entity>
-    </a-entity>
+    <a-scene embedded vr-mode-ui="enabled:false" ar-mode="false">
+      <a-entity id="cameraRig" position="0 0 0">
+        <a-entity id="mainCamera" camera look-controls position="0 1.6 0"></a-entity>
+      </a-entity>
 
     <a-assets>
       <a-asset-item id="notojpFont" src="fonts/MPLUSRounded1c-Black.ttf"></a-asset-item>
@@ -353,7 +353,17 @@
     window.addEventListener('resize', resizeCanvas);
     video.addEventListener('loadedmetadata', resizeCanvas);
 
-    tf.loadLayersModel(modelPath).then(m => model = m);
+    let modelLoaded = false;
+    tf.loadLayersModel(modelPath)
+      .then(m => {
+        model = m;
+        modelLoaded = true;
+        console.log('Model loaded successfully');
+      })
+      .catch(err => {
+        console.error('Model loading failed:', err);
+        showNotification('モデルの読み込みに失敗しました。ページを再読み込みしてください。', true);
+      });
 
     async function setupCamera() {
       try {
@@ -382,6 +392,10 @@
     }
 
     startButton.addEventListener('click', () => {
+      if (!modelLoaded) {
+        showNotification('モデルを読み込み中です。少しお待ちください...', false, true);
+        return;
+      }
       setupCamera();
     });
 
@@ -495,7 +509,17 @@
     }
 
     predictButton.addEventListener('click', async () => {
-      if (!model || points.length < 2) return;
+      if (!model || points.length < 2) {
+        if (!model) {
+          showNotification('モデルを読み込み中です。少しお待ちください...', false, true);
+        }
+        return;
+      }
+
+      if (!modelLoaded) {
+        showNotification('モデルの準備ができていません。少々お待ちください...', false, true);
+        return;
+      }
 
       predictButton.disabled = true;
       saveButton.disabled = true;
