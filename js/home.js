@@ -317,6 +317,7 @@ document.getElementById('fileInput').addEventListener('change', (e) => {
 // 【追加】ユーザー名表示部分にクリックイベントリスナーを設定
 // HTMLの構造上、親要素の .menu-title にイベントを設定します
 const menuTitle = document.querySelector('.menu-title');
+
 if (menuTitle) {
   menuTitle.addEventListener('click', (event) => {
     event.stopPropagation();  // メニュー開閉と干渉防止
