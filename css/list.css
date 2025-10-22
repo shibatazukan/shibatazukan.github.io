@@ -10,7 +10,7 @@ body {
   min-height: 100vh;
 }
 
-/* ハンバーガーメニュー */
+/* ハンバーガーメニュー（home.cssの構造を適用） */
 .menu-toggle {
   position: fixed;
   top: 20px;
@@ -44,6 +44,7 @@ body {
   transition: left 0.35s ease-in-out;
   display: flex;
   flex-direction: column;
+  font-family: 'Mochiy Pop One', sans-serif !important;
 }
 
 .side-menu.open {
@@ -53,7 +54,6 @@ body {
 /* サイドメニューが開いたとき三本線を右へずらす */
 .side-menu.open~.menu-toggle {
   left: 280px;
-  /* サイドメニュー幅260px + 余白20px */
 }
 
 .side-menu .menu-title {
@@ -65,22 +65,40 @@ body {
   align-items: center;
   gap: 0.6em;
   margin-left: 0.2em;
+  cursor: pointer;
 }
 
-.side-menu a {
+.side-menu a,
+.side-menu .menu-item {
   color: white;
   text-decoration: none;
   padding: 0.6em 0;
-  font-size: 1em;
+  font-size: 0.92em;
   display: flex;
   align-items: center;
   gap: 0.8em;
   transition: background 0.25s;
   border-radius: 6px;
+  cursor: pointer;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  font-family: 'Mochiy Pop One', sans-serif !important;
 }
 
-.side-menu a:hover {
+.side-menu a:hover,
+.side-menu .menu-item:hover {
   background: rgba(255, 255, 255, 0.1);
+}
+
+.file-input {
+  display: none;
+}
+
+.menu-divider {
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  margin: 1em 0;
 }
 
 /* ヘッダー */
@@ -362,6 +380,32 @@ input:focus {
   background: #2980b9;
   transform: translateY(-2px);
   box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+}
+
+/* 通知表示（home.cssから追加） */
+.notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: rgba(0, 200, 0, 0.9);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 0.9em;
+  z-index: 1001;
+  opacity: 0;
+  transform: translateX(100%);
+  transition: all 0.3s ease;
+  font-family: 'Mochiy Pop One', sans-serif;
+}
+
+.notification.show {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.notification.error {
+  background: rgba(200, 0, 0, 0.9);
 }
 
 /* 雲の装飾 */
