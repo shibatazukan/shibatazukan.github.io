@@ -14,8 +14,12 @@
 </head>
 
 <body>
+  <!-- ハンバーガーメニュー -->
   <nav class="side-menu" id="sideMenu">
-    <div class="menu-title"><i class="fa-solid fa-user"></i> ユーザー名</div>
+    <div class="menu-title">
+      <i class="fa-solid fa-user"></i>
+      <span id="userNameDisplay">ユーザー名</span>
+    </div>
     <a href="../home/home.html"><i class="fa-solid fa-house"></i> ホーム</a>
     <a href="list.html"><i class="fa-solid fa-scroll"></i> ずかん</a>
     <a href="../camera/camera.html"><i class="fa-solid fa-camera"></i> カメラ</a>
@@ -27,6 +31,9 @@
   <div class="menu-toggle" id="menuToggle">
     <i class="fa-solid fa-bars"></i>
   </div>
+
+  <!-- 通知エリア -->
+  <div id="notification" class="notification"></div>
 
   <div class="cloud cloud1"></div>
   <div class="cloud cloud2"></div>
