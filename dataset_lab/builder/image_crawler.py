@@ -8,115 +8,154 @@ from urllib.parse import quote, urljoin
 import hashlib
 import json
 import re
-from bs4 import BeautifulSoup
 
 class BingImageCrawler:
     def __init__(self):
         self.headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-            'Accept-Language': 'ja,en-US;q=0.7,en;q=0.3',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+            'Accept-Language': 'ja,en-US;q=0.9,en;q=0.8',
             'Accept-Encoding': 'gzip, deflate, br',
-            'DNT': '1',
             'Connection': 'keep-alive',
-            'Upgrade-Insecure-Requests': '1'
+            'Upgrade-Insecure-Requests': '1',
+            'Sec-Fetch-Dest': 'document',
+            'Sec-Fetch-Mode': 'navigate',
+            'Sec-Fetch-Site': 'none',
+            'Cache-Control': 'max-age=0'
         }
         self.session = requests.Session()
         self.session.headers.update(self.headers)
     
     def search_bing_images(self, keyword, max_images=10):
-        """Bing画像検索から画像URLを取得"""
+        """Bing画像検索から画像URLを取得（改善版）"""
         print(f"Bingで '{keyword}' を検索中...")
         
         image_urls = []
-        count = 0
         
         try:
-            # Bing画像検索のURL
-            search_url = f"https://www.bing.com/images/search?q={quote(keyword)}&form=HDRSC2&first=1&tsc=ImageBasicHover"
+            # Bing画像検索のURL（シンプル版）
+            search_url = f"https://www.bing.com/images/search?q={quote(keyword)}&first=1"
             
+            print(f"  アクセス中: {search_url}")
+            
+            # gzip圧縮を明示的に処理
             response = self.session.get(search_url, timeout=15)
             response.raise_for_status()
             
-            soup = BeautifulSoup(response.text, 'html.parser')
+            # レスポンスが正しくデコードされているか確認
+            content = response.text
             
-            # 方法1: m属性からJSONを抽出
-            img_tags = soup.find_all('a', {'class': 'iusc'})
+            # デバッグ: レスポンスの一部を確認
+            print(f"  レスポンスサイズ: {len(content)} 文字")
             
-            for img_tag in img_tags:
-                if count >= max_images:
-                    break
-                
-                m_attr = img_tag.get('m')
-                if m_attr:
-                    try:
-                        m_json = json.loads(m_attr)
-                        img_url = m_json.get('murl') or m_json.get('turl')
-                        
-                        if img_url and img_url not in image_urls:
-                            image_urls.append(img_url)
-                            count += 1
-                            print(f"  [{count}/{max_images}] 画像URLを取得")
-                    except json.JSONDecodeError:
-                        continue
+            # HTMLが正しく取得できているかチェック
+            if not content or len(content) < 1000 or '<html' not in content.lower():
+                print(f"  ⚠ 警告: HTMLが正しく取得できませんでした")
+                # デバッグ情報
+                print(f"  Content-Encoding: {response.headers.get('Content-Encoding', 'なし')}")
+                print(f"  Content-Type: {response.headers.get('Content-Type', 'なし')}")
+                return []
             
-            # 方法2: imgタグから直接取得（バックアップ）
-            if len(image_urls) < max_images:
-                img_tags2 = soup.find_all('img', {'class': 'mimg'})
-                for img in img_tags2:
-                    if count >= max_images:
-                        break
+            # 正規表現で画像URLを抽出
+            # 方法1: murl (高解像度画像URL)
+            pattern1 = r'"murl":"(https?://[^"]+)"'
+            matches1 = re.findall(pattern1, content)
+            
+            # 方法2: turl (サムネイル画像URL)
+            pattern2 = r'"turl":"(https?://[^"]+)"'
+            matches2 = re.findall(pattern2, content)
+            
+            # 方法3: imgurl
+            pattern3 = r'"imgurl":"(https?://[^"]+)"'
+            matches3 = re.findall(pattern3, content)
+            
+            # 方法4: mediaurl
+            pattern4 = r'"mediaurl":"(https?://[^"]+)"'
+            matches4 = re.findall(pattern4, content)
+            
+            # すべてのURLを結合（優先順位: murl > mediaurl > imgurl > turl）
+            all_urls = matches1 + matches4 + matches3 + matches2
+            
+            print(f"  検出された画像URL候補数: {len(all_urls)}")
+            
+            # 重複を除去して追加
+            seen = set()
+            for url in all_urls:
+                if url not in seen and url.startswith('http'):
+                    # エスケープ文字をデコード
+                    url = url.replace('\\u002f', '/').replace('\\/', '/').replace('\\u003d', '=').replace('\\u0026', '&')
                     
-                    img_url = img.get('src') or img.get('data-src')
-                    if img_url and img_url.startswith('http') and img_url not in image_urls:
-                        image_urls.append(img_url)
-                        count += 1
-                        print(f"  [{count}/{max_images}] 画像URLを取得")
+                    # 有効な画像URLかチェック
+                    if any(ext in url.lower() for ext in ['.jpg', '.jpeg', '.png', '.gif', '.webp']) or 'image' in url.lower():
+                        seen.add(url)
+                        image_urls.append(url)
+                        print(f"  [{len(image_urls)}/{max_images}] 画像URLを取得")
+                        
+                        if len(image_urls) >= max_images:
+                            break
+            
+            # まだ足りない場合は、より広範囲に検索
+            if len(image_urls) < max_images:
+                print(f"  追加検索中...")
+                pattern_general = r'(https?://[^"\s\\]+\.(?:jpg|jpeg|png|gif|webp)(?:\?[^"\s\\]*)?)'
+                matches_general = re.findall(pattern_general, content, re.IGNORECASE)
+                
+                for url in matches_general:
+                    url_clean = url.replace('\\/', '/').replace('\\u002f', '/')
+                    if url_clean not in seen and len(image_urls) < max_images:
+                        seen.add(url_clean)
+                        image_urls.append(url_clean)
+                        print(f"  [{len(image_urls)}/{max_images}] 画像URLを取得")
+            
+            if len(image_urls) == 0:
+                print(f"  ⚠ デバッグ: レスポンスの最初の500文字:")
+                print(f"  {content[:500]}")
             
             print(f"✓ {len(image_urls)} 件の画像URLを取得しました")
             return image_urls[:max_images]
             
         except Exception as e:
             print(f"✗ 検索エラー: {e}")
+            import traceback
+            traceback.print_exc()
             return []
     
     def download_image(self, url, save_path, timeout=15):
         """画像をダウンロード"""
         try:
+            # URLをクリーンアップ
+            url = url.replace('\\u002f', '/').replace('\\/', '/')
+            
             response = self.session.get(url, timeout=timeout, stream=True)
             response.raise_for_status()
-            
-            # Content-Typeから拡張子を判定
-            content_type = response.headers.get('content-type', '')
             
             with open(save_path, 'wb') as f:
                 for chunk in response.iter_content(chunk_size=8192):
                     f.write(chunk)
             
             # ファイルサイズチェック（小さすぎる画像は削除）
-            if os.path.getsize(save_path) < 1024:  # 1KB未満
+            file_size = os.path.getsize(save_path)
+            if file_size < 1024:  # 1KB未満
                 os.remove(save_path)
                 return False
             
             return True
             
         except Exception as e:
-            print(f"  ✗ ダウンロード失敗: {e}")
             if os.path.exists(save_path):
                 os.remove(save_path)
             return False
     
-    def get_file_extension(self, url, content_type=''):
-        """URLとContent-Typeから適切な拡張子を取得"""
-        # URLから拡張子を抽出
+    def get_file_extension(self, url):
+        """URLから適切な拡張子を取得"""
         url_lower = url.lower()
-        if '.jpg' in url_lower or '.jpeg' in url_lower or 'jpeg' in content_type:
+        if '.jpg' in url_lower or '.jpeg' in url_lower:
             return 'jpg'
-        elif '.png' in url_lower or 'png' in content_type:
+        elif '.png' in url_lower:
             return 'png'
-        elif '.gif' in url_lower or 'gif' in content_type:
+        elif '.gif' in url_lower:
             return 'gif'
-        elif '.webp' in url_lower or 'webp' in content_type:
+        elif '.webp' in url_lower:
             return 'webp'
         else:
             return 'jpg'  # デフォルト
@@ -144,6 +183,7 @@ class BingImageCrawler:
             
             if not image_urls:
                 print(f"⚠ '{keyword}' の画像が見つかりませんでした")
+                print(f"  ヒント: キーワードを変更してみてください（例: 'クワガタ 昆虫'）")
                 continue
             
             # 画像をダウンロード
@@ -161,9 +201,16 @@ class BingImageCrawler:
                 else:
                     print(f"✗ スキップ")
                 
-                time.sleep(1)  # サーバー負荷軽減（重要）
+                time.sleep(0.8)  # サーバー負荷軽減
             
             print(f"✓ {keyword}: {downloaded_count}/{len(image_urls)} 枚ダウンロード完了")
+        
+        if total_downloaded == 0:
+            print(f"\n⚠ 警告: 画像が1枚もダウンロードできませんでした")
+            print(f"  一時ディレクトリを削除します")
+            import shutil
+            shutil.rmtree(temp_dir)
+            return None
         
         # ZIPファイルを作成
         zip_filename = f"{output_dir}/bing_images_{timestamp}.zip"
@@ -200,7 +247,8 @@ def main():
     
     # キーワード入力
     print("\n💡 ヒント: 複数キーワードはカンマ区切りで入力")
-    keywords_input = input("キーワードを入力: ")
+    print("   例: クワガタ, カブトムシ, 昆虫")
+    keywords_input = input("\nキーワードを入力: ")
     keywords = [k.strip() for k in keywords_input.split(',') if k.strip()]
     
     if not keywords:
@@ -232,10 +280,17 @@ def main():
     crawler = BingImageCrawler()
     zip_file = crawler.crawl(keywords, max_images, output_dir)
     
-    print(f"\n✨ ZIPファイルが作成されました: {zip_file}")
-    print(f"\n💾 ダウンロード方法:")
-    print(f"   1. 左サイドバーのエクスプローラーから '{zip_file}' を右クリック")
-    print(f"   2. 'Download...' を選択")
+    if zip_file:
+        print(f"\n✨ ZIPファイルが作成されました: {zip_file}")
+        print(f"\n💾 ダウンロード方法:")
+        print(f"   1. 左サイドバーのエクスプローラーから '{zip_file}' を右クリック")
+        print(f"   2. 'Download...' を選択")
+    else:
+        print(f"\n❌ ZIPファイルを作成できませんでした")
+        print(f"\n💡 トラブルシューティング:")
+        print(f"   - キーワードを変更してみてください")
+        print(f"   - より具体的なキーワードを使用してください（例: 'クワガタ 昆虫'）")
+        print(f"   - インターネット接続を確認してください")
 
 
 if __name__ == "__main__":
@@ -245,3 +300,5 @@ if __name__ == "__main__":
         print("\n\n⚠ 中断されました")
     except Exception as e:
         print(f"\n❌ エラーが発生しました: {e}")
+        import traceback
+        traceback.print_exc()
