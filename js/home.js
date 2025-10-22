@@ -3,7 +3,7 @@ const images = ['../img/home_bg1.jpg', '../img/home_bg2.jpg', '../img/home_bg3.j
 let currentIndex = 0;
 const clearBg = document.getElementById('background-clear');
 const blurBg = document.getElementById('background-blur');
-const userNameDisplay = document.getElementById('userNameDisplay');
+const userNameDisplay = document.getElementById('userNameDisplay'); // 既存
 
 // ユーザー設定と図鑑データを初期化/更新する関数
 function init() {
@@ -13,9 +13,47 @@ function init() {
         preferences: {}
     };
     if (userNameDisplay) {
+        // init時にユーザー名を読み込み表示
         userNameDisplay.textContent = userSettings.username;
     }
 }
+
+// -----------------------------------------------------------
+// 【追加】ユーザー名を登録・保存する関数
+// -----------------------------------------------------------
+function registerUserName() {
+    // 現在の表示名を取得（初期値として使用）
+    const currentName = userNameDisplay.textContent === 'ユーザー名' 
+                        ? '' // デフォルト名なら空欄
+                        : userNameDisplay.textContent;
+    
+    const newUserName = prompt('新しいユーザー名を入力してください:', currentName);
+
+    // ユーザーがキャンセルせず、かつ何らかのテキストを入力した場合
+    if (newUserName !== null && newUserName.trim() !== "") {
+        const trimmedName = newUserName.trim();
+        
+        // ユーザー設定を更新
+        const userSettings = JSON.parse(localStorage.getItem('userSettings')) || {
+            username: "ユーザー名",
+            completedMissions: [],
+            preferences: {}
+        };
+        userSettings.username = trimmedName;
+        localStorage.setItem('userSettings', JSON.stringify(userSettings));
+
+        // ユーザー名表示を更新
+        userNameDisplay.textContent = trimmedName;
+        
+        // 通知を表示
+        showNotification(`ユーザー名を「${trimmedName}」に更新しました！`);
+    } else if (newUserName !== null) {
+        // 空欄でOKを押した場合は変更をキャンセル
+        showNotification('ユーザー名の変更をキャンセルしました。');
+    }
+}
+// -----------------------------------------------------------
+// -----------------------------------------------------------
 
 // 通知表示関数
 function showNotification(message, isError = false) {
@@ -195,6 +233,7 @@ function loadZukanData(file) {
             localStorage.setItem('myZukan', JSON.stringify(mergedData));
             if (data.settings) {
                 const currentSettings = JSON.parse(localStorage.getItem('userSettings')) || {};
+                // ロードした設定と現在の設定をマージして保存
                 const mergedSettings = { ...currentSettings, ...data.settings };
                 localStorage.setItem('userSettings', JSON.stringify(mergedSettings));
             }
@@ -209,7 +248,7 @@ function loadZukanData(file) {
             message += `- 現在の総発見数: ${mergedData.length}件`;
             showNotification(message);
             if (typeof init === 'function') {
-                setTimeout(() => init(), 1000);
+                setTimeout(() => init(), 1000); // init() を再実行してユーザー名などを更新
             }
         } catch (error) {
             console.error('ロードエラー:', error);
@@ -274,6 +313,10 @@ document.getElementById('fileInput').addEventListener('change', (e) => {
     // ファイル選択をリセット
     e.target.value = '';
 });
+
+// 【追加】ユーザー名表示部分にクリックイベントリスナーを設定
+// HTMLの構造上、親要素の .menu-title にイベントを設定します
+document.querySelector('.menu-title').addEventListener('click', registerUserName);
 
 // 初期化実行 (ユーザー名などの設定を読み込み)
 document.addEventListener('DOMContentLoaded', init);
