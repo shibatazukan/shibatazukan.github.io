@@ -12,7 +12,8 @@ function init() {
     completedMissions: [],
     preferences: {}
   };
-  if (userNameDisplay) {
+  if (userNameDisplay) 
+{
     userNameDisplay.textContent = userSettings.username;
   }
 }
