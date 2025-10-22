@@ -1,57 +1,43 @@
 <!DOCTYPE html>
-    <html lang="ja">
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>新発田ずかん ホーム</title>
+  <link rel="stylesheet" href="../css/home.css" />
+</head>
+<body>
+  <!-- 背景 -->
+  <div id="background-clear" class="background"></div>
+  <div id="background-blur" class="background blur"></div>
 
-    <head>
-        <meta charset="UTF-8">
-        <title>新発田ずかん</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&display=swap" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-        <link rel="stylesheet" href="../../css/home.css">
-    </head>
+  <!-- オーバーレイ -->
+  <div id="overlay" class="overlay">
+    <!-- ハンバーガーメニュー -->
+    <div id="menuToggle" class="menu-toggle">☰</div>
+    <nav id="sideMenu" class="side-menu">
+      <div class="menu-title" id="userNameDisplay">ユーザー名</div>
+      <ul>
+        <li><button id="shareData">データ共有</button></li>
+        <li><button id="loadData">データ読み込み</button></li>
+      </ul>
+    </nav>
 
-    <body>
-        <nav class="side-menu" id="sideMenu">
-            <div class="menu-title"><i class="fa-solid fa-user"></i> <span id="userNameDisplay">ユーザー名</span></div>
-            <a href="home.html"><i class="fa-solid fa-house"></i> ホーム</a>
-            <a href="../zukan/list.html"><i class="fa-solid fa-scroll"></i> ずかん</a>
-            <a href="../camera/camera.html"><i class="fa-solid fa-camera"></i> カメラ</a>
-            <a href="../map/re.html"><i class="fa-solid fa-map"></i> マップ</a>
+    <!-- コンテンツ -->
+    <main class="main-content">
+      <h1>ようこそ 新発田ずかんへ！</h1>
+      <p>発見を記録して、自分だけのずかんを作ろう。</p>
+    </main>
+  </div>
 
-            <div class="menu-divider"></div>
+  <!-- 通知 -->
+  <div id="notification" class="notification"></div>
 
-            <button class="menu-item" id="shareData">
-                <i class="fa-solid fa-share"></i> データを共有/ファイルに保存
-            </button>
-            <button class="menu-item" id="loadData">
-                <i class="fa-solid fa-upload"></i> データをロード
-            </button>
-            <input type="file" id="fileInput" class="file-input" accept=".json">
+  <!-- ファイル入力（非表示） -->
+  <input type="file" id="fileInput" accept=".json" style="display:none" />
 
-            <div class="menu-divider"></div>
-
-            <a href="settings.html"><i class="fa-solid fa-gear"></i> せってい</a>
-            <a href="help.html"><i class="fa-solid fa-circle-question"></i> ヘルプ</a>
-        </nav>
-        <div class="menu-toggle" id="menuToggle">
-            <i class="fa-solid fa-bars"></i>
-        </div>
-        <div id="background-clear"></div>
-        <div id="background-blur"></div>
-        <div class="overlay" id="overlay">
-            <div class="title-block">
-                <h1>新発田ずかん</h1>
-                <div class="subtitle">しばたの自然と文化を楽しむWebアプリ</div>
-            </div>
-            <div class="buttons">
-                <a href="../zukan/list.html" class="button-link"><i class="fa-solid fa-scroll"></i>ずかんを開く </a>
-                <a href="../camera/camera.html" class="button-link"><i class="fa-solid fa-camera"></i>カメラを開く</a>
-                <a href="../map/re.html" class="button-link"><i class="fa-solid fa-map"></i>マップを開く</a>
-            </div>
-        </div>
-        <div class="notification" id="notification"></div>
-
-        <script src="../../js/home.js"></script>
-    </body>
-
+  <!-- スクリプト読み込み -->
+  <script src="../js/hamburger.js"></script>
+  <script src="../js/home.js"></script>
+</body>
 </html>
