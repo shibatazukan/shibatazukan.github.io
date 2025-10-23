@@ -498,10 +498,7 @@ function init() {
 
   if (zukanData.length === 0) {
     if (emptyState) {
-      emptyState.style.display = 'flex';
-      emptyState.style.alignItems = 'center';
-      emptyState.style.justifyContent = 'center';
-      emptyState.style.minHeight = '50vh';
+      emptyState.style.display = 'block';
       // 「見つけに行こう！」ボタンを追加
       emptyState.innerHTML = `
         <div style="text-align: center;">
@@ -546,6 +543,7 @@ function init() {
 // -----------------------------------------------------------
 // イベントリスナーの設定
 // -----------------------------------------------------------
+
 
 document.addEventListener('DOMContentLoaded', () => {
   // 初期化実行 (ユーザー名、カードの読み込み)
