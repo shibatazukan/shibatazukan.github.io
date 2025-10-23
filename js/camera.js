@@ -1,6 +1,6 @@
 // 定数
 const modelPath = 'model/model.json';
-const classLabels = ['あやめ', 'さくら', 'とんぼ', 'カブトムシ', 'クワガタ'];
+const classLabels = ['あやめ', 'さくら', '赤とんぼ', 'カブトムシ', 'クワガタ'];
 const labelInfo = {
   'あやめ': {
     name: 'あやめ',
@@ -16,8 +16,8 @@ const labelInfo = {
     show3DObject: false,
     model: 'model/model.json'
   },
-  'とんぼ': {
-    name: 'とんぼ',
+  '赤とんぼ': {
+    name: '赤とんぼ',
     category: '昆虫',
     description: '大きな羽をもつ\n夏の虫。空をすばやく\n飛ぶことができます。',
     show3DObject: false,

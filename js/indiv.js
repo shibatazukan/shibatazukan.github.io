@@ -295,7 +295,7 @@ function getRarityStars(name) {
   const rarityMap = {
     'あやめ': 3,
     'さくら': 4,
-    'とんぼ': 2,
+    '赤とんぼ': 2,
     'カブトムシ': 4,
     'クワガタ': 5
   };
@@ -315,10 +315,23 @@ function getImagePath(name) {
     'さくら': '../img/さくら.jpg',
     'カブトムシ': '../img/カブトムシ.jpg',
     'クワガタ': '../img/クワガタ.jpg',
-    '赤とんぼ': '../img/赤とんぼ.jpg'
+    '赤とんぼ': '../img/赤とんぼ.jpg',
+    'とんぼ': '../img/赤とんぼ.jpg'  // とんぼも赤とんぼの画像を使用
   };
   
-  return imageMap[name] || null;
+  // 完全一致を試す
+  if (imageMap[name]) {
+    return imageMap[name];
+  }
+  
+  // 部分一致を試す（赤とんぼ、とんぼなど）
+  for (const [key, value] of Object.entries(imageMap)) {
+    if (name.includes(key) || key.includes(name)) {
+      return value;
+    }
+  }
+  
+  return null;
 }
 
 // カード作成
@@ -332,10 +345,22 @@ function createCard(entry, index) {
 
   // 写真のパスを取得
   const imagePath = getImagePath(entry.name);
+  console.log(`画像パス: ${imagePath} (名前: "${entry.name}")`);
+  console.log(`利用可能な画像:`, Object.keys({
+    'あやめ': '../img/あやめ.jpg',
+    'さくら': '../img/さくら.jpg',
+    'カブトムシ': '../img/カブトムシ.jpg',
+    'クワガタ': '../img/クワガタ.jpg',
+    '赤とんぼ': '../img/赤とんぼ.jpg'
+  }));
   
   // 写真がある場合は画像を表示、ない場合はデフォルト表示
   const imageContent = imagePath 
-    ? `<img src="${imagePath}" alt="${entry.name}" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;">`
+    ? `<img src="${imagePath}" alt="${entry.name}" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+       <div style="display: none; text-align: center; z-index: 1; position: relative;">
+         <div style="font-size: 48px; margin-bottom: 10px;">🔍</div>
+         <div>写真読み込みエラー</div>
+       </div>`
     : `<div style="text-align: center; z-index: 1; position: relative;">
          <div style="font-size: 48px; margin-bottom: 10px;">🔍</div>
          <div>写真データなし</div>
