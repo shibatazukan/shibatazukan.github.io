@@ -8,7 +8,6 @@ body {
   font-family: 'Mochiy Pop One', 'Hiragino Sans', 'Yu Gothic', sans-serif;
   background: linear-gradient(135deg, #87CEEB 0%, #98D8E8 50%, #B6E5F0 100%);
   min-height: 100vh;
-  overflow-x: hidden;
 }
 
 /* ハンバーガーメニュー */
@@ -186,11 +185,11 @@ body {
 
 /* カードビュー */
 .card-view {
-  position: relative;
-  width: 100%;
-  max-width: 400px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+  max-width: 1200px;
   margin: 0 auto;
-  height: 600px;
 }
 
 .card {
