@@ -17,50 +17,94 @@ if (typeof DataManager === 'undefined') {
 
     async initDB() {
       return new Promise((resolve, reject) => {
+        console.log('IndexedDB初期化開始:', this.dbName);
+        
+        // Safari対応: IndexedDBのサポートチェック
+        if (!window.indexedDB) {
+          console.warn('IndexedDBがサポートされていません。localStorageのみを使用します。');
+          this.db = null;
+          resolve();
+          return;
+        }
+        
         const request = indexedDB.open(this.dbName, this.dbVersion);
         
-        request.onerror = () => reject(request.error);
+        request.onerror = () => {
+          console.error('IndexedDB初期化エラー:', request.error);
+          // Safari対応: エラーでもlocalStorageは使用可能
+          this.db = null;
+          resolve();
+        };
         request.onsuccess = () => {
           this.db = request.result;
+          console.log('IndexedDB初期化完了');
           resolve();
         };
         
         request.onupgradeneeded = (event) => {
+          console.log('IndexedDBアップグレード開始');
           const db = event.target.result;
           
           if (!db.objectStoreNames.contains('zukanData')) {
+            console.log('zukanDataストアを作成');
             const zukanStore = db.createObjectStore('zukanData', { keyPath: 'id' });
             zukanStore.createIndex('date', 'date', { unique: false });
             zukanStore.createIndex('name', 'name', { unique: false });
           }
           
           if (!db.objectStoreNames.contains('userSettings')) {
+            console.log('userSettingsストアを作成');
             db.createObjectStore('userSettings', { keyPath: 'key' });
           }
           
           if (!db.objectStoreNames.contains('backups')) {
+            console.log('backupsストアを作成');
             const backupStore = db.createObjectStore('backups', { keyPath: 'timestamp' });
             backupStore.createIndex('date', 'date', { unique: false });
           }
+          console.log('IndexedDBアップグレード完了');
         };
       });
     }
 
     async saveZukanData(data) {
       try {
+        console.log('DataManager.saveZukanData開始:', data.length, '件');
+        
+        // 1. localStorageに保存（必須）
         localStorage.setItem('myZukan', JSON.stringify(data));
+        console.log('localStorageに保存完了');
         
+        // 2. IndexedDBに保存（利用可能な場合のみ）
         await this.initPromise;
-        const transaction = this.db.transaction(['zukanData'], 'readwrite');
-        const store = transaction.objectStore('zukanData');
-        
-        await store.clear();
-        
-        for (const item of data) {
-          await store.add(item);
+        if (this.db) {
+          try {
+            const transaction = this.db.transaction(['zukanData'], 'readwrite');
+            const store = transaction.objectStore('zukanData');
+            
+            await store.clear();
+            console.log('IndexedDBをクリア完了');
+            
+            for (const item of data) {
+              await store.add(item);
+            }
+            console.log('IndexedDBに保存完了');
+          } catch (dbError) {
+            console.warn('IndexedDB保存エラー（localStorageは正常）:', dbError);
+          }
+        } else {
+          console.log('IndexedDBが利用できないため、localStorageのみ使用');
         }
         
-        await this.createBackup(data);
+        // 3. バックアップ作成（IndexedDBが利用可能な場合のみ）
+        if (this.db) {
+          try {
+            await this.createBackup(data);
+            console.log('バックアップ作成完了');
+          } catch (backupError) {
+            console.warn('バックアップ作成エラー:', backupError);
+          }
+        }
         
         console.log('データが正常に保存されました');
         return true;
@@ -72,32 +116,57 @@ if (typeof DataManager === 'undefined') {
 
     async loadZukanData() {
       try {
-        let data = JSON.parse(localStorage.getItem('myZukan') || '[]');
+        console.log('DataManager.loadZukanData開始');
         
+        // 1. localStorageから読み込み（最優先）
+        let data = JSON.parse(localStorage.getItem('myZukan') || '[]');
+        console.log('localStorageから読み込み:', data.length, '件');
+        
+        // 2. IndexedDBから読み込み（localStorageが空で、IndexedDBが利用可能な場合のみ）
         if (data.length === 0) {
           await this.initPromise;
-          const transaction = this.db.transaction(['zukanData'], 'readonly');
-          const store = transaction.objectStore('zukanData');
-          const request = store.getAll();
-          
-          data = await new Promise((resolve, reject) => {
-            request.onsuccess = () => resolve(request.result);
-            request.onerror = () => reject(request.error);
-          });
-          
-          if (data.length > 0) {
-            localStorage.setItem('myZukan', JSON.stringify(data));
+          if (this.db) {
+            try {
+              console.log('localStorageが空、IndexedDBから読み込み中...');
+              const transaction = this.db.transaction(['zukanData'], 'readonly');
+              const store = transaction.objectStore('zukanData');
+              const request = store.getAll();
+              
+              data = await new Promise((resolve, reject) => {
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+              });
+              
+              console.log('IndexedDBから読み込み:', data.length, '件');
+              
+              if (data.length > 0) {
+                localStorage.setItem('myZukan', JSON.stringify(data));
+                console.log('localStorageに復元完了');
+              }
+            } catch (dbError) {
+              console.warn('IndexedDB読み込みエラー:', dbError);
+            }
+          } else {
+            console.log('IndexedDBが利用できないため、localStorageのみ使用');
           }
         }
         
-        if (data.length === 0 || !this.validateData(data)) {
-          const backupData = await this.loadLatestBackup();
-          if (backupData) {
-            data = backupData;
-            localStorage.setItem('myZukan', JSON.stringify(data));
+        // 3. バックアップから復元（データが破損している場合、IndexedDBが利用可能な場合のみ）
+        if ((data.length === 0 || !this.validateData(data)) && this.db) {
+          try {
+            console.log('データが空または破損、バックアップから復元中...');
+            const backupData = await this.loadLatestBackup();
+            if (backupData) {
+              data = backupData;
+              localStorage.setItem('myZukan', JSON.stringify(data));
+              console.log('バックアップから復元完了:', data.length, '件');
+            }
+          } catch (backupError) {
+            console.warn('バックアップ復元エラー:', backupError);
           }
         }
         
+        console.log('最終的なデータ:', data.length, '件');
         return data;
       } catch (error) {
         console.error('データ読み込みエラー:', error);
@@ -108,6 +177,13 @@ if (typeof DataManager === 'undefined') {
     async createBackup(data) {
       try {
         await this.initPromise;
+        
+        // IndexedDBが利用可能な場合のみバックアップ作成
+        if (!this.db) {
+          console.log('IndexedDBが利用できないため、バックアップをスキップ');
+          return;
+        }
+        
         const transaction = this.db.transaction(['backups'], 'readwrite');
         const store = transaction.objectStore('backups');
         
@@ -129,6 +205,13 @@ if (typeof DataManager === 'undefined') {
     async loadLatestBackup() {
       try {
         await this.initPromise;
+        
+        // IndexedDBが利用可能な場合のみバックアップ読み込み
+        if (!this.db) {
+          console.log('IndexedDBが利用できないため、バックアップ読み込みをスキップ');
+          return null;
+        }
+        
         const transaction = this.db.transaction(['backups'], 'readonly');
         const store = transaction.objectStore('backups');
         const index = store.index('date');
@@ -154,6 +237,12 @@ if (typeof DataManager === 'undefined') {
     async cleanupOldBackups() {
       try {
         await this.initPromise;
+        
+        // IndexedDBが利用可能な場合のみクリーンアップ
+        if (!this.db) {
+          return;
+        }
+        
         const transaction = this.db.transaction(['backups'], 'readwrite');
         const store = transaction.objectStore('backups');
         const request = store.getAll();
@@ -472,12 +561,18 @@ function loadZukanData(file) {
 
 // データ読み込み（デモデータなし）
 async function loadData() {
+  console.log('loadData開始');
+  
   // 新しいデータ管理システムを使用
   if (!window.dataManager) {
+    console.log('DataManagerを初期化');
     window.dataManager = new DataManager();
   }
   
+  console.log('データを読み込み中...');
   zukanData = await window.dataManager.loadZukanData();
+  console.log('読み込まれたデータ:', zukanData);
+  console.log('データ数:', zukanData.length);
 }
 
 // レア度を星で表示
