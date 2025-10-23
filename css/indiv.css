@@ -8,6 +8,7 @@ body {
   font-family: 'Mochiy Pop One', 'Hiragino Sans', 'Yu Gothic', sans-serif;
   background: linear-gradient(135deg, #87CEEB 0%, #98D8E8 50%, #B6E5F0 100%);
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
 /* ハンバーガーメニュー */
@@ -183,14 +184,13 @@ body {
   min-height: calc(100vh - 80px);
 }
 
-
 /* カードビュー */
 .card-view {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 20px;
-  max-width: 1200px;
+  position: relative;
+  width: 100%;
+  max-width: 400px;
   margin: 0 auto;
+  height: 600px;
 }
 
 .card {
@@ -366,8 +366,7 @@ body {
 }
 
 .empty-state p {
-  font-family: 'Mochiy Pop One', sans-serif;
-  margin-bottom: 15px;
+  font-family: 'Noto Sans JP', sans-serif;
   font-size: 16px;
   line-height: 1.6;
 }
@@ -490,7 +489,7 @@ body {
 }
 
 /* レスポンシブ */
-@media (max-width: 768px) {
+@media (max-width: 480px) {
   .card-view {
     max-width: 350px;
     height: 550px;
