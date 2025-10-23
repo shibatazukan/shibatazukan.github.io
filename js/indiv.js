@@ -308,6 +308,19 @@ function getRarityStars(name) {
   return stars;
 }
 
+// 写真データのマッピング
+function getImagePath(name) {
+  const imageMap = {
+    'あやめ': '../文化祭展示用写真/あやめ.jpg',
+    'さくら': '../文化祭展示用写真/さくら.jpg',
+    'カブトムシ': '../文化祭展示用写真/カブトムシ.jpg',
+    'クワガタ': '../文化祭展示用写真/クワガタ.jpg',
+    '赤とんぼ': '../文化祭展示用写真/赤とんぼ.jpg'
+  };
+  
+  return imageMap[name] || null;
+}
+
 // カード作成
 function createCard(entry, index) {
   const card = document.createElement('div');
@@ -317,14 +330,22 @@ function createCard(entry, index) {
   const date = new Date(entry.date);
   const dateStr = date.toLocaleDateString('ja-JP');
 
+  // 写真のパスを取得
+  const imagePath = getImagePath(entry.name);
+  
+  // 写真がある場合は画像を表示、ない場合はデフォルト表示
+  const imageContent = imagePath 
+    ? `<img src="${imagePath}" alt="${entry.name}" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;">`
+    : `<div style="text-align: center; z-index: 1; position: relative;">
+         <div style="font-size: 48px; margin-bottom: 10px;">🔍</div>
+         <div>写真データなし</div>
+       </div>`;
+
   card.innerHTML = `
     <div class="card-title">${entry.name}</div>
     <div class="rarity">${getRarityStars(entry.name)}</div>
     <div class="card-image">
-      <div style="text-align: center; z-index: 1; position: relative;">
-        <div style="font-size: 48px; margin-bottom: 10px;">🔍</div>
-        <div>写真データなし</div>
-      </div>
+      ${imageContent}
     </div>
     <div class="card-description">
       <div style="margin-bottom: 8px;"><strong>これは${entry.name}です。</strong></div>
