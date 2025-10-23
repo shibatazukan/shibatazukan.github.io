@@ -366,7 +366,8 @@ body {
 }
 
 .empty-state p {
-  font-family: 'Noto Sans JP', sans-serif;
+  font-family: 'Mochiy Pop One', sans-serif;
+  margin-bottom: 15px;
   font-size: 16px;
   line-height: 1.6;
 }
@@ -489,7 +490,7 @@ body {
 }
 
 /* レスポンシブ */
-@media (max-width: 480px) {
+@media (max-width: 768px) {
   .card-view {
     max-width: 350px;
     height: 550px;
