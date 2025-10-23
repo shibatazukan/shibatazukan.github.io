@@ -311,11 +311,11 @@ function getRarityStars(name) {
 // 写真データのマッピング
 function getImagePath(name) {
   const imageMap = {
-    'あやめ': '../文化祭展示用写真/あやめ.jpg',
-    'さくら': '../文化祭展示用写真/さくら.jpg',
-    'カブトムシ': '../文化祭展示用写真/カブトムシ.jpg',
-    'クワガタ': '../文化祭展示用写真/クワガタ.jpg',
-    '赤とんぼ': '../文化祭展示用写真/赤とんぼ.jpg'
+    'あやめ': '../img/あやめ.jpg',
+    'さくら': '../img/さくら.jpg',
+    'カブトムシ': '../img/カブトムシ.jpg',
+    'クワガタ': '../img/クワガタ.jpg',
+    '赤とんぼ': '../img/赤とんぼ.jpg'
   };
   
   return imageMap[name] || null;
