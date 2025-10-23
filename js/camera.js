@@ -5,35 +5,35 @@ const labelInfo = {
   'あやめ': {
     name: 'あやめ',
     category: '草花',
-    description: '紫色や青い花が\n咲く春の花。\n水辺が好きです。',
+    description: 'きれいなむらさき色の花だよ！\n春になると咲いて、\n水の近くで見つけられるよ。',
     show3DObject: false,
     model: 'model/model.json'
   },
   'さくら': {
     name: 'さくら',
     category: '木の花',
-    description: 'ピンク色の\nきれいな花。\n春の代表的な花です。',
+    description: 'ピンク色のとってもきれいな花だよ！\n春の一番人気の花で、\nお花見でみんなが見に来るよ。',
     show3DObject: false,
     model: 'model/model.json'
   },
   '赤とんぼ': {
     name: '赤とんぼ',
     category: '昆虫',
-    description: '大きな羽をもつ\n夏の虫。空をすばやく\n飛ぶことができます。',
+    description: '赤い色のとんぼだよ！\n大きな羽で空をとんで、\nとってもはやく飛べるんだ。',
     show3DObject: false,
     model: 'model/model.json'
   },
   'カブトムシ': {
     name: 'カブトムシ',
     category: '昆虫',
-    description: '黒い体と角が\n特徴の昆虫。夏に\nクワガタと一緒に活動します。',
+    description: '黒くてかっこいい虫だよ！\n頭に大きな角があって、\n夏になると元気に活動するよ。',
     show3DObject: false,
     model: 'model/model.json'
   },
   'クワガタ': {
     name: 'クワガタ',
     category: '昆虫',
-    description: '大きなあごが\n特徴の昆虫。\n夏に活躍します。',
+    description: '大きなあごがとくちょうの虫だよ！\nはさみみたいなあごで、\n夏になるとたくさん見つかるよ。',
     show3DObject: false,
     model: 'model/model.json'
   }

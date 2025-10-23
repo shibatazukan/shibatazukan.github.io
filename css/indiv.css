@@ -260,19 +260,7 @@ body {
   overflow: hidden;
 }
 
-.card-image::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: repeating-linear-gradient(45deg,
-      transparent,
-      transparent 10px,
-      rgba(52, 73, 94, 0.1) 10px,
-      rgba(52, 73, 94, 0.1) 20px);
-}
+/* 斜線パターンを削除 - 写真表示時は不要 */
 
 .card-description {
   background: rgba(236, 240, 241, 0.8);
