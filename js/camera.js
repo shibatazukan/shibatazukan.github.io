@@ -63,6 +63,277 @@ let points = [];
 let identifiedObject = null;
 let lastPrediction = null;
 
+// データ管理用の変数
+let dataManager = null;
+
+/**
+ * 高度なデータ管理クラス
+ * localStorage + IndexedDB + 自動バックアップを組み合わせ
+ */
+class DataManager {
+  constructor() {
+    this.dbName = 'ShibataZukanDB';
+    this.dbVersion = 1;
+    this.db = null;
+    this.initPromise = this.initDB();
+  }
+
+  async initDB() {
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open(this.dbName, this.dbVersion);
+      
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => {
+        this.db = request.result;
+        resolve();
+      };
+      
+      request.onupgradeneeded = (event) => {
+        const db = event.target.result;
+        
+        // 図鑑データ用のストア
+        if (!db.objectStoreNames.contains('zukanData')) {
+          const zukanStore = db.createObjectStore('zukanData', { keyPath: 'id' });
+          zukanStore.createIndex('date', 'date', { unique: false });
+          zukanStore.createIndex('name', 'name', { unique: false });
+        }
+        
+        // ユーザー設定用のストア
+        if (!db.objectStoreNames.contains('userSettings')) {
+          db.createObjectStore('userSettings', { keyPath: 'key' });
+        }
+        
+        // バックアップデータ用のストア
+        if (!db.objectStoreNames.contains('backups')) {
+          const backupStore = db.createObjectStore('backups', { keyPath: 'timestamp' });
+          backupStore.createIndex('date', 'date', { unique: false });
+        }
+      };
+    });
+  }
+
+  // 図鑑データの保存（複数方法で保存）
+  async saveZukanData(data) {
+    try {
+      // 1. localStorage（即座に利用可能）
+      localStorage.setItem('myZukan', JSON.stringify(data));
+      
+      // 2. IndexedDB（大容量対応）
+      await this.initPromise;
+      const transaction = this.db.transaction(['zukanData'], 'readwrite');
+      const store = transaction.objectStore('zukanData');
+      
+      // 既存データをクリア
+      await store.clear();
+      
+      // 新しいデータを保存
+      for (const item of data) {
+        await store.add(item);
+      }
+      
+      // 3. 自動バックアップ
+      await this.createBackup(data);
+      
+      console.log('データが正常に保存されました');
+      return true;
+    } catch (error) {
+      console.error('データ保存エラー:', error);
+      return false;
+    }
+  }
+
+  // 図鑑データの読み込み（複数ソースから復元）
+  async loadZukanData() {
+    try {
+      // 1. localStorageから読み込み
+      let data = JSON.parse(localStorage.getItem('myZukan') || '[]');
+      
+      // 2. IndexedDBから読み込み（localStorageが空の場合）
+      if (data.length === 0) {
+        await this.initPromise;
+        const transaction = this.db.transaction(['zukanData'], 'readonly');
+        const store = transaction.objectStore('zukanData');
+        const request = store.getAll();
+        
+        data = await new Promise((resolve, reject) => {
+          request.onsuccess = () => resolve(request.result);
+          request.onerror = () => reject(request.error);
+        });
+        
+        // localStorageに復元
+        if (data.length > 0) {
+          localStorage.setItem('myZukan', JSON.stringify(data));
+        }
+      }
+      
+      // 3. バックアップから復元（データが破損している場合）
+      if (data.length === 0 || !this.validateData(data)) {
+        const backupData = await this.loadLatestBackup();
+        if (backupData) {
+          data = backupData;
+          localStorage.setItem('myZukan', JSON.stringify(data));
+        }
+      }
+      
+      return data;
+    } catch (error) {
+      console.error('データ読み込みエラー:', error);
+      return JSON.parse(localStorage.getItem('myZukan') || '[]');
+    }
+  }
+
+  // ユーザー設定の保存
+  async saveUserSettings(settings) {
+    try {
+      localStorage.setItem('userSettings', JSON.stringify(settings));
+      
+      await this.initPromise;
+      const transaction = this.db.transaction(['userSettings'], 'readwrite');
+      const store = transaction.objectStore('userSettings');
+      await store.put({ key: 'settings', data: settings });
+      
+      return true;
+    } catch (error) {
+      console.error('設定保存エラー:', error);
+      return false;
+    }
+  }
+
+  // ユーザー設定の読み込み
+  async loadUserSettings() {
+    try {
+      let settings = JSON.parse(localStorage.getItem('userSettings') || '{}');
+      
+      if (Object.keys(settings).length === 0) {
+        await this.initPromise;
+        const transaction = this.db.transaction(['userSettings'], 'readonly');
+        const store = transaction.objectStore('userSettings');
+        const request = store.get('settings');
+        
+        const result = await new Promise((resolve, reject) => {
+          request.onsuccess = () => resolve(request.result);
+          request.onerror = () => reject(request.error);
+        });
+        
+        if (result && result.data) {
+          settings = result.data;
+          localStorage.setItem('userSettings', JSON.stringify(settings));
+        }
+      }
+      
+      return settings;
+    } catch (error) {
+      console.error('設定読み込みエラー:', error);
+      return JSON.parse(localStorage.getItem('userSettings') || '{}');
+    }
+  }
+
+  // 自動バックアップの作成
+  async createBackup(data) {
+    try {
+      await this.initPromise;
+      const transaction = this.db.transaction(['backups'], 'readwrite');
+      const store = transaction.objectStore('backups');
+      
+      const backup = {
+        timestamp: Date.now(),
+        date: new Date().toISOString(),
+        data: data,
+        version: '1.0'
+      };
+      
+      await store.add(backup);
+      
+      // 古いバックアップを削除（最新5個まで保持）
+      await this.cleanupOldBackups();
+      
+    } catch (error) {
+      console.error('バックアップ作成エラー:', error);
+    }
+  }
+
+  // 最新バックアップの読み込み
+  async loadLatestBackup() {
+    try {
+      await this.initPromise;
+      const transaction = this.db.transaction(['backups'], 'readonly');
+      const store = transaction.objectStore('backups');
+      const index = store.index('date');
+      const request = index.openCursor(null, 'prev');
+      
+      return new Promise((resolve, reject) => {
+        request.onsuccess = (event) => {
+          const cursor = event.target.result;
+          if (cursor) {
+            resolve(cursor.value.data);
+          } else {
+            resolve(null);
+          }
+        };
+        request.onerror = () => reject(request.error);
+      });
+    } catch (error) {
+      console.error('バックアップ読み込みエラー:', error);
+      return null;
+    }
+  }
+
+  // 古いバックアップの削除
+  async cleanupOldBackups() {
+    try {
+      await this.initPromise;
+      const transaction = this.db.transaction(['backups'], 'readwrite');
+      const store = transaction.objectStore('backups');
+      const request = store.getAll();
+      
+      const backups = await new Promise((resolve, reject) => {
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+      
+      // 最新5個以外を削除
+      if (backups.length > 5) {
+        const sortedBackups = backups.sort((a, b) => b.timestamp - a.timestamp);
+        const toDelete = sortedBackups.slice(5);
+        
+        for (const backup of toDelete) {
+          await store.delete(backup.timestamp);
+        }
+      }
+    } catch (error) {
+      console.error('バックアップクリーンアップエラー:', error);
+    }
+  }
+
+  // データの整合性チェック
+  validateData(data) {
+    if (!Array.isArray(data)) return false;
+    
+    for (const item of data) {
+      if (!item.id || !item.name || !item.category || !item.date) {
+        return false;
+      }
+    }
+    
+    return true;
+  }
+
+  // データの完全復元
+  async fullRestore() {
+    try {
+      const backupData = await this.loadLatestBackup();
+      if (backupData) {
+        await this.saveZukanData(backupData);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('完全復元エラー:', error);
+      return false;
+    }
+  }
+}
+
 // ImageNet標準化用の定数
 const IMAGENET_MEAN = tf.tensor1d([123.68, 116.779, 103.939]);
 const IMAGENET_STD = tf.tensor1d([58.393, 57.12, 57.375]);
@@ -714,7 +985,7 @@ predictButton.addEventListener('click', async () => {
 
 // --- 図鑑登録処理 ---
 
-saveButton.addEventListener('click', () => {
+saveButton.addEventListener('click', async () => {
   if (!lastPrediction) return;
 
   const { label, count, total, confidence } = lastPrediction;
@@ -730,14 +1001,22 @@ saveButton.addEventListener('click', () => {
     confidence: confidence
   };
 
-  let zukan = JSON.parse(localStorage.getItem('myZukan') || '[]');
-
+  // 新しいデータ管理システムを使用
+  if (!dataManager) {
+    dataManager = new DataManager();
+  }
+  
+  const zukan = await dataManager.loadZukanData();
   const exists = zukan.some(item => item.name === entry.name);
 
   if (!exists) {
     zukan.push(entry);
-    localStorage.setItem('myZukan', JSON.stringify(zukan));
-    showNotification('「' + labelData.name + '」をマイずかんに登録しました！');
+    const success = await dataManager.saveZukanData(zukan);
+    if (success) {
+      showNotification('「' + labelData.name + '」をマイずかんに登録しました！');
+    } else {
+      showNotification('データの保存に失敗しました。', true);
+    }
   } else {
     showNotification('「' + labelData.name + '」はすでに登録済みです。', true);
   }

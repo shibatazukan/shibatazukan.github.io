@@ -5,6 +5,191 @@ let startX = 0;
 let currentX = 0;
 let isDragging = false;
 
+// DataManagerクラスをグローバルに定義（camera.jsから移動）
+if (typeof DataManager === 'undefined') {
+  class DataManager {
+    constructor() {
+      this.dbName = 'ShibataZukanDB';
+      this.dbVersion = 1;
+      this.db = null;
+      this.initPromise = this.initDB();
+    }
+
+    async initDB() {
+      return new Promise((resolve, reject) => {
+        const request = indexedDB.open(this.dbName, this.dbVersion);
+        
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => {
+          this.db = request.result;
+          resolve();
+        };
+        
+        request.onupgradeneeded = (event) => {
+          const db = event.target.result;
+          
+          if (!db.objectStoreNames.contains('zukanData')) {
+            const zukanStore = db.createObjectStore('zukanData', { keyPath: 'id' });
+            zukanStore.createIndex('date', 'date', { unique: false });
+            zukanStore.createIndex('name', 'name', { unique: false });
+          }
+          
+          if (!db.objectStoreNames.contains('userSettings')) {
+            db.createObjectStore('userSettings', { keyPath: 'key' });
+          }
+          
+          if (!db.objectStoreNames.contains('backups')) {
+            const backupStore = db.createObjectStore('backups', { keyPath: 'timestamp' });
+            backupStore.createIndex('date', 'date', { unique: false });
+          }
+        };
+      });
+    }
+
+    async saveZukanData(data) {
+      try {
+        localStorage.setItem('myZukan', JSON.stringify(data));
+        
+        await this.initPromise;
+        const transaction = this.db.transaction(['zukanData'], 'readwrite');
+        const store = transaction.objectStore('zukanData');
+        
+        await store.clear();
+        
+        for (const item of data) {
+          await store.add(item);
+        }
+        
+        await this.createBackup(data);
+        
+        console.log('データが正常に保存されました');
+        return true;
+      } catch (error) {
+        console.error('データ保存エラー:', error);
+        return false;
+      }
+    }
+
+    async loadZukanData() {
+      try {
+        let data = JSON.parse(localStorage.getItem('myZukan') || '[]');
+        
+        if (data.length === 0) {
+          await this.initPromise;
+          const transaction = this.db.transaction(['zukanData'], 'readonly');
+          const store = transaction.objectStore('zukanData');
+          const request = store.getAll();
+          
+          data = await new Promise((resolve, reject) => {
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error);
+          });
+          
+          if (data.length > 0) {
+            localStorage.setItem('myZukan', JSON.stringify(data));
+          }
+        }
+        
+        if (data.length === 0 || !this.validateData(data)) {
+          const backupData = await this.loadLatestBackup();
+          if (backupData) {
+            data = backupData;
+            localStorage.setItem('myZukan', JSON.stringify(data));
+          }
+        }
+        
+        return data;
+      } catch (error) {
+        console.error('データ読み込みエラー:', error);
+        return JSON.parse(localStorage.getItem('myZukan') || '[]');
+      }
+    }
+
+    async createBackup(data) {
+      try {
+        await this.initPromise;
+        const transaction = this.db.transaction(['backups'], 'readwrite');
+        const store = transaction.objectStore('backups');
+        
+        const backup = {
+          timestamp: Date.now(),
+          date: new Date().toISOString(),
+          data: data,
+          version: '1.0'
+        };
+        
+        await store.add(backup);
+        await this.cleanupOldBackups();
+        
+      } catch (error) {
+        console.error('バックアップ作成エラー:', error);
+      }
+    }
+
+    async loadLatestBackup() {
+      try {
+        await this.initPromise;
+        const transaction = this.db.transaction(['backups'], 'readonly');
+        const store = transaction.objectStore('backups');
+        const index = store.index('date');
+        const request = index.openCursor(null, 'prev');
+        
+        return new Promise((resolve, reject) => {
+          request.onsuccess = (event) => {
+            const cursor = event.target.result;
+            if (cursor) {
+              resolve(cursor.value.data);
+            } else {
+              resolve(null);
+            }
+          };
+          request.onerror = () => reject(request.error);
+        });
+      } catch (error) {
+        console.error('バックアップ読み込みエラー:', error);
+        return null;
+      }
+    }
+
+    async cleanupOldBackups() {
+      try {
+        await this.initPromise;
+        const transaction = this.db.transaction(['backups'], 'readwrite');
+        const store = transaction.objectStore('backups');
+        const request = store.getAll();
+        
+        const backups = await new Promise((resolve, reject) => {
+          request.onsuccess = () => resolve(request.result);
+          request.onerror = () => reject(request.error);
+        });
+        
+        if (backups.length > 5) {
+          const sortedBackups = backups.sort((a, b) => b.timestamp - a.timestamp);
+          const toDelete = sortedBackups.slice(5);
+          
+          for (const backup of toDelete) {
+            await store.delete(backup.timestamp);
+          }
+        }
+      } catch (error) {
+        console.error('バックアップクリーンアップエラー:', error);
+      }
+    }
+
+    validateData(data) {
+      if (!Array.isArray(data)) return false;
+      
+      for (const item of data) {
+        if (!item.id || !item.name || !item.category || !item.date) {
+          return false;
+        }
+      }
+      
+      return true;
+    }
+  }
+}
+
 const userNameDisplay = document.getElementById('userNameDisplay');
 
 // -----------------------------------------------------------
@@ -286,8 +471,13 @@ function loadZukanData(file) {
 // -----------------------------------------------------------
 
 // データ読み込み（デモデータなし）
-function loadData() {
-  zukanData = JSON.parse(localStorage.getItem('myZukan')) || [];
+async function loadData() {
+  // 新しいデータ管理システムを使用
+  if (!window.dataManager) {
+    window.dataManager = new DataManager();
+  }
+  
+  zukanData = await window.dataManager.loadZukanData();
 }
 
 // レア度を星で表示
@@ -525,12 +715,12 @@ function updateCardView() {
 // 初期化処理
 // -----------------------------------------------------------
 
-function init() {
+async function init() {
   // 1. 設定の初期化（ユーザー名の読み込み・表示）
   initSettings();
 
   // 2. 図鑑データカードの処理
-  loadData();
+  await loadData();
 
   const container = document.getElementById('cardContainer');
   if (!container) return;
