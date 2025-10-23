@@ -315,8 +315,7 @@ function getImagePath(name) {
     'さくら': '../img/さくら.jpg',
     'カブトムシ': '../img/カブトムシ.jpg',
     'クワガタ': '../img/クワガタ.jpg',
-    '赤とんぼ': '../img/赤とんぼ.jpg',
-    'とんぼ': '../img/赤とんぼ.jpg'  // とんぼも赤とんぼの画像を使用
+    '赤とんぼ': '../img/赤とんぼ.jpg'
   };
   
   // 完全一致を試す
@@ -324,7 +323,7 @@ function getImagePath(name) {
     return imageMap[name];
   }
   
-  // 部分一致を試す（赤とんぼ、とんぼなど）
+  // 部分一致を試す（赤とんぼなど）
   for (const [key, value] of Object.entries(imageMap)) {
     if (name.includes(key) || key.includes(name)) {
       return value;
