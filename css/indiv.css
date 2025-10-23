@@ -4,13 +4,13 @@
   box-sizing: border-box;
 }
 
+
 body {
   font-family: 'Mochiy Pop One', 'Hiragino Sans', 'Yu Gothic', sans-serif;
   background: linear-gradient(135deg, #87CEEB 0%, #98D8E8 50%, #B6E5F0 100%);
   min-height: 100vh;
   overflow-x: hidden;
 }
-
 
 /* ハンバーガーメニュー */
 .menu-toggle {
