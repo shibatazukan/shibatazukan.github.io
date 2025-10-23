@@ -266,7 +266,7 @@ body {
   background: rgba(236, 240, 241, 0.8);
   padding: 15px;
   border-radius: 10px;
-  font-family: 'Noto Sans JP', sans-serif;
+  font-family: 'Mochiy Pop One', sans-serif;
   font-size: 14px;
   line-height: 1.6;
   text-align: left;
@@ -275,7 +275,7 @@ body {
 }
 
 .card-meta {
-  font-family: 'Noto Sans JP', sans-serif;
+  font-family: 'Mochiy Pop One', sans-serif;
   font-size: 12px;
   color: #7f8c8d;
   margin-top: 10px;
@@ -355,7 +355,7 @@ body {
 }
 
 .empty-state p {
-  font-family: 'Noto Sans JP', sans-serif;
+  font-family: 'Mochiy Pop One', sans-serif;
   font-size: 16px;
   line-height: 1.6;
 }
