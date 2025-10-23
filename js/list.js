@@ -263,55 +263,8 @@ function loadZukanData(file) {
 
 // ===== 元々のlist.jsの機能 =====
 
-// データ読み込み
+// データ読み込み（デモデータなし）
 function loadData() {
-  const demoData = [
-    {
-      name: 'オナガガモ',
-      category: '鳥類',
-      description: '特徴的な長い尾羽を持つカモ。冬の間に日本に飛来する。',
-      date: new Date().toISOString(),
-      matchCount: 28,
-      totalSamples: 30
-    },
-    {
-      name: 'キンクロハジロ',
-      category: '鳥類',
-      description: '頭の後ろから垂れ下がる冠羽と、黄色い瞳が特徴の潜水ガモ。',
-      date: new Date(Date.now() - 86400000 * 3).toISOString(),
-      matchCount: 30,
-      totalSamples: 30
-    },
-    {
-      name: 'コハクチョウ',
-      category: '鳥類',
-      description: '白い羽毛と優雅な姿を持つ大型の鳥。シベリアから渡来する。',
-      date: new Date(Date.now() - 86400000 * 7).toISOString(),
-      matchCount: 25,
-      totalSamples: 30
-    },
-    {
-      name: 'アオムシ',
-      category: '昆虫',
-      description: '小さな体に緑色の体色を持つ、チョウやガの幼虫の総称。',
-      date: new Date(Date.now() - 86400000 * 15).toISOString(),
-      matchCount: 15,
-      totalSamples: 30
-    },
-    {
-      name: 'トノサマガエル',
-      category: '両生類',
-      description: '水田や湿地に生息する比較的大型のカエル。体色は緑色や褐色。',
-      date: new Date(Date.now() - 86400000 * 1).toISOString(),
-      matchCount: 20,
-      totalSamples: 30
-    },
-  ];
-
-  if (!localStorage.getItem('myZukan')) {
-    localStorage.setItem('myZukan', JSON.stringify(demoData));
-  }
-
   zukanData = JSON.parse(localStorage.getItem('myZukan')) || [];
   filteredData = [...zukanData];
 }
@@ -319,11 +272,11 @@ function loadData() {
 // レア度を星で表示
 function getRarityStars(name) {
   const rarityMap = {
-    'オナガガモ': 3,
-    'キンクロハジロ': 3,
-    'コハクチョウ': 4,
-    'アオムシ': 2,
-    'トノサマガエル': 3
+    'あやめ': 3,
+    'さくら': 4,
+    'とんぼ': 2,
+    'カブトムシ': 4,
+    'クワガタ': 5
   };
 
   const rarity = rarityMap[name] || 3;
@@ -463,7 +416,28 @@ function init() {
   displayUserName(); // ユーザー名を表示
 
   if (zukanData.length === 0) {
-    document.getElementById('emptyState').style.display = 'block';
+    const emptyState = document.getElementById('emptyState');
+    emptyState.style.display = 'block';
+    // 「見つけに行こう！」ボタンを追加
+    emptyState.innerHTML = `
+      <div style="text-align: center;">
+        <div style="font-size: 64px; margin-bottom: 20px;">🔍</div>
+        <p style="font-size: 18px; color: #666; margin-bottom: 30px;">まだ図鑑に登録されていません</p>
+        <button onclick="location.href='../camera/camera.html'" style="
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          border: none;
+          padding: 15px 40px;
+          font-size: 18px;
+          border-radius: 25px;
+          cursor: pointer;
+          box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+          transition: transform 0.2s, box-shadow 0.2s;
+        " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(102, 126, 234, 0.6)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(102, 126, 234, 0.4)'">
+          🚀 見つけに行こう！
+        </button>
+      </div>
+    `;
     document.getElementById('stats').style.display = 'none';
     document.getElementById('controls').style.display = 'none';
     return;
