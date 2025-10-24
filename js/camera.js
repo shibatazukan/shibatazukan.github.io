@@ -67,27 +67,79 @@ let lastPrediction = null;
 const IMAGENET_MEAN = tf.tensor1d([123.68, 116.779, 103.939]);
 const IMAGENET_STD = tf.tensor1d([58.393, 57.12, 57.375]);
 
+// A-Frameコンポーネント: 完全にカメラを向く
+AFRAME.registerComponent('face-camera-full', {
+  tick: function () {
+    const camera = document.querySelector('#mainCamera');
+    if (camera) {
+      const cameraPosition = new THREE.Vector3();
+      camera.object3D.getWorldPosition(cameraPosition);
+      
+      const thisPosition = new THREE.Vector3();
+      this.el.object3D.getWorldPosition(thisPosition);
+      
+      // カメラの方向を向く
+      this.el.object3D.lookAt(cameraPosition);
+      
+      // Z軸回転をリセット（テキストが傾かないように）
+      const euler = new THREE.Euler();
+      euler.setFromQuaternion(this.el.object3D.quaternion);
+      euler.z = 0;
+      this.el.object3D.quaternion.setFromEuler(euler);
+    }
+  }
+});
+
+// A-Frameコンポーネント: 吹き出しのしっぽを更新
+AFRAME.registerComponent('tail-update', {
+  init: function () {
+    this.tailBlack = this.el.querySelector('#tailBlack');
+    this.tailWhite = this.el.querySelector('#tailWhite');
+  },
+  tick: function () {
+    const camera = document.querySelector('#mainCamera');
+    if (!camera || !this.tailBlack || !this.tailWhite) return;
+
+    const bubblePos = new THREE.Vector3();
+    this.el.object3D.getWorldPosition(bubblePos);
+    
+    const cameraPos = new THREE.Vector3();
+    camera.object3D.getWorldPosition(cameraPos);
+
+    const dy = cameraPos.y - bubblePos.y;
+    
+    if (dy > 0.5) {
+      this.tailBlack.setAttribute('position', '0 0.575 0');
+      this.tailWhite.setAttribute('position', '0 0.525 0');
+    } else if (dy < -0.5) {
+      this.tailBlack.setAttribute('position', '0 -0.575 0');
+      this.tailWhite.setAttribute('position', '0 -0.525 0');
+    } else {
+      this.tailBlack.setAttribute('visible', false);
+      this.tailWhite.setAttribute('visible', false);
+      return;
+    }
+    
+    this.tailBlack.setAttribute('visible', true);
+    this.tailWhite.setAttribute('visible', true);
+  }
+});
+
 /**
  * 画像のノイズ除去とコントラスト調整を行う関数
- * @param {CanvasRenderingContext2D} ctx - コンテキスト
- * @param {HTMLCanvasElement} canvas - キャンバス
- * @param {Object} options - 処理オプション
  */
 function applyImageEnhancement(ctx, canvas, options = {}) {
   const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
   const data = imageData.data;
   
-  // ガウシアンブラーでノイズ除去
   if (options.noiseReduction) {
     applyGaussianBlur(data, canvas.width, canvas.height, 1);
   }
   
-  // コントラスト調整
   if (options.contrast !== 1.0) {
     applyContrastAdjustment(data, options.contrast);
   }
   
-  // シャープネス調整
   if (options.sharpness !== 1.0) {
     applySharpnessAdjustment(data, canvas.width, canvas.height, options.sharpness);
   }
@@ -95,9 +147,6 @@ function applyImageEnhancement(ctx, canvas, options = {}) {
   ctx.putImageData(imageData, 0, 0);
 }
 
-/**
- * ガウシアンブラーを適用
- */
 function applyGaussianBlur(data, width, height, radius) {
   const temp = new Uint8ClampedArray(data);
   const sigma = radius / 3;
@@ -128,9 +177,6 @@ function applyGaussianBlur(data, width, height, radius) {
   }
 }
 
-/**
- * コントラスト調整
- */
 function applyContrastAdjustment(data, contrast) {
   const factor = (259 * (contrast + 255)) / (255 * (259 - contrast));
   
@@ -141,9 +187,6 @@ function applyContrastAdjustment(data, contrast) {
   }
 }
 
-/**
- * シャープネス調整
- */
 function applySharpnessAdjustment(data, width, height, sharpness) {
   const temp = new Uint8ClampedArray(data);
   const kernel = [
@@ -174,29 +217,20 @@ function applySharpnessAdjustment(data, width, height, sharpness) {
   }
 }
 
-/**
- * 信頼度の分散を計算
- * 予測の安定性を評価するために使用
- */
 function calculateConfidenceVariance(scores) {
   if (scores.length < 2) return 0;
   
   const mean = scores.reduce((sum, score) => sum + score, 0) / scores.length;
   const variance = scores.reduce((sum, score) => sum + Math.pow(score - mean, 2), 0) / scores.length;
   
-  return Math.sqrt(variance); // 標準偏差を返す
+  return Math.sqrt(variance);
 }
 
-/**
- * 最適化された境界計算
- * フリーハンド描画の外れ値を除去し、より正確な領域を計算
- */
 function calculateOptimalBounds(points) {
   if (points.length < 2) {
     return { minX: 0, minY: 0, maxX: 0, maxY: 0, width: 0, height: 0 };
   }
   
-  // 外れ値除去（四分位範囲を使用）
   const xValues = points.map(p => p.x).sort((a, b) => a - b);
   const yValues = points.map(p => p.y).sort((a, b) => a - b);
   
@@ -208,19 +242,16 @@ function calculateOptimalBounds(points) {
   const xIQR = xQ3 - xQ1;
   const yIQR = yQ3 - yQ1;
   
-  // 外れ値の閾値
   const xLowerBound = xQ1 - 1.5 * xIQR;
   const xUpperBound = xQ3 + 1.5 * xIQR;
   const yLowerBound = yQ1 - 1.5 * yIQR;
   const yUpperBound = yQ3 + 1.5 * yIQR;
   
-  // 外れ値を除去した点の集合
   const filteredPoints = points.filter(p => 
     p.x >= xLowerBound && p.x <= xUpperBound &&
     p.y >= yLowerBound && p.y <= yUpperBound
   );
   
-  // フィルタリング後の点が少なすぎる場合は元の点を使用
   const validPoints = filteredPoints.length >= 2 ? filteredPoints : points;
   
   const minX = Math.min(...validPoints.map(p => p.x));
@@ -228,7 +259,6 @@ function calculateOptimalBounds(points) {
   const maxX = Math.max(...validPoints.map(p => p.x));
   const maxY = Math.max(...validPoints.map(p => p.y));
   
-  // パディングを追加（境界を少し拡張）
   const padding = Math.min(10, Math.min(maxX - minX, maxY - minY) * 0.1);
   
   return {
@@ -241,12 +271,6 @@ function calculateOptimalBounds(points) {
   };
 }
 
-/**
- * 通知メッセージを表示する関数
- * @param {string} message - 表示するメッセージ
- * @param {boolean} isError - エラー表示か
- * @param {boolean} isWarning - 警告表示か
- */
 function showNotification(message, isError = false, isWarning = false) {
   notificationMessage.textContent = message;
   notificationMessage.className = '';
@@ -262,28 +286,16 @@ function showNotification(message, isError = false, isWarning = false) {
   }, 3000);
 }
 
-/**
- * プログレスインジケーターを更新する関数
- * @param {number} current - 現在のステップ
- * @param {number} total - 全体のステップ数
- */
 function updateProgress(current, total) {
   progressText.textContent = `${current}/${total}`;
   const percentage = (current / total) * 100;
   progressFill.style.width = percentage + '%';
 }
 
-/**
- * プログレスインジケーターの表示/非表示を切り替える関数
- * @param {boolean} show - trueで表示、falseで非表示
- */
 function showProgressIndicator(show = true) {
   progressIndicator.style.display = show ? 'block' : 'none';
 }
 
-/**
- * キャンバスのサイズをビデオ要素に合わせる関数
- */
 function resizeCanvas() {
   drawingCanvas.width = video.offsetWidth;
   drawingCanvas.height = video.offsetHeight;
@@ -291,15 +303,11 @@ function resizeCanvas() {
 window.addEventListener('resize', resizeCanvas);
 video.addEventListener('loadedmetadata', resizeCanvas);
 
-// モデルの読み込み
 tf.loadLayersModel(modelPath).then(m => model = m).catch(err => {
   showNotification("モデルの読み込みに失敗しました。", true);
   console.error("Model load error:", err);
 });
 
-/**
- * カメラを起動する関数
- */
 async function setupCamera() {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({
@@ -315,7 +323,7 @@ async function setupCamera() {
     });
 
     startScreen.style.display = 'none';
-    await new Promise(resolve => setTimeout(resolve, 1500)); // ARシーンの準備を待つ
+    await new Promise(resolve => setTimeout(resolve, 1500));
 
     controlPanel.style.display = 'flex';
     drawingCanvas.style.pointerEvents = "auto";
@@ -327,18 +335,15 @@ async function setupCamera() {
   }
 }
 
-// 起動ボタンのイベントリスナー
 startButton.addEventListener('click', () => {
   setupCamera();
 });
 
-// キャンバス描画設定
 ctx.strokeStyle = '#007bff';
 ctx.lineWidth = 5;
 ctx.lineCap = 'round';
 ctx.lineJoin = 'round';
 
-// 描画イベント（タッチデバイス用）
 drawingCanvas.addEventListener('touchstart', e => {
   if (e.touches.length !== 1) return;
   e.preventDefault();
@@ -370,7 +375,6 @@ drawingCanvas.addEventListener('touchend', () => {
   ctx.closePath();
 });
 
-// 消去ボタンのイベントリスナー
 clearButton.addEventListener('click', () => {
   ctx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
   points = [];
@@ -385,12 +389,6 @@ clearButton.addEventListener('click', () => {
   showProgressIndicator(false);
 });
 
-
-// --- 画像オーギュメンテーション・評価関数群 ---
-
-/**
- * 明るさ調整を適用する
- */
 function applyBrightnessAdjustment(ctx, canvas, factor) {
   const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
   const data = imageData.data;
@@ -404,9 +402,6 @@ function applyBrightnessAdjustment(ctx, canvas, factor) {
   ctx.putImageData(imageData, 0, 0);
 }
 
-/**
- * 左右反転を適用する
- */
 function applyHorizontalFlip(ctx, canvas, sourceCanvas) {
   ctx.save();
   ctx.scale(-1, 1);
@@ -414,9 +409,6 @@ function applyHorizontalFlip(ctx, canvas, sourceCanvas) {
   ctx.restore();
 }
 
-/**
- * サンプリングごとのオーギュメンテーション戦略を決定する
- */
 function getAugmentationStrategy(sampleIndex) {
   const strategies = [
     { rotation: true, brightness: 0.5, flip: false },
@@ -432,9 +424,6 @@ function getAugmentationStrategy(sampleIndex) {
   return strategies[sampleIndex % strategies.length];
 }
 
-/**
- * 画像品質を評価する（簡易）
- */
 function evaluateImageQuality(canvas) {
   const ctx = canvas.getContext('2d');
   const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -457,9 +446,6 @@ function evaluateImageQuality(canvas) {
   };
 }
 
-
-// --- 識別処理関数 ---
-
 predictButton.addEventListener('click', async () => {
   if (!model || points.length < 2) {
     showNotification("囲いがありません。", true);
@@ -470,7 +456,6 @@ predictButton.addEventListener('click', async () => {
   saveButton.disabled = true;
   showProgressIndicator(true);
 
-  // 囲まれた領域の座標を計算（最適化された境界計算）
   const bounds = calculateOptimalBounds(points);
   const { minX, minY, maxX, maxY, width, height } = bounds;
 
@@ -481,14 +466,12 @@ predictButton.addEventListener('click', async () => {
     return;
   }
 
-  // 1. 囲まれた領域をトリミング
   const originalCanvas = document.createElement('canvas');
   originalCanvas.width = width;
   originalCanvas.height = height;
   const originalCtx = originalCanvas.getContext('2d');
   originalCtx.drawImage(video, minX, minY, width, height, 0, 0, width, height);
 
-  // 2. 画像品質チェックと通知
   const quality = evaluateImageQuality(originalCanvas);
 
   if (quality.brightness < 0.2) {
@@ -497,13 +480,12 @@ predictButton.addEventListener('click', async () => {
     showNotification('逆光が強すぎます。角度を調整してください', false, true);
   }
 
-  // 3. データオーギュメンテーションと予測（アンサンブル学習風）
   const predictions = [];
-  const highConfidenceThreshold = 0.95; // より厳格な閾値
+  const highConfidenceThreshold = 0.95;
   const mediumConfidenceThreshold = 0.85;
   const lowConfidenceThreshold = 0.70;
-  const minimumConfidenceThreshold = 0.60; // 最低信頼度閾値
-  const totalSamples = 100; // サンプリング回数を倍増
+  const minimumConfidenceThreshold = 0.60;
+  const totalSamples = 100;
 
   for (let i = 0; i < totalSamples; i++) {
     updateProgress(i + 1, totalSamples);
@@ -515,9 +497,8 @@ predictButton.addEventListener('click', async () => {
 
     const strategy = getAugmentationStrategy(i);
 
-    // 回転を適用
     if (strategy.rotation) {
-      const rotationAngle = (Math.random() - 0.5) * 15 * Math.PI / 180; // ±7.5度
+      const rotationAngle = (Math.random() - 0.5) * 15 * Math.PI / 180;
       processedCtx.save();
       processedCtx.translate(width / 2, height / 2);
       processedCtx.rotate(rotationAngle);
@@ -527,7 +508,6 @@ predictButton.addEventListener('click', async () => {
       processedCtx.drawImage(originalCanvas, 0, 0);
     }
 
-    // 左右反転を適用
     if (strategy.flip) {
       const tempCanvas = document.createElement('canvas');
       tempCanvas.width = width;
@@ -537,32 +517,27 @@ predictButton.addEventListener('click', async () => {
       applyHorizontalFlip(processedCtx, processedCanvas, tempCanvas);
     }
 
-    // リサイズ（224x224）
     const resizedCanvas = document.createElement('canvas');
     resizedCanvas.width = 224;
     resizedCanvas.height = 224;
     const resizedCtx = resizedCanvas.getContext('2d');
     resizedCtx.drawImage(processedCanvas, 0, 0, 224, 224);
 
-    // 明度調整を適用
     if (strategy.brightness !== 1.0) {
       applyBrightnessAdjustment(resizedCtx, resizedCanvas, strategy.brightness);
     }
     
-    // 画像品質向上処理を適用
     const enhancementOptions = {
-      noiseReduction: Math.random() < 0.3, // 30%の確率でノイズ除去
-      contrast: 0.8 + Math.random() * 0.4, // 0.8-1.2の範囲でコントラスト調整
-      sharpness: 0.8 + Math.random() * 0.4  // 0.8-1.2の範囲でシャープネス調整
+      noiseReduction: Math.random() < 0.3,
+      contrast: 0.8 + Math.random() * 0.4,
+      sharpness: 0.8 + Math.random() * 0.4
     };
     applyImageEnhancement(resizedCtx, resizedCanvas, enhancementOptions);
 
     const resizedImageData = resizedCtx.getImageData(0, 0, 224, 224);
 
-    // ImageNet標準化とTensorFlow.jsでの予測
     const tensor = tf.tidy(() => {
       const pixelsTensor = tf.browser.fromPixels(resizedImageData).toFloat();
-      // VGG16/ResNetなどによく使われるImageNet標準化
       return pixelsTensor.sub(IMAGENET_MEAN).div(IMAGENET_STD).expandDims();
     });
 
@@ -575,7 +550,6 @@ predictButton.addEventListener('click', async () => {
     const topLabel = classLabels.length > 0 && topResultIndex >= 0 ? classLabels[topResultIndex] : null;
 
     if (topLabel && topScore >= minimumConfidenceThreshold) {
-      // 信頼度の分散を計算（より安定した予測のため）
       const confidenceVariance = calculateConfidenceVariance(scores);
       
       predictions.push({
@@ -589,17 +563,14 @@ predictButton.addEventListener('click', async () => {
     }
   }
 
-  // 4. 加重平均スコアで結果を集計
   const weightedScores = {};
   const labelCounts = {};
 
   predictions.forEach(p => {
-    // 確信度階層と分散に応じて重み付け
     const baseWeight = p.tier === 'high' ? 1.0 :
       p.tier === 'medium' ? 0.7 :
         p.tier === 'low' ? 0.4 : 0.1;
     
-    // 分散が小さい（安定した予測）ほど重みを増加
     const varianceWeight = Math.max(0.5, 1.0 - p.variance);
     const finalWeight = baseWeight * varianceWeight;
 
@@ -612,13 +583,11 @@ predictButton.addEventListener('click', async () => {
     labelCounts[p.label]++;
   });
 
-  // 5. 最終ラベルを決定
   let finalLabel = null;
   let maxAvgWeightedScore = 0;
   let finalCount = 0;
 
   Object.keys(weightedScores).forEach(label => {
-    // 加重平均スコア（平均重み付き確信度）
     const avgWeightedScore = weightedScores[label] / labelCounts[label];
     if (avgWeightedScore > maxAvgWeightedScore) {
       maxAvgWeightedScore = avgWeightedScore;
@@ -629,7 +598,6 @@ predictButton.addEventListener('click', async () => {
 
   showProgressIndicator(false);
 
-  // 6. AR表示の更新
   if (identifiedObject) {
     identifiedObject.parentNode.removeChild(identifiedObject);
     identifiedObject = null;
@@ -638,9 +606,8 @@ predictButton.addEventListener('click', async () => {
   const bubbleText = document.getElementById('bubbleText');
   const rawConfidence = Math.round((finalCount / totalSamples) * 100);
 
-  if (finalLabel && rawConfidence >= 50) { // 50%以上の賛成票（サンプリング回数）で採用
+  if (finalLabel && rawConfidence >= 50) {
     const labelData = labelInfo[finalLabel];
-    // 50%～100%の結果を0%～100%に再マップして表示（より分かりやすく）
     const convertedConfidence = Math.round(((rawConfidence - 50) / 50) * 100);
     const template = `なまえ：${labelData.name}\n種類　：${labelData.category}\n説明　：${labelData.description}\n一致回数：${finalCount}/${totalSamples}回\n信頼度：${convertedConfidence}%`;
 
@@ -657,15 +624,11 @@ predictButton.addEventListener('click', async () => {
 
     bubbleTextEl.setAttribute('value', template);
 
-    // カメラの正面少し下に情報バブルを配置
     const cameraWorldPosition = new THREE.Vector3();
     camera.object3D.getWorldPosition(cameraWorldPosition);
 
-    // カメラからZ軸方向に-2mの位置
     const infoBubblePosition = new THREE.Vector3(0, 0, -2);
-    // カメラの向きに合わせて回転を適用
     infoBubblePosition.applyQuaternion(camera.object3D.quaternion);
-    // カメラの位置を足してワールド座標へ
     infoBubblePosition.add(cameraWorldPosition);
 
     bubble.setAttribute('position', infoBubblePosition);
@@ -679,14 +642,7 @@ predictButton.addEventListener('click', async () => {
     };
     saveButton.disabled = false;
 
-    // 3Dオブジェクトの表示はスキップされているので、ここではコメントアウトまたはカスタマイズ
-    /*
-    if (labelData.show3DObject) {
-      // 3Dオブジェクトの表示ロジック
-    }
-    */
   } else {
-    // 識別失敗
     const camera = document.querySelector('#mainCamera');
     if (!camera || !camera.object3D) {
       predictButton.disabled = false;
@@ -705,14 +661,10 @@ predictButton.addEventListener('click', async () => {
     saveButton.disabled = true;
   }
 
-  // 描画をクリア
   ctx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
   points = [];
   predictButton.disabled = false;
 });
-
-
-// --- 図鑑登録処理 ---
 
 saveButton.addEventListener('click', () => {
   if (!lastPrediction) return;
@@ -746,11 +698,10 @@ saveButton.addEventListener('click', () => {
   lastPrediction = null;
 });
 
-
 // --- A-Frame コンポーネント ---
 
 // バブルをカメラのY軸回転に合わせて常に正面に向かせるコンポーネント
-AFRAME.registerComponent('face-camera-y', {
+AFRAME.registerComponent('face-camera-full', {
   tick: function () {
     const camera = document.querySelector('#mainCamera');
     const obj3D = this.el.object3D;
