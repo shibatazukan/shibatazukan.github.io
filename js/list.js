@@ -274,7 +274,7 @@ function getRarityStars(name) {
   const rarityMap = {
     'あやめ': 3,
     'さくら': 4,
-    'とんぼ': 2,
+    '赤とんぼ': 2,
     'カブトムシ': 4,
     'クワガタ': 5
   };

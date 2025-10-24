@@ -17,7 +17,7 @@ body {
   align-items: center;
   z-index: 100;
   color: white;
-  font-family: sans-serif;
+  font-family: 'Mochiy Pop One', sans-serif;
 }
 
 #startButton {
@@ -68,7 +68,7 @@ body {
   padding: 10px;
   border-radius: 8px;
   z-index: 10;
-  font-family: sans-serif;
+  font-family: 'Mochiy Pop One', sans-serif;
   width: 90%;
   max-width: 500px;
   text-align: center;
@@ -137,7 +137,7 @@ body {
   color: white;
   padding: 15px 25px;
   border-radius: 8px;
-  font-family: sans-serif;
+  font-family: 'Mochiy Pop One', sans-serif;
   font-size: 16px;
   font-weight: bold;
   z-index: 15;
@@ -182,7 +182,7 @@ body {
   z-index: 12;
   display: none;
   text-align: center;
-  font-family: sans-serif;
+  font-family: 'Mochiy Pop One', sans-serif;
   font-size: 18px;
 }
 

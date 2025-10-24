@@ -295,7 +295,7 @@ function getRarityStars(name) {
   const rarityMap = {
     'あやめ': 3,
     'さくら': 4,
-    'とんぼ': 2,
+    '赤とんぼ': 2,
     'カブトムシ': 4,
     'クワガタ': 5
   };
@@ -308,6 +308,31 @@ function getRarityStars(name) {
   return stars;
 }
 
+// 写真データのマッピング
+function getImagePath(name) {
+  const imageMap = {
+    'あやめ': '../img/あやめ.jpg',
+    'さくら': '../img/さくら.jpg',
+    'カブトムシ': '../img/カブトムシ.jpg',
+    'クワガタ': '../img/クワガタ.jpg',
+    '赤とんぼ': '../img/赤とんぼ.jpg'
+  };
+  
+  // 完全一致を試す
+  if (imageMap[name]) {
+    return imageMap[name];
+  }
+  
+  // 部分一致を試す（赤とんぼなど）
+  for (const [key, value] of Object.entries(imageMap)) {
+    if (name.includes(key) || key.includes(name)) {
+      return value;
+    }
+  }
+  
+  return null;
+}
+
 // カード作成
 function createCard(entry, index) {
   const card = document.createElement('div');
@@ -317,14 +342,34 @@ function createCard(entry, index) {
   const date = new Date(entry.date);
   const dateStr = date.toLocaleDateString('ja-JP');
 
+  // 写真のパスを取得
+  const imagePath = getImagePath(entry.name);
+  console.log(`画像パス: ${imagePath} (名前: "${entry.name}")`);
+  console.log(`利用可能な画像:`, Object.keys({
+    'あやめ': '../img/あやめ.jpg',
+    'さくら': '../img/さくら.jpg',
+    'カブトムシ': '../img/カブトムシ.jpg',
+    'クワガタ': '../img/クワガタ.jpg',
+    '赤とんぼ': '../img/赤とんぼ.jpg'
+  }));
+  
+  // 写真がある場合は画像を表示、ない場合はデフォルト表示
+  const imageContent = imagePath 
+    ? `<img src="${imagePath}" alt="${entry.name}" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+       <div style="display: none; text-align: center; z-index: 1; position: relative;">
+         <div style="font-size: 48px; margin-bottom: 10px;">🔍</div>
+         <div>写真読み込みエラー</div>
+       </div>`
+    : `<div style="text-align: center; z-index: 1; position: relative;">
+         <div style="font-size: 48px; margin-bottom: 10px;">🔍</div>
+         <div>写真データなし</div>
+       </div>`;
+
   card.innerHTML = `
     <div class="card-title">${entry.name}</div>
     <div class="rarity">${getRarityStars(entry.name)}</div>
     <div class="card-image">
-      <div style="text-align: center; z-index: 1; position: relative;">
-        <div style="font-size: 48px; margin-bottom: 10px;">🔍</div>
-        <div>写真データなし</div>
-      </div>
+      ${imageContent}
     </div>
     <div class="card-description">
       <div style="margin-bottom: 8px;"><strong>これは${entry.name}です。</strong></div>
