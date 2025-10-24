@@ -718,27 +718,25 @@ AFRAME.registerComponent('face-camera-full', {
 });
 
 // バブルの尻尾を識別対象の3Dオブジェクトに向けるコンポーネント
-AFRAME.registerComponent('tail-update', {
+// A-Frameコンポーネント: 完全にカメラを向く
+AFRAME.registerComponent('face-camera-full', {
   tick: function () {
-    if (!identifiedObject || !infoBubble.getAttribute('visible')) {
-      return;
+    const camera = document.querySelector('#mainCamera');
+    if (camera) {
+      // カメラの向きをそのままコピー
+      const cameraQuaternion = camera.object3D.quaternion.clone();
+      this.el.object3D.quaternion.copy(cameraQuaternion);
+      
+      // カメラの「前方」ベクトルを取得
+      const forward = new THREE.Vector3(0, 0, -1);
+      forward.applyQuaternion(cameraQuaternion);
+      
+      // オブジェクトをカメラから2m前方に配置
+      const cameraPosition = new THREE.Vector3();
+      camera.object3D.getWorldPosition(cameraPosition);
+      
+      const targetPosition = cameraPosition.clone().add(forward.multiplyScalar(2));
+      this.el.object3D.position.copy(targetPosition);
     }
-
-    const bubblePos = new THREE.Vector3();
-    infoBubble.object3D.getWorldPosition(bubblePos);
-    const targetPos = new THREE.Vector3();
-    identifiedObject.object3D.getWorldPosition(targetPos);
-
-    const dir = new THREE.Vector3().subVectors(targetPos, bubblePos);
-    dir.y = 0; // 水平方向のみ
-    if (dir.length() < 0.001) {
-      return;
-    }
-    dir.normalize();
-    const angle = Math.atan2(dir.x, dir.z) * (180 / Math.PI); // 角度に変換
-    const tailBlack = infoBubble.querySelector('#tailBlack');
-    const tailWhite = infoBubble.querySelector('#tailWhite');
-    if (tailBlack) tailBlack.setAttribute('rotation', `0 ${angle} 0`);
-    if (tailWhite) tailWhite.setAttribute('rotation', `0 ${angle} 0`);
   }
 });
