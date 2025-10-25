@@ -5,36 +5,10 @@
   <title>しばた図鑑 ヘルプ</title>
   <style>
     body {
-      font-family: 'Mochiy Pop One', sans-serif;
-      line-height: 1.6;
-      background-image: url('../img/helpkabegami.jpg'); /* ← 画像ファイル名を指定 */
-      background-size: cover;
-      background-position: center;
-      background-attachment: fixed;
-      color: #333;
-      padding: 2em;
-      max-width: 700px;
-      margin: auto;
-      background-color: rgba(255, 255, 255, 0.85); /* 背景が見えすぎないように白を重ねる */
-    }
-
-    h1, h2, ul, .note {
-      background-color: rgba(255, 255, 255, 0.85);
-      padding: 1em;
-      border-radius: 8px;
-      margin-bottom: 1em;
-    }
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="UTF-8">
-  <title>しばた図鑑 ヘルプ</title>
-  <style>
-    body {
       margin: 0;
       padding: 0;
       font-family: 'Mochiy Pop One', sans-serif;
-      background-image: url('helpkabegami.jpg'); /* 壁紙画像ファイル名 */
+      background-image: url('../assets/img/helpkabegami.jpg'); /* 壁紙画像 */
       background-size: cover;
       background-position: center;
       background-attachment: fixed;
@@ -46,14 +20,15 @@
       padding: 2em;
       background-color: rgba(255, 255, 255, 0.85);
       border-radius: 12px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.3);
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+      line-height: 1.6;
+      color: #333;
     }
 
     h1 {
-      font
-    h1 {
       color: #2c3e50;
       border-bottom: 2px solid #ccc;
+      padding-bottom: 0.3em;
     }
 
     h2 {
@@ -71,35 +46,39 @@
 
     .note {
       border-left: 6px solid #ffc107;
+      padding-left: 1em;
+      margin-top: 2em;
     }
   </style>
 </head>
 <body>
-  <h1>しばた図鑑 ヘルプ</h1>
+  <div class="container">
+    <h1>しばた図鑑 ヘルプ</h1>
 
-  <h2>カメラがうまく開けないとき</h2>
-  <ul>
-    <li><strong>shibatazukan.github.io</strong> がカメラへのアクセスを許可しているか確認してください。</li>
-    <li>ページを<strong>何度かリロード</strong>してみてください。</li>
-  </ul>
+    <h2>カメラがうまく開けないとき</h2>
+    <ul>
+      <li><strong>shibatazukan.github.io</strong> がカメラへのアクセスを許可しているか確認してください。</li>
+      <li>ページを<strong>何度かリロード</strong>してみてください。</li>
+    </ul>
 
-  <h2>違うものが判定されたとき</h2>
-  <ul>
-    <li><strong>「消去」ボタン</strong>を押して、もう一度分類してください。</li>
-  </ul>
+    <h2>違うものが判定されたとき</h2>
+    <ul>
+      <li><strong>「消去」ボタン</strong>を押して、もう一度分類してください。</li>
+    </ul>
 
-  <h2>データをセーブするとき</h2>
-  <ul>
-    <li>ホーム画面から<strong>「ファイルに保存」</strong>を選び、ファイルを保存してください。</li>
-  </ul>
+    <h2>データをセーブするとき</h2>
+    <ul>
+      <li>ホーム画面から<strong>「ファイルに保存」</strong>を選び、ファイルを保存してください。</li>
+    </ul>
 
-  <h2>データをロードするとき</h2>
-  <ul>
-    <li>ホーム画面から<strong>「データをロード」</strong>を選び、<strong>shibata-zukanのデータ</strong>をロードしてください。</li>
-  </ul>
+    <h2>データをロードするとき</h2>
+    <ul>
+      <li>ホーム画面から<strong>「データをロード」</strong>を選び、<strong>shibata-zukanのデータ</strong>をロードしてください。</li>
+    </ul>
 
-  <div class="note">
-    <strong>注意：</strong>カメラを長時間つけっぱなしにしないようにしましょう。
+    <div class="note">
+      <strong>注意：</strong>カメラを長時間つけっぱなしにしないようにしましょう。
+    </div>
   </div>
 </body>
 </html>

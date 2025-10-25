@@ -311,11 +311,11 @@ function getRarityStars(name) {
 // 写真データのマッピング
 function getImagePath(name) {
   const imageMap = {
-    'あやめ': '../img/あやめ.jpg',
-    'さくら': '../img/さくら.jpg',
-    'カブトムシ': '../img/カブトムシ.jpg',
-    'クワガタ': '../img/クワガタ.jpg',
-    '赤とんぼ': '../img/赤とんぼ.jpg'
+    'あやめ': '../assets/img/あやめ.jpg',
+    'さくら': '../assets/img/さくら.jpg',
+    'カブトムシ': '../assets/img/カブトムシ.jpg',
+    'クワガタ': '../assets/img/クワガタ.jpg',
+    '赤とんぼ': '../assets/img/赤とんぼ.jpg'
   };
   
   // 完全一致を試す
@@ -346,11 +346,11 @@ function createCard(entry, index) {
   const imagePath = getImagePath(entry.name);
   console.log(`画像パス: ${imagePath} (名前: "${entry.name}")`);
   console.log(`利用可能な画像:`, Object.keys({
-    'あやめ': '../img/あやめ.jpg',
-    'さくら': '../img/さくら.jpg',
-    'カブトムシ': '../img/カブトムシ.jpg',
-    'クワガタ': '../img/クワガタ.jpg',
-    '赤とんぼ': '../img/赤とんぼ.jpg'
+    'あやめ': '../assets/img/あやめ.jpg',
+    'さくら': '../assets/img/さくら.jpg',
+    'カブトムシ': '../assets/img/カブトムシ.jpg',
+    'クワガタ': '../assets/img/クワガタ.jpg',
+    '赤とんぼ': '../assets/img/赤とんぼ.jpg'
   }));
   
   // 写真がある場合は画像を表示、ない場合はデフォルト表示
