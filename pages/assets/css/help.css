@@ -1,7 +1,6 @@
 body {
     margin: 0;
     padding: 0;
-    /* ヘルプページ本文はNoto Sans JP */
     font-family: 'Noto Sans JP', sans-serif;
     background-image: url('../img/helpkabegami.jpg');
     background-size: cover;
