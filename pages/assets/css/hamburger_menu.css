@@ -1,0 +1,140 @@
+/* メニュートグルボタン（ハンバーガーアイコン） */
+.menu-toggle {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    font-size: 1.8em;
+    color: white;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 10px 12px;
+    border-radius: 10px;
+    z-index: 1000;
+    cursor: pointer;
+    transition: background 0.3s, left 0.35s ease-in-out;
+}
+
+.menu-toggle:hover {
+    background: rgba(0, 0, 0, 0.6);
+}
+
+/* サイドメニュー本体 */
+.side-menu {
+    position: fixed;
+    top: 0;
+    left: -260px;
+    width: 260px;
+    height: 100%;
+    background: rgba(20, 20, 20, 0.95);
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.5);
+    padding: 2em 1em 1em 1em;
+    box-sizing: border-box;
+    z-index: 999;
+    transition: left 0.35s ease-in-out;
+    display: flex;
+    flex-direction: column;
+    font-family: 'Mochiy Pop One', sans-serif;
+    overflow-y: auto;
+}
+
+/* メニューが開いた状態 */
+.side-menu.open {
+    left: 0;
+}
+
+/* メニューが開いた時、トグルボタンも右に移動 */
+.side-menu.open ~ .menu-toggle {
+    left: 280px;
+}
+
+/* メニュータイトル（ユーザー名表示） */
+.side-menu .menu-title {
+    font-size: 1.2em;
+    font-weight: bold;
+    margin-bottom: 1.5em;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 0.6em;
+    margin-left: 0.2em;
+    cursor: pointer;
+}
+
+/* メニューアイテム（リンクとボタン） */
+.side-menu a,
+.side-menu .menu-item {
+    color: white;
+    text-decoration: none;
+    padding: 0.6em 0;
+    font-size: 0.92em;
+    display: flex;
+    align-items: center;
+    gap: 0.8em;
+    transition: background 0.25s;
+    border-radius: 6px;
+    cursor: pointer;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    font-family: 'Mochiy Pop One', sans-serif;
+}
+
+.side-menu a:hover,
+.side-menu .menu-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* ファイル入力（非表示） */
+.file-input {
+    display: none;
+}
+
+/* メニュー区切り線 */
+.menu-divider {
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    margin: 1em 0;
+}
+
+/* 通知メッセージ */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(0, 200, 0, 0.9);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 0.9em;
+    z-index: 1001;
+    opacity: 0;
+    transform: translateX(100%);
+    transition: all 0.3s ease;
+    font-family: 'Mochiy Pop One', sans-serif;
+    white-space: pre-line;
+}
+
+.notification.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.notification.error {
+    background: rgba(200, 0, 0, 0.9);
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+    .menu-toggle {
+        font-size: 1.5em;
+        padding: 8px 10px;
+    }
+    
+    .side-menu {
+        width: 240px;
+        left: -240px;
+    }
+    
+    .side-menu.open ~ .menu-toggle {
+        left: 260px;
+    }
+}
