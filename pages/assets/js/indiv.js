@@ -69,13 +69,6 @@ function createCard(entry, index) {
   // 写真のパスを取得
   const imagePath = getImagePath(entry.name);
   console.log(`画像パス: ${imagePath} (名前: "${entry.name}")`);
-  console.log(`利用可能な画像:`, Object.keys({
-    'あやめ': '../assets/img/あやめ.jpg',
-    'さくら': '../assets/img/さくら.jpg',
-    'カブトムシ': '../assets/img/カブトムシ.jpg',
-    'クワガタ': '../assets/img/クワガタ.jpg',
-    '赤とんぼ': '../assets/img/赤とんぼ.jpg'
-  }));
  
   // 写真がある場合は画像を表示、ない場合はデフォルト表示
   const imageContent = imagePath
@@ -246,15 +239,20 @@ function updateCardView() {
 }
 
 // -----------------------------------------------------------
-// 初期化処理
+// 初期化処理（グローバル関数として公開 - hamburger_menu.jsから呼ばれる）
 // -----------------------------------------------------------
 
-function init() {
+window.init = function() {
+  console.log('init() called - Loading zukan data...');
+  
   // 図鑑データカードの処理
   loadData();
 
   const container = document.getElementById('cardContainer');
-  if (!container) return;
+  if (!container) {
+    console.error('cardContainer not found!');
+    return;
+  }
 
   container.innerHTML = '';
 
@@ -263,6 +261,7 @@ function init() {
   const counter = document.getElementById('counter');
 
   if (zukanData.length === 0) {
+    console.log('No zukan data found');
     if (emptyState) {
       emptyState.style.display = 'block';
       // 「見つけに行こう！」ボタンを追加
@@ -291,6 +290,7 @@ function init() {
     return;
   }
 
+  console.log(`Loading ${zukanData.length} cards...`);
   if (emptyState) emptyState.style.display = 'none';
 
   // カードを全て生成
@@ -304,6 +304,8 @@ function init() {
   updateCardView();
   if (navigation) navigation.style.display = 'flex';
   if (counter) counter.style.display = 'block';
+  
+  console.log('Cards loaded successfully');
 }
 
 // -----------------------------------------------------------
@@ -311,6 +313,7 @@ function init() {
 // -----------------------------------------------------------
 
 document.addEventListener('DOMContentLoaded', () => {
+  console.log('indiv.js: DOMContentLoaded');
   // 初期化実行（カードの読み込み）
   init();
 });
