@@ -63,9 +63,35 @@ let points           = [];
 let identifiedObject = null;
 let lastPrediction   = null;
 
-// ImageNet標準化用の定数
-const IMAGENET_MEAN = tf.tensor1d([123.68, 116.779, 103.939]);
-const IMAGENET_STD  = tf.tensor1d([58.393, 57.12, 57.375]);
+// ImageNet標準化用の定数 - tf が読み込まれた後に初期化
+let IMAGENET_MEAN;
+let IMAGENET_STD;
+
+// 初期化関数
+async function initializeTensorFlow() {
+  try {
+    await tf.ready();
+    console.log('TensorFlow.js ready, backend:', tf.getBackend());
+    
+    // ここで tf を使った定数を初期化
+    IMAGENET_MEAN = tf.tensor1d([123.68, 116.779, 103.939]);
+    IMAGENET_STD  = tf.tensor1d([58.393, 57.12, 57.375]);
+    
+    // モデルの読み込み
+    model = await tf.loadLayersModel(modelPath);
+    console.log('Model loaded successfully');
+  } catch (err) {
+    showNotification("モデルの読み込みに失敗しました。", true);
+    console.error("Model load error:", err);
+  }
+}
+
+// ページ読み込み後に初期化
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeTensorFlow);
+} else {
+  initializeTensorFlow();
+}
 
 // A-Frameコンポーネント: 完全にカメラを向く
 AFRAME.registerComponent('face-camera-full', {
@@ -303,11 +329,6 @@ function resizeCanvas() {
 window.addEventListener('resize', resizeCanvas);
 video.addEventListener('loadedmetadata', resizeCanvas);
 
-tf.loadLayersModel(modelPath).then(m => model = m).catch(err => {
-  showNotification("モデルの読み込みに失敗しました。", true);
-  console.error("Model load error:", err);
-});
-
 async function setupCamera() {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({
@@ -541,10 +562,12 @@ predictButton.addEventListener('click', async () => {
       return pixelsTensor.sub(IMAGENET_MEAN).div(IMAGENET_STD).expandDims();
     });
 
-    const predictionArray = await model.predict(tensor).data();
+    const prediction = model.predict(tensor);
+    const predictionArray = await prediction.data();
+    prediction.dispose();
     tensor.dispose();
 
-    const scores = predictionArray ? predictionArray.flat() : [];
+    const scores = predictionArray ? Array.from(predictionArray) : [];
     const topResultIndex = scores.indexOf(Math.max(...scores));
     const topScore = scores[topResultIndex];
     const topLabel = classLabels.length > 0 && topResultIndex >= 0 ? classLabels[topResultIndex] : null;
@@ -696,47 +719,4 @@ saveButton.addEventListener('click', () => {
 
   saveButton.disabled = true;
   lastPrediction = null;
-});
-
-// --- A-Frame コンポーネント ---
-
-// バブルをカメラのY軸回転に合わせて常に正面に向かせるコンポーネント
-AFRAME.registerComponent('face-camera-full', {
-  tick: function () {
-    const camera = document.querySelector('#mainCamera');
-    const obj3D = this.el.object3D;
-    const cameraPos = new THREE.Vector3();
-    camera.object3D.getWorldPosition(cameraPos);
-    const objPos = new THREE.Vector3();
-    obj3D.getWorldPosition(objPos);
-    const dir = new THREE.Vector3().subVectors(cameraPos, objPos);
-    dir.y = 0; // Y軸方向は無視して水平回転のみ
-    dir.normalize();
-    // カメラの方向からバブルへの角度を計算して回転
-    obj3D.rotation.y = Math.atan2(dir.x, dir.z);
-  }
-});
-
-// バブルの尻尾を識別対象の3Dオブジェクトに向けるコンポーネント
-// A-Frameコンポーネント: 完全にカメラを向く
-AFRAME.registerComponent('face-camera-full', {
-  tick: function () {
-    const camera = document.querySelector('#mainCamera');
-    if (camera) {
-      // カメラの向きをそのままコピー
-      const cameraQuaternion = camera.object3D.quaternion.clone();
-      this.el.object3D.quaternion.copy(cameraQuaternion);
-      
-      // カメラの「前方」ベクトルを取得
-      const forward = new THREE.Vector3(0, 0, -1);
-      forward.applyQuaternion(cameraQuaternion);
-      
-      // オブジェクトをカメラから2m前方に配置
-      const cameraPosition = new THREE.Vector3();
-      camera.object3D.getWorldPosition(cameraPosition);
-      
-      const targetPosition = cameraPosition.clone().add(forward.multiplyScalar(2));
-      this.el.object3D.position.copy(targetPosition);
-    }
-  }
 });
