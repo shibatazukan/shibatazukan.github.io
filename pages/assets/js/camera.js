@@ -541,7 +541,7 @@ predictButton.addEventListener('click', async () => {
       return pixelsTensor.sub(IMAGENET_MEAN).div(IMAGENET_STD).expandDims();
     });
 
-    const predictionArray = await model.predict(tensor).array();
+    const predictionArray = await model.predict(tensor).data();
     tensor.dispose();
 
     const scores = predictionArray ? predictionArray.flat() : [];
