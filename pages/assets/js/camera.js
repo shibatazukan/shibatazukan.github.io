@@ -70,23 +70,14 @@ let IMAGENET_STD;
 // 初期化関数
 async function initializeTensorFlow() {
   try {
-    // tf が定義されるまで待機
-    let attempts = 0;
-    while (typeof tf === 'undefined' && attempts < 50) {
-      await new Promise(resolve => setTimeout(resolve, 100));
-      attempts++;
-    }
-    
-    if (typeof tf === 'undefined') {
-      throw new Error('TensorFlow.js failed to load');
-    }
-    
     await tf.ready();
     console.log('TensorFlow.js ready, backend:', tf.getBackend());
     
+    // ここで tf を使った定数を初期化
     IMAGENET_MEAN = tf.tensor1d([123.68, 116.779, 103.939]);
     IMAGENET_STD  = tf.tensor1d([58.393, 57.12, 57.375]);
     
+    // モデルの読み込み
     model = await tf.loadLayersModel(modelPath);
     console.log('Model loaded successfully');
   } catch (err) {
@@ -95,7 +86,12 @@ async function initializeTensorFlow() {
   }
 }
 
-window.addEventListener('load', initializeTensorFlow);
+// ページ読み込み後に初期化
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeTensorFlow);
+} else {
+  initializeTensorFlow();
+}
 
 // A-Frameコンポーネント: 完全にカメラを向く
 AFRAME.registerComponent('face-camera-full', {
