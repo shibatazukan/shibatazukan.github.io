@@ -1,7 +1,7 @@
 // 定数
-const modelPath = 'model/model.json';
+const modelPath   = 'model/model.json';
 const classLabels = ['あやめ', 'さくら', '赤とんぼ', 'カブトムシ', 'クワガタ'];
-const labelInfo = {
+const labelInfo   = {
   'あやめ': {
     name: 'あやめ',
     category: '草花',
@@ -40,32 +40,32 @@ const labelInfo = {
 };
 
 // DOM要素の取得
-const video = document.getElementById('webcam');
-const drawingCanvas = document.getElementById('drawingCanvas');
-const ctx = drawingCanvas.getContext('2d');
-const predictButton = document.getElementById('predictButton');
-const saveButton = document.getElementById('saveButton');
-const clearButton = document.getElementById('clearButton');
-const controlPanel = document.getElementById('controlPanel');
-const scene = document.querySelector('a-scene');
-const infoBubble = document.getElementById('infoBubble');
+const video               = document.getElementById('webcam');
+const drawingCanvas       = document.getElementById('drawingCanvas');
+const ctx                 = drawingCanvas.getContext('2d');
+const predictButton       = document.getElementById('predictButton');
+const saveButton          = document.getElementById('saveButton');
+const clearButton         = document.getElementById('clearButton');
+const controlPanel        = document.getElementById('controlPanel');
+const scene               = document.querySelector('a-scene');
+const infoBubble          = document.getElementById('infoBubble');
 const notificationMessage = document.getElementById('notificationMessage');
-const progressIndicator = document.getElementById('progressIndicator');
-const progressText = document.getElementById('progressText');
-const progressFill = document.querySelector('.progress-fill');
-const startScreen = document.getElementById('startScreen');
-const startButton = document.getElementById('startButton');
+const progressIndicator   = document.getElementById('progressIndicator');
+const progressText        = document.getElementById('progressText');
+const progressFill        = document.querySelector('.progress-fill');
+const startScreen         = document.getElementById('startScreen');
+const startButton         = document.getElementById('startButton');
 
 // グローバル変数
 let model;
-let isDrawing = false;
-let points = [];
+let isDrawing        = false;
+let points           = [];
 let identifiedObject = null;
-let lastPrediction = null;
+let lastPrediction   = null;
 
 // ImageNet標準化用の定数
 const IMAGENET_MEAN = tf.tensor1d([123.68, 116.779, 103.939]);
-const IMAGENET_STD = tf.tensor1d([58.393, 57.12, 57.375]);
+const IMAGENET_STD  = tf.tensor1d([58.393, 57.12, 57.375]);
 
 // A-Frameコンポーネント: 完全にカメラを向く
 AFRAME.registerComponent('face-camera-full', {
