@@ -698,7 +698,6 @@ saveButton.addEventListener('click', () => {
   lastPrediction = null;
 });
 
-// --- A-Frame コンポーネント ---
 
 // バブルをカメラのY軸回転に合わせて常に正面に向かせるコンポーネント
 AFRAME.registerComponent('face-camera-full', {
@@ -715,7 +714,7 @@ AFRAME.registerComponent('face-camera-full', {
     // カメラの方向からバブルへの角度を計算して回転
     obj3D.rotation.y = Math.atan2(dir.x, dir.z);
   }
-});
+}); 
 
 // バブルの尻尾を識別対象の3Dオブジェクトに向けるコンポーネント
 // A-Frameコンポーネント: 完全にカメラを向く
