@@ -34,6 +34,7 @@ h1 {
     padding-bottom: 0.3em;
     /* 長いタイトルの折り返し対応 */
     word-wrap: break-word;
+    text-align: center;
 }
 
 h2 {
