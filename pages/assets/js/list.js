@@ -162,7 +162,7 @@ window.init = function () {
       <div style="text-align: center;">
         <div style="font-size: 64px; margin-bottom: 20px;">🔍</div>
         <p style="font-size: 18px; color: #666; margin-bottom: 30px;">まだ図鑑に登録されていません</p>
-        <button onclick="location.href='../camera/camera.html'" style="
+        <button onclick="location.href='../camera/index.html'" style="
           background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
           color: white;
           border: none;
