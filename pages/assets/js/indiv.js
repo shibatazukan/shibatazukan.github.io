@@ -57,8 +57,34 @@ function getImagePath(name) {
   return null;
 }
 
+// 緯度経度から住所を取得（OpenStreetMap Nominatim API使用）
+async function getAddressFromCoords(latitude, longitude) {
+  try {
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&accept-language=ja`
+    );
+    const data = await response.json();
+    
+    if (data && data.address) {
+      const addr = data.address;
+      // 市町村レベルの住所を取得
+      const city = addr.city || addr.town || addr.village || '';
+      const prefecture = addr.state || addr.prefecture || '';
+      
+      if (city) {
+        return prefecture ? `${prefecture}${city}` : city;
+      }
+      return '位置情報あり';
+    }
+    return '位置情報あり';
+  } catch (error) {
+    console.error('住所取得エラー:', error);
+    return '位置情報あり';
+  }
+}
+
 // カード作成
-function createCard(entry, index) {
+async function createCard(entry, index) {
   const card = document.createElement('div');
   card.className = 'card';
   card.style.zIndex = zukanData.length - index;
@@ -82,6 +108,17 @@ function createCard(entry, index) {
          <div>写真データなし</div>
        </div>`;
 
+  // 位置情報がある場合は住所を取得
+  let locationHTML = '';
+  if (entry.location && entry.location.latitude && entry.location.longitude) {
+    locationHTML = `
+      <div style="margin-bottom: 8px;" class="card-location">
+        <strong>📍 発見場所:</strong> 
+        <span class="location-text">取得中...</span>
+      </div>
+    `;
+  }
+
   card.innerHTML = `
     <div class="card-title">${entry.name}</div>
     <div class="rarity">${getRarityStars(entry.name)}</div>
@@ -93,6 +130,7 @@ function createCard(entry, index) {
       <div style="margin-bottom: 8px;"><strong>種類:</strong> ${entry.category}</div>
       <div style="margin-bottom: 8px;"><strong>特徴:</strong> ${entry.description}</div>
       <div style="margin-bottom: 8px;"><strong>一致度:</strong> ${entry.matchCount || 0}/${entry.totalSamples || 30}回</div>
+      ${locationHTML}
     </div>
     <div class="card-meta">発見日: ${dateStr}</div>
   `;
@@ -107,6 +145,15 @@ function createCard(entry, index) {
   card.addEventListener('mousemove', handleMouseMove);
   card.addEventListener('mouseup', handleMouseUp);
   card.addEventListener('mouseleave', handleMouseUp);
+
+  // 位置情報がある場合は非同期で住所を取得して更新
+  if (entry.location && entry.location.latitude && entry.location.longitude) {
+    const address = await getAddressFromCoords(entry.location.latitude, entry.location.longitude);
+    const locationText = card.querySelector('.location-text');
+    if (locationText) {
+      locationText.textContent = address;
+    }
+  }
 
   return card;
 }
@@ -242,7 +289,7 @@ function updateCardView() {
 // 初期化処理（グローバル関数として公開 - hamburger_menu.jsから呼ばれる）
 // -----------------------------------------------------------
 
-window.init = function() {
+window.init = async function() {
   console.log('init() called - Loading zukan data...');
   
   // 図鑑データカードの処理
@@ -293,11 +340,11 @@ window.init = function() {
   console.log(`Loading ${zukanData.length} cards...`);
   if (emptyState) emptyState.style.display = 'none';
 
-  // カードを全て生成
-  zukanData.forEach((entry, index) => {
-    const card = createCard(entry, index);
+  // カードを全て生成（非同期処理）
+  for (let index = 0; index < zukanData.length; index++) {
+    const card = await createCard(zukanData[index], index);
     container.appendChild(card);
-  });
+  }
 
   // 最新のカードを初期表示
   currentIndex = zukanData.length - 1;

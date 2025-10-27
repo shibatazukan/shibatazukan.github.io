@@ -159,6 +159,55 @@ body {
   margin-top: auto;
 }
 
+/* ============================================
+   位置情報表示スタイル（新規追加）
+   ============================================ */
+
+/* カード内の位置情報表示 */
+.card-location {
+  background: rgba(74, 144, 226, 0.1);
+  padding: 8px 10px;
+  border-radius: 6px;
+  border-left: 3px solid #4a90e2;
+  transition: all 0.3s ease;
+}
+
+.card-location:hover {
+  background: rgba(74, 144, 226, 0.15);
+  transform: translateX(2px);
+}
+
+.card-location strong {
+  color: #4a90e2;
+  font-size: 0.95em;
+}
+
+.card-location .location-text {
+  color: #2c3e50;
+  font-size: 0.9em;
+  font-weight: 500;
+}
+
+/* 位置情報取得中のアニメーション */
+.location-text:empty::after {
+  content: '取得中...';
+  color: #95a5a6;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+/* ============================================
+   以下、元のスタイル（続き）
+   ============================================ */
+
 .card-meta {
   font-family: 'Mochiy Pop One', sans-serif;
   font-size: 12px;
@@ -353,5 +402,18 @@ body {
   
   .header h1 {
     font-size: 20px;
+  }
+
+  /* 位置情報のレスポンシブ対応 */
+  .card-location {
+    padding: 6px 8px;
+  }
+
+  .card-location strong {
+    font-size: 0.85em;
+  }
+
+  .card-location .location-text {
+    font-size: 0.85em;
   }
 }
