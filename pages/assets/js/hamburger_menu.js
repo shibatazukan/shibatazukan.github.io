@@ -80,7 +80,7 @@ function showNotification(message, isError = false) {
 }
 
 // ========================================
-// 5. 図鑑データ取得機能
+// 5. 図鑑データ取得機能（位置情報対応）
 // ========================================
 function getZukanData() {
     try {
@@ -97,8 +97,11 @@ function getZukanData() {
             return acc;
         }, {});
         
+        // 位置情報付きの発見数をカウント
+        const withLocationCount = zukanArray.filter(item => item.location).length;
+        
         return {
-            version: "1.0",
+            version: "1.1",
             exportDate: new Date().toISOString(),
             appName: "新発田ずかん",
             discoveries: zukanArray.map(item => ({
@@ -110,7 +113,13 @@ function getZukanData() {
                 matchCount: item.matchCount || 0,
                 totalSamples: item.totalSamples || 30,
                 accuracy: Math.round(((item.matchCount || 0) / (item.totalSamples || 30)) * 100),
-                discoveredAt: item.date
+                discoveredAt: item.date,
+                location: item.location ? {
+                    latitude: item.location.latitude,
+                    longitude: item.location.longitude,
+                    accuracy: item.location.accuracy,
+                    timestamp: item.location.timestamp
+                } : null
             })),
             settings: userSettings,
             statistics: {
@@ -120,18 +129,27 @@ function getZukanData() {
                 averageAccuracy: zukanArray.length > 0 ?
                     Math.round(zukanArray.reduce((sum, item) =>
                         sum + ((item.matchCount || 0) / (item.totalSamples || 30) * 100), 0
-                    ) / zukanArray.length) : 0
+                    ) / zukanArray.length) : 0,
+                withLocation: withLocationCount,
+                withoutLocation: zukanArray.length - withLocationCount
             }
         };
     } catch (error) {
         console.error('データ取得エラー:', error);
         return {
-            version: "1.0",
+            version: "1.1",
             exportDate: new Date().toISOString(),
             appName: "新発田ずかん",
             discoveries: [],
             settings: { username: "ユーザー名", completedMissions: [], preferences: {} },
-            statistics: { totalDiscoveries: 0, uniqueSpecies: 0, categories: {}, averageAccuracy: 0 }
+            statistics: { 
+                totalDiscoveries: 0, 
+                uniqueSpecies: 0, 
+                categories: {}, 
+                averageAccuracy: 0,
+                withLocation: 0,
+                withoutLocation: 0
+            }
         };
     }
 }
@@ -151,7 +169,8 @@ function fallbackCopyMethod(text, stats) {
     
     try {
         document.execCommand('copy');
-        showNotification(`データをクリップボードにコピーしました！（発見数: ${stats.totalDiscoveries}件）メモアプリなどに貼り付けて保存してください`);
+        const locationMsg = stats.withLocation > 0 ? `（位置情報付き: ${stats.withLocation}件）` : '';
+        showNotification(`データをクリップボードにコピーしました！（発見数: ${stats.totalDiscoveries}件${locationMsg}）メモアプリなどに貼り付けて保存してください`);
     } catch (err) {
         textArea.style.position = 'fixed';
         textArea.style.top = '50px';
@@ -180,7 +199,7 @@ function fallbackCopyMethod(text, stats) {
 }
 
 // ========================================
-// 7. データ共有機能
+// 7. データ共有機能（位置情報対応）
 // ========================================
 function shareZukanData() {
     try {
@@ -194,10 +213,13 @@ function shareZukanData() {
                 type: 'application/json',
             });
             if (navigator.canShare({ files: [file] })) {
+                const locationMsg = zukanData.statistics.withLocation > 0 
+                    ? `、位置情報付き${zukanData.statistics.withLocation}件` 
+                    : '';
                 navigator.share({
                     files: [file],
                     title: '新発田ずかんデータ',
-                    text: `図鑑データ（${zukanData.statistics.totalDiscoveries}件の発見）をバックアップしました`
+                    text: `図鑑データ（${zukanData.statistics.totalDiscoveries}件の発見${locationMsg}）をバックアップしました`
                 }).then(() => {
                     showNotification('データを他アプリやファイルに保存できます！');
                 }).catch((error) => {
@@ -211,7 +233,8 @@ function shareZukanData() {
         if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(dataStr).then(() => {
                 const stats = zukanData.statistics;
-                showNotification(`データをクリップボードにコピーしました！（発見数: ${stats.totalDiscoveries}件）メモアプリなどに貼り付けて保存してください`);
+                const locationMsg = stats.withLocation > 0 ? `（位置情報付き: ${stats.withLocation}件）` : '';
+                showNotification(`データをクリップボードにコピーしました！（発見数: ${stats.totalDiscoveries}件${locationMsg}）メモアプリなどに貼り付けて保存してください`);
             }).catch(() => {
                 fallbackCopyMethod(dataStr, zukanData.statistics);
             });
@@ -225,7 +248,7 @@ function shareZukanData() {
 }
 
 // ========================================
-// 8. データロード機能
+// 8. データロード機能（位置情報対応）
 // ========================================
 function loadZukanData(file) {
     if (!file) {
@@ -255,7 +278,13 @@ function loadZukanData(file) {
                 date: item.date || item.discoveredAt || new Date().toISOString(),
                 matchCount: item.matchCount || 0,
                 totalSamples: item.totalSamples || 30,
-                id: item.id || `imported_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+                id: item.id || `imported_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                location: item.location ? {
+                    latitude: item.location.latitude,
+                    longitude: item.location.longitude,
+                    accuracy: item.location.accuracy,
+                    timestamp: item.location.timestamp
+                } : null
             }));
             
             const existingKeys = new Set(currentData.map(item => `${item.name}-${item.date}`));
@@ -275,9 +304,13 @@ function loadZukanData(file) {
             const totalImported = data.discoveries.length;
             const newDiscoveries = newItems.length;
             const duplicates = totalImported - newDiscoveries;
+            const withLocation = newItems.filter(item => item.location).length;
             
             let message = `データをロードしました！\n`;
             message += `- 新規追加: ${newDiscoveries}件\n`;
+            if (withLocation > 0) {
+                message += `- 位置情報付き: ${withLocation}件\n`;
+            }
             if (duplicates > 0) {
                 message += `- 重複スキップ: ${duplicates}件\n`;
             }
