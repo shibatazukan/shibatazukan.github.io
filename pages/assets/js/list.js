@@ -102,12 +102,38 @@ window.applyFilters = function () {
   renderListView();
 }
 
+// 緯度経度から住所を取得（OpenStreetMap Nominatim API使用）
+async function getAddressFromCoords(latitude, longitude) {
+  try {
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&accept-language=ja`
+    );
+    const data = await response.json();
+    
+    if (data && data.address) {
+      const addr = data.address;
+      // 市町村レベルの住所を取得
+      const city = addr.city || addr.town || addr.village || '';
+      const prefecture = addr.state || addr.prefecture || '';
+      
+      if (city) {
+        return prefecture ? `${prefecture}${city}` : city;
+      }
+      return '位置情報あり';
+    }
+    return '位置情報あり';
+  } catch (error) {
+    console.error('住所取得エラー:', error);
+    return '位置情報あり';
+  }
+}
+
 // 一覧ビューを描画
-function renderListView() {
+async function renderListView() {
   const container = document.getElementById('listView');
   container.innerHTML = '';
 
-  filteredData.forEach(entry => {
+  for (const entry of filteredData) {
     const card = document.createElement('div');
     card.className = 'list-card';
 
@@ -120,6 +146,17 @@ function renderListView() {
 
     const rarity = getRarityStars(entry.name);
     const accuracy = Math.round((entry.matchCount || 0) / (entry.totalSamples || 30) * 100);
+
+    // 位置情報がある場合は住所を取得
+    let locationHTML = '';
+    if (entry.location && entry.location.latitude && entry.location.longitude) {
+      locationHTML = `
+        <div class="info location-info">
+          <span class="label">📍 発見場所:</span> 
+          <span class="location-text">取得中...</span>
+        </div>
+      `;
+    }
 
     card.innerHTML = `
       <div class="list-card-header">
@@ -141,11 +178,22 @@ function renderListView() {
         </div>
       </div>
       
+      ${locationHTML}
+      
       <div class="date-badge">📅 ${dateStr}</div>
     `;
 
     container.appendChild(card);
-  });
+
+    // 位置情報がある場合は非同期で住所を取得して更新
+    if (entry.location && entry.location.latitude && entry.location.longitude) {
+      const locationText = card.querySelector('.location-text');
+      const address = await getAddressFromCoords(entry.location.latitude, entry.location.longitude);
+      if (locationText) {
+        locationText.textContent = address;
+      }
+    }
+  }
 }
 
 // 初期化（グローバル関数として公開 - hamburger_menu.jsから呼ばれる可能性がある）

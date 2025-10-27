@@ -241,6 +241,65 @@ input:focus {
   transition: width 0.3s ease;
 }
 
+/* ============================================
+   位置情報表示スタイル（新規追加）
+   ============================================ */
+
+/* 位置情報表示エリア */
+.location-info {
+  background: rgba(74, 144, 226, 0.08);
+  border-left: 3px solid #4a90e2;
+  padding: 10px 14px;
+  margin: 12px 0;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.location-info:hover {
+  background: rgba(74, 144, 226, 0.12);
+  box-shadow: 0 2px 8px rgba(74, 144, 226, 0.15);
+  transform: translateX(2px);
+}
+
+/* 位置情報のラベル */
+.location-info .label {
+  color: #4a90e2;
+  font-weight: bold;
+  font-size: 0.9em;
+  min-width: 90px;
+}
+
+/* 位置情報のテキスト */
+.location-text {
+  color: #2c3e50;
+  font-size: 0.92em;
+  font-weight: 500;
+  flex: 1;
+}
+
+/* 位置情報取得中のアニメーション */
+.location-text:empty::after {
+  content: '取得中...';
+  color: #95a5a6;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+/* ============================================
+   以下、元のスタイル（続き）
+   ============================================ */
+
 .date-badge {
   background: rgba(149, 165, 166, 0.1);
   color: #7f8c8d;
@@ -388,5 +447,22 @@ input:focus {
   .toggle-btn {
     font-size: 12px;
     padding: 6px 12px;
+  }
+
+  /* 位置情報のレスポンシブ対応 */
+  .location-info {
+    padding: 8px 12px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .location-info .label {
+    font-size: 0.85em;
+    min-width: auto;
+  }
+
+  .location-text {
+    font-size: 0.88em;
   }
 }
