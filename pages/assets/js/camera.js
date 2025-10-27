@@ -62,6 +62,7 @@ let isDrawing        = false;
 let points           = [];
 let identifiedObject = null;
 let lastPrediction   = null;
+let currentLocation  = null;
 
 // ImageNet標準化用の定数
 const IMAGENET_MEAN = tf.tensor1d([123.68, 116.779, 103.939]);
@@ -78,10 +79,8 @@ AFRAME.registerComponent('face-camera-full', {
       const thisPosition = new THREE.Vector3();
       this.el.object3D.getWorldPosition(thisPosition);
       
-      // カメラの方向を向く
       this.el.object3D.lookAt(cameraPosition);
       
-      // Z軸回転をリセット（テキストが傾かないように）
       const euler = new THREE.Euler();
       euler.setFromQuaternion(this.el.object3D.quaternion);
       euler.z = 0;
@@ -125,9 +124,6 @@ AFRAME.registerComponent('tail-update', {
   }
 });
 
-/**
- * 画像のノイズ除去とコントラスト調整を行う関数
- */
 function applyImageEnhancement(ctx, canvas, options = {}) {
   const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
   const data = imageData.data;
@@ -329,6 +325,8 @@ async function setupCamera() {
     drawingCanvas.style.pointerEvents = "auto";
     showNotification("カメラ準備完了。対象を囲んでください。");
 
+    getLocation();
+
   } catch (err) {
     showNotification("カメラへのアクセスを許可してください。", true);
     startScreen.style.display = 'flex';
@@ -338,6 +336,36 @@ async function setupCamera() {
 startButton.addEventListener('click', () => {
   setupCamera();
 });
+
+function getLocation() {
+  if (!navigator.geolocation) {
+    console.log('位置情報がサポートされていません');
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      currentLocation = {
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude,
+        accuracy: position.coords.accuracy,
+        timestamp: new Date(position.timestamp).toISOString()
+      };
+      console.log('位置情報を取得しました:', currentLocation);
+      showNotification('位置情報を取得しました', false, false);
+    },
+    (error) => {
+      console.warn('位置情報の取得に失敗:', error.message);
+      showNotification('位置情報の取得に失敗しました', false, true);
+      currentLocation = null;
+    },
+    {
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 0
+    }
+  );
+}
 
 ctx.strokeStyle = '#007bff';
 ctx.lineWidth = 5;
@@ -679,7 +707,13 @@ saveButton.addEventListener('click', () => {
     date: now,
     matchCount: count,
     totalSamples: total,
-    confidence: confidence
+    confidence: confidence,
+    location: currentLocation ? {
+      latitude: currentLocation.latitude,
+      longitude: currentLocation.longitude,
+      accuracy: currentLocation.accuracy,
+      timestamp: currentLocation.timestamp
+    } : null
   };
 
   let zukan = JSON.parse(localStorage.getItem('myZukan') || '[]');
@@ -689,7 +723,8 @@ saveButton.addEventListener('click', () => {
   if (!exists) {
     zukan.push(entry);
     localStorage.setItem('myZukan', JSON.stringify(zukan));
-    showNotification('「' + labelData.name + '」をマイずかんに登録しました！');
+    const locationMsg = currentLocation ? '（位置情報付き）' : '';
+    showNotification('「' + labelData.name + '」をマイずかんに登録しました！' + locationMsg);
   } else {
     showNotification('「' + labelData.name + '」はすでに登録済みです。', true);
   }
