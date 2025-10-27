@@ -108,8 +108,8 @@ async function getAddressFromCoords(latitude, longitude) {
     const response = await fetch(
       `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&accept-language=ja`
     );
-    const data = await response.json();
     
+    const data = await response.json();
     if (data && data.address) {
       const addr = data.address;
       // 市町村レベルの住所を取得
