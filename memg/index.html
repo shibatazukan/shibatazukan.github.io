@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>音声画像神経衰弱ゲーム</title>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .rotate-y-180 {
+      transform: rotateY(180deg);
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useRef, useEffect } = React;
+
+    // Lucide Reactアイコンの代替（SVGで直接実装）
+    const Upload = ({ size = 24, className = "" }) => (
+      <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+        <polyline points="17 8 12 3 7 8"></polyline>
+        <line x1="12" y1="3" x2="12" y2="15"></line>
+      </svg>
+    );
+
+    const Mic = ({ size = 24, className = "" }) => (
+      <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+        <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+        <line x1="12" y1="19" x2="12" y2="23"></line>
+        <line x1="8" y1="23" x2="16" y2="23"></line>
+      </svg>
+    );
+
+    const Play = ({ size = 24, className = "" }) => (
+      <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+      </svg>
+    );
+
+    const RotateCcw = ({ size = 24, className = "" }) => (
+      <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="1 4 1 10 7 10"></polyline>
+        <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+      </svg>
+    );
+
+    const Plus = ({ size = 24, className = "" }) => (
+      <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+    );
+
+    const X = ({ size = 24, className = "" }) => (
+      <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    );
+
+    function App() {
+      const [pairs, setPairs] = useState([]);
+      const [cards, setCards] = useState([]);
+      const [flippedCards, setFlippedCards] = useState([]);
+      const [matchedCards, setMatchedCards] = useState([]);
+      const [isRecording, setIsRecording] = useState(false);
+      const [recordingFor, setRecordingFor] = useState(null);
+      const [gameStarted, setGameStarted] = useState(false);
+      const [moves, setMoves] = useState(0);
+      
+      const mediaRecorderRef = useRef(null);
+      const audioChunksRef = useRef([]);
+      const currentAudioRef = useRef(null);
+
+      const addPair = () => {
+        if (pairs.length < 8) {
+          setPairs([...pairs, { id: Date.now(), image: null, audio: null }]);
+        }
+      };
+
+      const removePair = (id) => {
+        setPairs(pairs.filter(p => p.id !== id));
+      };
+
+      const handleImageUpload = (id, e) => {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            setPairs(pairs.map(p => 
+              p.id === id ? { ...p, image: event.target.result } : p
+            ));
+          };
+          reader.readAsDataURL(file);
+        }
+      };
+
+      const handleAudioUpload = (id, e) => {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            setPairs(pairs.map(p => 
+              p.id === id ? { ...p, audio: event.target.result } : p
+            ));
+          };
+          reader.readAsDataURL(file);
+        }
+      };
+
+      const startRecording = async (id) => {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          mediaRecorderRef.current = new MediaRecorder(stream);
+          audioChunksRef.current = [];
+
+          mediaRecorderRef.current.ondataavailable = (event) => {
+            audioChunksRef.current.push(event.data);
+          };
+
+          mediaRecorderRef.current.onstop = () => {
+            const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              setPairs(pairs.map(p => 
+                p.id === id ? { ...p, audio: e.target.result } : p
+              ));
+            };
+            reader.readAsDataURL(audioBlob);
+            stream.getTracks().forEach(track => track.stop());
+          };
+
+          mediaRecorderRef.current.start();
+          setIsRecording(true);
+          setRecordingFor(id);
+        } catch (err) {
+          alert('マイクへのアクセスが許可されていません');
+        }
+      };
+
+      const stopRecording = () => {
+        if (mediaRecorderRef.current && isRecording) {
+          mediaRecorderRef.current.stop();
+          setIsRecording(false);
+          setRecordingFor(null);
+        }
+      };
+
+      const playAudio = (audioData) => {
+        if (currentAudioRef.current) {
+          currentAudioRef.current.pause();
+        }
+        const audio = new Audio(audioData);
+        currentAudioRef.current = audio;
+        audio.play();
+      };
+
+      const startGame = () => {
+        const validPairs = pairs.filter(p => p.image && p.audio);
+        if (validPairs.length < 2) {
+          alert('最低2組のペア(画像と音声)を登録してください');
+          return;
+        }
+
+        const gameCards = [];
+        validPairs.forEach((pair, index) => {
+          gameCards.push({
+            id: `img-${index}`,
+            pairId: index,
+            type: 'image',
+            content: pair.image,
+            audio: pair.audio
+          });
+          gameCards.push({
+            id: `audio-${index}`,
+            pairId: index,
+            type: 'audio',
+            content: pair.audio,
+            audio: pair.audio
+          });
+        });
+
+        const shuffled = gameCards.sort(() => Math.random() - 0.5);
+        setCards(shuffled);
+        setFlippedCards([]);
+        setMatchedCards([]);
+        setGameStarted(true);
+        setMoves(0);
+      };
+
+      const handleCardClick = (card) => {
+        if (flippedCards.length >= 2 || 
+            flippedCards.find(c => c.id === card.id) || 
+            matchedCards.includes(card.id)) {
+          return;
+        }
+
+        playAudio(card.audio);
+        const newFlipped = [...flippedCards, card];
+        setFlippedCards(newFlipped);
+
+        if (newFlipped.length === 2) {
+          setMoves(moves + 1);
+          if (newFlipped[0].pairId === newFlipped[1].pairId) {
+            setTimeout(() => {
+              setMatchedCards([...matchedCards, newFlipped[0].id, newFlipped[1].id]);
+              setFlippedCards([]);
+            }, 1000);
+          } else {
+            setTimeout(() => {
+              setFlippedCards([]);
+            }, 1500);
+          }
+        }
+      };
+
+      const resetGame = () => {
+        setGameStarted(false);
+        setCards([]);
+        setFlippedCards([]);
+        setMatchedCards([]);
+        setMoves(0);
+      };
+
+      useEffect(() => {
+        if (matchedCards.length > 0 && matchedCards.length === cards.length) {
+          setTimeout(() => {
+            alert(`ゲームクリア！ ${moves}手でクリアしました！`);
+          }, 500);
+        }
+      }, [matchedCards, cards.length, moves]);
+
+      if (!gameStarted) {
+        return (
+          <div className="min-h-screen bg-gradient-to-br from-purple-100 to-pink-100 p-8">
+            <div className="max-w-4xl mx-auto">
+              <h1 className="text-4xl font-bold text-center mb-8 text-purple-800">
+                音声画像神経衰弱ゲーム
+              </h1>
+              
+              <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-2xl font-semibold text-gray-800">ペアの登録</h2>
+                  <button
+                    onClick={addPair}
+                    disabled={pairs.length >= 8}
+                    className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition"
+                  >
+                    <Plus size={20} />
+                    ペア追加
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  {pairs.map((pair) => (
+                    <div key={pair.id} className="border-2 border-purple-200 rounded-lg p-4">
+                      <div className="flex justify-between items-start mb-3">
+                        <span className="text-lg font-medium text-gray-700">
+                          ペア {pairs.indexOf(pair) + 1}
+                        </span>
+                        <button
+                          onClick={() => removePair(pair.id)}
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          <X size={20} />
+                        </button>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium mb-2 text-gray-700">
+                            画像をアップロード
+                          </label>
+                          <div className="relative">
+                            {pair.image ? (
+                              <img src={pair.image} alt="登録画像" className="w-full h-32 object-cover rounded-lg" />
+                            ) : (
+                              <div className="w-full h-32 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center">
+                                <Upload className="text-gray-400" size={32} />
+                              </div>
+                            )}
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => handleImageUpload(pair.id, e)}
+                              className="absolute inset-0 opacity-0 cursor-pointer"
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium mb-2 text-gray-700">
+                            音声を登録
+                          </label>
+                          <div className="space-y-2">
+                            <div className="relative">
+                              <input
+                                type="file"
+                                accept="audio/*"
+                                onChange={(e) => handleAudioUpload(pair.id, e)}
+                                className="hidden"
+                                id={`audio-upload-${pair.id}`}
+                              />
+                              <label
+                                htmlFor={`audio-upload-${pair.id}`}
+                                className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 cursor-pointer transition"
+                              >
+                                <Upload size={18} />
+                                ファイルを選択
+                              </label>
+                            </div>
+                            
+                            <button
+                              onClick={() => isRecording && recordingFor === pair.id ? stopRecording() : startRecording(pair.id)}
+                              className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition ${
+                                isRecording && recordingFor === pair.id
+                                  ? 'bg-red-500 hover:bg-red-600 text-white'
+                                  : 'bg-green-500 hover:bg-green-600 text-white'
+                              }`}
+                            >
+                              <Mic size={18} />
+                              {isRecording && recordingFor === pair.id ? '録音停止' : '録音開始'}
+                            </button>
+
+                            {pair.audio && (
+                              <button
+                                onClick={() => playAudio(pair.audio)}
+                                className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition"
+                              >
+                                <Play size={18} />
+                                再生
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {pairs.length === 0 && (
+                  <p className="text-center text-gray-500 py-8">
+                    「ペア追加」ボタンを押して、画像と音声のペアを登録してください
+                  </p>
+                )}
+              </div>
+
+              <button
+                onClick={startGame}
+                className="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xl font-bold rounded-lg hover:from-purple-700 hover:to-pink-700 transition shadow-lg"
+              >
+                ゲームスタート
+              </button>
+            </div>
+          </div>
+        );
+      }
+
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-purple-100 to-pink-100 p-8">
+          <div className="max-w-6xl mx-auto">
+            <div className="flex justify-between items-center mb-6">
+              <h1 className="text-3xl font-bold text-purple-800">神経衰弱ゲーム</h1>
+              <div className="flex items-center gap-4">
+                <span className="text-xl font-semibold text-gray-700">手数: {moves}</span>
+                <button
+                  onClick={resetGame}
+                  className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+                >
+                  <RotateCcw size={20} />
+                  戻る
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-4 md:grid-cols-8 gap-3">
+              {cards.map((card) => {
+                const isFlipped = flippedCards.find(c => c.id === card.id) || matchedCards.includes(card.id);
+                
+                return (
+                  <div
+                    key={card.id}
+                    onClick={() => handleCardClick(card)}
+                    className={`aspect-square cursor-pointer transition-all duration-300 ${
+                      matchedCards.includes(card.id) ? 'opacity-50' : ''
+                    }`}
+                  >
+                    <div className={`relative w-full h-full transition-transform duration-500 ${
+                      isFlipped ? 'rotate-y-180' : ''
+                    }`}
+                    style={{ transformStyle: 'preserve-3d' }}>
+                      <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg shadow-lg flex items-center justify-center"
+                        style={{ backfaceVisibility: 'hidden' }}>
+                        <span className="text-4xl text-white">?</span>
+                      </div>
+                      
+                      <div className="absolute inset-0 bg-white rounded-lg shadow-lg p-2 flex items-center justify-center"
+                        style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}>
+                        {card.type === 'image' ? (
+                          <img src={card.content} alt="カード" className="w-full h-full object-cover rounded" />
+                        ) : (
+                          <div className="flex items-center justify-center w-full h-full bg-gradient-to-br from-blue-100 to-purple-100 rounded">
+                            <Play size={32} className="text-purple-600" />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
