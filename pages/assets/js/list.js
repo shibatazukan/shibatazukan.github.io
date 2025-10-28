@@ -152,8 +152,7 @@ async function renderListView() {
     if (entry.location && entry.location.latitude && entry.location.longitude) {
       locationHTML = `
         <div class="info location-info">
-          <span class="label">📍 発見場所:</span> 
-          <span class="location-text">取得中...</span>
+          <span class="label">📍 発見場所:</span> <span class="location-text">取得中...</span>
         </div>
       `;
     }
@@ -221,7 +220,7 @@ window.init = function () {
           box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
           transition: transform 0.2s, box-shadow 0.2s;
         " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(102, 126, 234, 0.6)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(102, 126, 234, 0.4)'">
-          🚀 見つけに行こう！
+          🔍 見つけに行こう！
         </button>
       </div>
     `;

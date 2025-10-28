@@ -327,7 +327,7 @@ window.init = async function() {
             box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
             transition: transform 0.2s, box-shadow 0.2s;
           " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(102, 126, 234, 0.6)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(102, 126, 234, 0.4)'">
-            🚀 見つけに行こう！
+            🔍 見つけに行こう！
           </button>
         </div>
       `;
