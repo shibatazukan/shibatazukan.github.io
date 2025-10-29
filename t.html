@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>たかまさきゲーム</title>
+<style>
+body {
+    background: #111;
+    color: white;
+    text-align: center;
+    font-family: "Courier New", monospace;
+    overflow: hidden;
+    user-select: none;
+}
+#gameArea {
+    position: relative;
+    width: 100vw;
+    height: 400px;
+    margin-top: 50px;
+    border-bottom: 4px solid #00e0ff;
+}
+#player {
+    position: absolute;
+    bottom: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    width: 40px;
+    height: 60px;
+}
+.stickman {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+.stickman .head {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 16px;
+    height: 16px;
+    border: 3px solid #00e0ff;
+    border-radius: 50%;
+    background: transparent;
+}
+.stickman .body {
+    position: absolute;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 3px;
+    height: 24px;
+    background: #00e0ff;
+}
+.stickman .arm-left,
+.stickman .arm-right {
+    position: absolute;
+    top: 22px;
+    width: 20px;
+    height: 3px;
+    background: #00e0ff;
+    transform-origin: right center;
+}
+.stickman .arm-left {
+    left: 2px;
+    transform: rotate(-30deg);
+}
+.stickman .arm-right {
+    right: 2px;
+    transform: rotate(30deg);
+    transform-origin: left center;
+}
+.stickman .leg-left,
+.stickman .leg-right {
+    position: absolute;
+    top: 40px;
+    width: 22px;
+    height: 3px;
+    background: #00e0ff;
+    transform-origin: right center;
+}
+.stickman .leg-left {
+    left: 9px;
+    transform: rotate(-40deg);
+}
+.stickman .leg-right {
+    right: 9px;
+    transform: rotate(40deg);
+    transform-origin: left center;
+}
+.char {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 64px;
+    cursor: pointer;
+    color: #00e0ff;
+    transition: color 0.3s;
+}
+.stopped {
+    color: #ff4081;
+}
+#message {
+    font-size: 28px;
+    margin-top: 40px;
+}
+#restartBtn {
+    margin-top: 20px;
+    font-size: 24px;
+    padding: 10px 20px;
+    cursor: pointer;
+}
+</style>
+</head>
+<body>
+<h1>まさきんたま をそろえろ</h1>
+<div id="gameArea">
+    <div id="player">
+        <div class="stickman">
+            <div class="head"></div>
+            <div class="body"></div>
+            <div class="arm-left"></div>
+            <div class="arm-right"></div>
+            <div class="leg-left"></div>
+            <div class="leg-right"></div>
+        </div>
+    </div>
+</div>
+<div id="message">↑ ジャンプ  ↓ 落下  ← 左移動  → 右移動</div>
+<button id="restartBtn">もう一度プレイ</button>
+
+<script>
+const textString = "まさきんたま";
+const gameArea = document.getElementById("gameArea");
+const message = document.getElementById("message");
+const restartBtn = document.getElementById("restartBtn");
+
+let chars = [];
+let speed = 5;
+let running = true;
+let screenWidth = window.innerWidth;
+const clickMargin = 90;
+let animationId;
+
+let currentLoop = 0;
+const maxLoop = 3;
+let spacing = 800;
+
+// プレイヤーの位置
+let playerX = screenWidth / 2;
+let playerY = 0;
+const playerSpeed = 10;
+const groundLevel = 0;
+const jumpPower = 20;
+const gravity = 0.8;
+let playerVelocityY = 0;
+let isJumping = false;
+let fastFall = false;
+
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+function setupGame() {
+    if (animationId) cancelAnimationFrame(animationId);
+
+    gameArea.innerHTML = `
+        <div id="player">
+            <div class="stickman">
+                <div class="head"></div>
+                <div class="body"></div>
+                <div class="arm-left"></div>
+                <div class="arm-right"></div>
+                <div class="leg-left"></div>
+                <div class="leg-right"></div>
+            </div>
+        </div>
+    `;
+    chars = [];
+    running = true;
+    currentLoop = 0;
+    message.textContent = "↑ ジャンプ  ↓ 落下  ← 左移動  → 右移動";
+    
+    playerX = screenWidth / 2;
+    playerY = groundLevel;
+    playerVelocityY = 0;
+    isJumping = false;
+    fastFall = false;
+    lastHorizontalKey = null;
+    updatePlayerPosition();
+
+    createChars(shuffleArray(textString.split("")));
+    animate();
+}
+
+// 文字オブジェクトを生成して中央揃えで右端からスタート
+function createChars(charArray) {
+    const totalWidth = charArray.length * spacing;
+    const startX = (screenWidth - totalWidth) / 2;
+
+    charArray.forEach((ch, i) => {
+        const span = document.createElement("span");
+        span.classList.add("char");
+        span.textContent = ch;
+        gameArea.appendChild(span);
+
+        const initialX = screenWidth + i * spacing; // 右端から出す
+        chars.push({
+            el: span,
+            char: ch,
+            x: initialX,
+            targetX: startX + i * spacing,
+            stopped: false,
+            passed: false
+        });
+        span.style.left = initialX + "px";
+    });
+}
+
+// クリックでの停止は無効化（踏みつけのみに変更）
+// gameArea.addEventListener("click", e => {
+//     if (!running) return;
+//     const clickX = e.clientX;
+//     chars.forEach(c => {
+//         if (!c.stopped) {
+//             const charX = c.x;
+//             if (clickX >= charX - clickMargin && clickX <= charX + clickMargin) {
+//                 c.stopped = true;
+//                 c.el.classList.add("stopped");
+//             }
+//         }
+//     });
+// });
+
+function animate() {
+    if (!running) return;
+
+    // プレイヤーの移動と物理演算
+    updatePlayerMovement();
+    updatePlayerPhysics();
+
+    let active = false;
+
+    for (let c of chars) {
+        if (!c.stopped) {
+            c.x -= speed;
+            c.el.style.left = c.x + "px";
+            active = true;
+
+            if (c.x + c.el.offsetWidth < -50) {
+                c.passed = true;
+            }
+        }
+    }
+
+    if (chars.every(c => c.stopped || c.passed)) {
+        currentLoop++;
+        if (currentLoop >= maxLoop) {
+            // 最大周回終了
+            chars.forEach(c => {
+                if (!c.stopped) {
+                    c.stopped = true;
+                    c.el.classList.add("stopped");
+                }
+            });
+            endGame();
+        } else {
+            // 次周回準備（未停止文字だけをシャッフルして中央揃えで右端から流す）
+            const remainingChars = chars.filter(c => !c.stopped);
+            chars = chars.filter(c => c.stopped); // 停止文字は残す
+
+            if (remainingChars.length > 0) {
+                const shuffled = shuffleArray(remainingChars);
+                const totalWidth = shuffled.length * spacing;
+                const startX = (screenWidth - totalWidth) / 2;
+
+                shuffled.forEach((c, i) => {
+                    c.x = screenWidth + i * spacing;
+                    c.targetX = startX + i * spacing;
+                    c.passed = false;
+                    c.el.style.left = c.x + "px";
+                    chars.push(c);
+                });
+            }
+        }
+    }
+
+    animationId = requestAnimationFrame(animate);
+}
+
+function endGame() {
+    running = false;
+    let totalDiff = 0;
+    let count = 0;
+
+    for (let c of chars) {
+        if (c.stopped) {
+            const diff = Math.abs(c.x - c.targetX);
+            totalDiff += diff;
+            count++;
+        }
+    }
+
+    const avgDiff = count ? totalDiff / count : 999;
+    const score = Math.max(0, Math.floor(100 - avgDiff / 5));
+    message.textContent = `スコア：${score}点！`;
+}
+
+restartBtn.onclick = () => setupGame();
+window.onresize = () => screenWidth = window.innerWidth;
+
+// 矢印キーでプレイヤーを動かす
+let keysPressed = {};
+let lastHorizontalKey = null;
+
+document.addEventListener("keydown", e => {
+    if (!keysPressed[e.key]) {
+        keysPressed[e.key] = true;
+        
+        // 最後に押された左右キーを記録
+        if (e.key === "ArrowRight" || e.key === "→") {
+            lastHorizontalKey = "right";
+        } else if (e.key === "ArrowLeft" || e.key === "←") {
+            lastHorizontalKey = "left";
+        }
+    }
+    
+    if (e.key === "ArrowUp" || e.key === "↑") {
+        // ジャンプ（地面にいる時のみ）
+        if (!isJumping && playerY === groundLevel) {
+            playerVelocityY = jumpPower;
+            isJumping = true;
+        }
+    }
+});
+
+// 下キーを離したら急降下解除
+document.addEventListener("keyup", e => {
+    keysPressed[e.key] = false;
+    
+    if (e.key === "ArrowDown" || e.key === "↓") {
+        fastFall = false;
+    }
+    
+    // 離されたキーが最後に押された方向キーなら、もう片方をチェック
+    if (e.key === "ArrowRight" || e.key === "→") {
+        if (keysPressed["ArrowLeft"] || keysPressed["←"]) {
+            lastHorizontalKey = "left";
+        } else {
+            lastHorizontalKey = null;
+        }
+    } else if (e.key === "ArrowLeft" || e.key === "←") {
+        if (keysPressed["ArrowRight"] || keysPressed["→"]) {
+            lastHorizontalKey = "right";
+        } else {
+            lastHorizontalKey = null;
+        }
+    }
+});
+
+function updatePlayerMovement() {
+    // 最後に押された方向を優先
+    if (lastHorizontalKey === "right") {
+        playerX += playerSpeed;
+        // 右端を超えたら左端にループ
+        if (playerX > screenWidth + 50) {
+            playerX = -50;
+        }
+    } else if (lastHorizontalKey === "left") {
+        playerX -= playerSpeed;
+        // 左端を超えたら右端にループ
+        if (playerX < -50) {
+            playerX = screenWidth + 50;
+        }
+    }
+    
+    // 下キーで急降下
+    if ((keysPressed["ArrowDown"] || keysPressed["↓"]) && isJumping) {
+        fastFall = true;
+    }
+}
+
+function updatePlayerPhysics() {
+    // 重力を適用
+    if (isJumping) {
+        if (fastFall) {
+            playerVelocityY -= gravity * 3; // 急降下は3倍速
+        } else {
+            playerVelocityY -= gravity;
+        }
+        playerY += playerVelocityY;
+
+        // 踏みつけ判定（落下中のみ）
+        if (playerVelocityY < 0) {
+            checkStompCollision();
+        }
+
+        // 地面に着地
+        if (playerY <= groundLevel) {
+            playerY = groundLevel;
+            playerVelocityY = 0;
+            isJumping = false;
+            fastFall = false;
+        }
+    }
+    updatePlayerPosition();
+}
+
+function checkStompCollision() {
+    const playerBottom = playerY;
+    const playerLeft = playerX - 30;
+    const playerRight = playerX + 30;
+    const stompRange = 40; // 踏みつけ判定の縦方向の範囲
+
+    chars.forEach(c => {
+        if (!c.stopped) {
+            const charX = c.x;
+            const charY = 200; // 文字のY位置（top: 50%）
+            const charWidth = 64;
+
+            // 横方向の当たり判定
+            const horizontalHit = playerRight > charX && playerLeft < charX + charWidth;
+            
+            // 縦方向の当たり判定（文字の上から踏む）
+            const verticalHit = Math.abs(playerBottom - charY) < stompRange && playerVelocityY < 0;
+
+            if (horizontalHit && verticalHit) {
+                c.stopped = true;
+                c.el.classList.add("stopped");
+                
+                // マリオ風の小ジャンプ（踏んだ反動）
+                playerVelocityY = jumpPower * 0.5;
+                
+                // 踏みつけ成功のフィードバック（文字を少し下げる）
+                c.el.style.transform = "translateY(-40%)";
+                setTimeout(() => {
+                    if (c.el) c.el.style.transform = "translateY(-50%)";
+                }, 100);
+            }
+        }
+    });
+}
+
+function updatePlayerPosition() {
+    const p = document.getElementById("player");
+    if (p) {
+        p.style.left = playerX + "px";
+        p.style.bottom = playerY + "px";
+        p.style.transform = "translateX(-50%)";
+    }
+}
+
+setupGame();
+</script>
+</body>
+</html>
