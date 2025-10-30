@@ -103,22 +103,41 @@ window.applyFilters = function () {
 }
 
 // 緯度経度から住所を取得（OpenStreetMap Nominatim API使用）
+// 緯度経度から住所を取得（OpenStreetMap Nominatim API使用）
 async function getAddressFromCoords(latitude, longitude) {
   try {
     const response = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&accept-language=ja`
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&accept-language=ja&zoom=18`
     );
     
     const data = await response.json();
     if (data && data.address) {
       const addr = data.address;
-      // 市町村レベルの住所を取得
-      const city = addr.city || addr.town || addr.village || '';
-      const prefecture = addr.state || addr.prefecture || '';
       
-      if (city) {
-        return prefecture ? `${prefecture}${city}` : city;
+      // 詳細な住所を構築（都道府県・市区町村・町名まで）
+      const parts = [];
+      
+      // 都道府県
+      const prefecture = addr.state || addr.prefecture || '';
+      if (prefecture) parts.push(prefecture);
+      
+      // 市区町村
+      const city = addr.city || addr.town || addr.village || '';
+      if (city) parts.push(city);
+      
+      // 町名・地区名
+      const district = addr.suburb || addr.quarter || addr.neighbourhood || '';
+      if (district) parts.push(district);
+      
+      // 町・番地
+      const road = addr.road || '';
+      if (road) parts.push(road);
+      
+      // 住所が取得できた場合
+      if (parts.length > 0) {
+        return parts.join('');
       }
+      
       return '位置情報あり';
     }
     return '位置情報あり';
