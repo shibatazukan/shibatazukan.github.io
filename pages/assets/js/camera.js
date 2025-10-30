@@ -68,6 +68,63 @@ let currentLocation  = null;
 const IMAGENET_MEAN = tf.tensor1d([123.68, 116.779, 103.939]);
 const IMAGENET_STD  = tf.tensor1d([58.393, 57.12, 57.375]);
 
+// 緯度経度から住所を取得（localStorageにキャッシュ）
+async function getAddressFromCoords(latitude, longitude) {
+  // 座標をキーとして使用
+  const cacheKey = `${latitude.toFixed(4)},${longitude.toFixed(4)}`;
+  
+  // localStorageのキャッシュを確認
+  const cache = JSON.parse(localStorage.getItem('addressCache') || '{}');
+  if (cache[cacheKey]) {
+    console.log('キャッシュから住所取得:', cacheKey);
+    return cache[cacheKey];
+  }
+  
+  try {
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&accept-language=ja&zoom=18`
+    );
+    
+    const data = await response.json();
+    if (data && data.address) {
+      const addr = data.address;
+      const parts = [];
+      
+      // 都道府県
+      const prefecture = addr.state || addr.prefecture || '';
+      if (prefecture) parts.push(prefecture);
+      
+      // 市区町村
+      const city = addr.city || addr.town || addr.village || '';
+      if (city) parts.push(city);
+      
+      // 町名・地区名
+      const district = addr.suburb || addr.quarter || addr.neighbourhood || '';
+      if (district) parts.push(district);
+      
+      // 番地・house_number（丁目や番地の情報）
+      const houseNumber = addr.house_number || '';
+      if (houseNumber) parts.push(houseNumber);
+      
+      if (parts.length > 0) {
+        const address = parts.join('');
+        // localStorageに保存
+        cache[cacheKey] = address;
+        localStorage.setItem('addressCache', JSON.stringify(cache));
+        console.log('新規住所取得:', address);
+        return address;
+      }
+    }
+    
+    cache[cacheKey] = '位置情報あり';
+    localStorage.setItem('addressCache', JSON.stringify(cache));
+    return '位置情報あり';
+  } catch (error) {
+    console.error('住所取得エラー:', error);
+    return '位置情報あり';
+  }
+}
+
 // A-Frameコンポーネント: 完全にカメラを向く
 AFRAME.registerComponent('face-camera-full', {
   tick: function () {
@@ -694,12 +751,34 @@ predictButton.addEventListener('click', async () => {
   predictButton.disabled = false;
 });
 
-saveButton.addEventListener('click', () => {
+saveButton.addEventListener('click', async () => {
   if (!lastPrediction) return;
+
+  // 保存ボタンを一時的に無効化して二重登録を防ぐ
+  saveButton.disabled = true;
+  showNotification('登録中...', false, false);
 
   const { label, count, total, confidence } = lastPrediction;
   const now = new Date().toISOString();
   const labelData = labelInfo[label];
+  
+  // 位置情報がある場合は住所を取得
+  let locationData = null;
+  if (currentLocation) {
+    const address = await getAddressFromCoords(
+      currentLocation.latitude,
+      currentLocation.longitude
+    );
+    
+    locationData = {
+      latitude: currentLocation.latitude,
+      longitude: currentLocation.longitude,
+      accuracy: currentLocation.accuracy,
+      timestamp: currentLocation.timestamp,
+      address: address  // 住所を追加
+    };
+  }
+  
   const entry = {
     name: labelData.name,
     category: labelData.category,
@@ -708,12 +787,7 @@ saveButton.addEventListener('click', () => {
     matchCount: count,
     totalSamples: total,
     confidence: confidence,
-    location: currentLocation ? {
-      latitude: currentLocation.latitude,
-      longitude: currentLocation.longitude,
-      accuracy: currentLocation.accuracy,
-      timestamp: currentLocation.timestamp
-    } : null
+    location: locationData
   };
 
   let zukan = JSON.parse(localStorage.getItem('myZukan') || '[]');
@@ -723,12 +797,11 @@ saveButton.addEventListener('click', () => {
   if (!exists) {
     zukan.push(entry);
     localStorage.setItem('myZukan', JSON.stringify(zukan));
-    const locationMsg = currentLocation ? '（位置情報付き）' : '';
+    const locationMsg = locationData ? `（${locationData.address}）` : '';
     showNotification('「' + labelData.name + '」をマイずかんに登録しました！' + locationMsg);
   } else {
     showNotification('「' + labelData.name + '」はすでに登録済みです。', true);
   }
 
-  saveButton.disabled = true;
   lastPrediction = null;
 });

@@ -103,7 +103,6 @@ window.applyFilters = function () {
 }
 
 // 緯度経度から住所を取得（OpenStreetMap Nominatim API使用）
-// 緯度経度から住所を取得（OpenStreetMap Nominatim API使用）
 async function getAddressFromCoords(latitude, longitude) {
   try {
     const response = await fetch(
@@ -114,7 +113,7 @@ async function getAddressFromCoords(latitude, longitude) {
     if (data && data.address) {
       const addr = data.address;
       
-      // 詳細な住所を構築（都道府県・市区町村・町名まで）
+      // 詳細な住所を構築（都道府県・市区町村・町名・番地まで）
       const parts = [];
       
       // 都道府県
@@ -129,9 +128,9 @@ async function getAddressFromCoords(latitude, longitude) {
       const district = addr.suburb || addr.quarter || addr.neighbourhood || '';
       if (district) parts.push(district);
       
-      // 町・番地
-      const road = addr.road || '';
-      if (road) parts.push(road);
+      // 番地・house_number（丁目や番地の情報）
+      const houseNumber = addr.house_number || '';
+      if (houseNumber) parts.push(houseNumber);
       
       // 住所が取得できた場合
       if (parts.length > 0) {
@@ -148,11 +147,11 @@ async function getAddressFromCoords(latitude, longitude) {
 }
 
 // 一覧ビューを描画
-async function renderListView() {
+function renderListView() {
   const container = document.getElementById('listView');
   container.innerHTML = '';
 
-  for (const entry of filteredData) {
+  filteredData.forEach((entry, index) => {
     const card = document.createElement('div');
     card.className = 'list-card';
 
@@ -166,12 +165,14 @@ async function renderListView() {
     const rarity = getRarityStars(entry.name);
     const accuracy = Math.round((entry.matchCount || 0) / (entry.totalSamples || 30) * 100);
 
-    // 位置情報がある場合は住所を取得
+    // 位置情報がある場合は住所を表示（保存済みの住所を使用）
     let locationHTML = '';
     if (entry.location && entry.location.latitude && entry.location.longitude) {
+      const address = entry.location.address || '位置情報あり';
       locationHTML = `
         <div class="info location-info">
-          <span class="label">📍 発見場所:</span> <span class="location-text">取得中...</span>
+          <span class="label">📍 発見場所:</span> 
+          <span class="location-text">${address}</span>
         </div>
       `;
     }
@@ -202,16 +203,7 @@ async function renderListView() {
     `;
 
     container.appendChild(card);
-
-    // 位置情報がある場合は非同期で住所を取得して更新
-    if (entry.location && entry.location.latitude && entry.location.longitude) {
-      const locationText = card.querySelector('.location-text');
-      const address = await getAddressFromCoords(entry.location.latitude, entry.location.longitude);
-      if (locationText) {
-        locationText.textContent = address;
-      }
-    }
-  }
+  });
 }
 
 // 初期化（グローバル関数として公開 - hamburger_menu.jsから呼ばれる可能性がある）

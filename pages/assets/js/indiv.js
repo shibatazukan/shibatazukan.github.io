@@ -61,19 +61,37 @@ function getImagePath(name) {
 async function getAddressFromCoords(latitude, longitude) {
   try {
     const response = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&accept-language=ja`
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&accept-language=ja&zoom=18`
     );
-    const data = await response.json();
     
+    const data = await response.json();
     if (data && data.address) {
       const addr = data.address;
-      // 市町村レベルの住所を取得
-      const city = addr.city || addr.town || addr.village || '';
-      const prefecture = addr.state || addr.prefecture || '';
       
-      if (city) {
-        return prefecture ? `${prefecture}${city}` : city;
+      // 詳細な住所を構築（都道府県・市区町村・町名・番地まで）
+      const parts = [];
+      
+      // 都道府県
+      const prefecture = addr.state || addr.prefecture || '';
+      if (prefecture) parts.push(prefecture);
+      
+      // 市区町村
+      const city = addr.city || addr.town || addr.village || '';
+      if (city) parts.push(city);
+      
+      // 町名・地区名
+      const district = addr.suburb || addr.quarter || addr.neighbourhood || '';
+      if (district) parts.push(district);
+      
+      // 番地・house_number（丁目や番地の情報）
+      const houseNumber = addr.house_number || '';
+      if (houseNumber) parts.push(houseNumber);
+      
+      // 住所が取得できた場合
+      if (parts.length > 0) {
+        return parts.join('');
       }
+      
       return '位置情報あり';
     }
     return '位置情報あり';
@@ -83,8 +101,8 @@ async function getAddressFromCoords(latitude, longitude) {
   }
 }
 
-// カード作成
-async function createCard(entry, index) {
+// カード作成（asyncを削除して同期的に作成）
+function createCard(entry, index) {
   const card = document.createElement('div');
   card.className = 'card';
   card.style.zIndex = zukanData.length - index;
@@ -114,7 +132,7 @@ async function createCard(entry, index) {
     locationHTML = `
       <div style="margin-bottom: 8px;" class="card-location">
         <strong>📍 発見場所:</strong> 
-        <span class="location-text">取得中...</span>
+        <span class="location-text" data-card-index="${index}">取得中...</span>
       </div>
     `;
   }
@@ -146,13 +164,15 @@ async function createCard(entry, index) {
   card.addEventListener('mouseup', handleMouseUp);
   card.addEventListener('mouseleave', handleMouseUp);
 
-  // 位置情報がある場合は非同期で住所を取得して更新
+  // 位置情報がある場合は非同期で住所を取得して更新（後回し）
   if (entry.location && entry.location.latitude && entry.location.longitude) {
-    const address = await getAddressFromCoords(entry.location.latitude, entry.location.longitude);
-    const locationText = card.querySelector('.location-text');
-    if (locationText) {
-      locationText.textContent = address;
-    }
+    setTimeout(async () => {
+      const locationText = document.querySelector(`.location-text[data-card-index="${index}"]`);
+      if (locationText) {
+        const address = await getAddressFromCoords(entry.location.latitude, entry.location.longitude);
+        locationText.textContent = address;
+      }
+    }, 0);
   }
 
   return card;
@@ -289,7 +309,7 @@ function updateCardView() {
 // 初期化処理（グローバル関数として公開 - hamburger_menu.jsから呼ばれる）
 // -----------------------------------------------------------
 
-window.init = async function() {
+window.init = function() {
   console.log('init() called - Loading zukan data...');
   
   // 図鑑データカードの処理
@@ -340,9 +360,9 @@ window.init = async function() {
   console.log(`Loading ${zukanData.length} cards...`);
   if (emptyState) emptyState.style.display = 'none';
 
-  // カードを全て生成（非同期処理）
+  // カードを全て生成（同期的に生成して即座に表示）
   for (let index = 0; index < zukanData.length; index++) {
-    const card = await createCard(zukanData[index], index);
+    const card = createCard(zukanData[index], index);
     container.appendChild(card);
   }
 
