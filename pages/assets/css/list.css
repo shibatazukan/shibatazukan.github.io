@@ -10,97 +10,6 @@ body {
   min-height: 100vh;
 }
 
-/* ハンバーガーメニュー（home.cssの構造を適用） */
-.menu-toggle {
-  position: fixed;
-  top: 20px;
-  left: 20px;
-  font-size: 1.8em;
-  color: white;
-  background: rgba(0, 0, 0, 0.4);
-  padding: 10px 12px;
-  border-radius: 10px;
-  z-index: 1000;
-  cursor: pointer;
-  transition: background 0.3s, left 0.35s ease-in-out;
-}
-
-.menu-toggle:hover {
-  background: rgba(0, 0, 0, 0.6);
-}
-
-/* サイドメニュー */
-.side-menu {
-  position: fixed;
-  top: 0;
-  left: -260px;
-  width: 260px;
-  height: 100%;
-  background: rgba(20, 20, 20, 0.95);
-  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.5);
-  padding: 2em 1em 1em 1em;
-  box-sizing: border-box;
-  z-index: 999;
-  transition: left 0.35s ease-in-out;
-  display: flex;
-  flex-direction: column;
-  font-family: 'Mochiy Pop One', sans-serif !important;
-}
-
-.side-menu.open {
-  left: 0;
-}
-
-/* サイドメニューが開いたとき三本線を右へずらす */
-.side-menu.open~.menu-toggle {
-  left: 280px;
-}
-
-.side-menu .menu-title {
-  font-size: 1.2em;
-  font-weight: bold;
-  margin-bottom: 1.5em;
-  color: #fff;
-  display: flex;
-  align-items: center;
-  gap: 0.6em;
-  margin-left: 0.2em;
-  cursor: pointer;
-}
-
-.side-menu a,
-.side-menu .menu-item {
-  color: white;
-  text-decoration: none;
-  padding: 0.6em 0;
-  font-size: 0.92em;
-  display: flex;
-  align-items: center;
-  gap: 0.8em;
-  transition: background 0.25s;
-  border-radius: 6px;
-  cursor: pointer;
-  border: none;
-  background: none;
-  width: 100%;
-  text-align: left;
-  font-family: 'Mochiy Pop One', sans-serif !important;
-}
-
-.side-menu a:hover,
-.side-menu .menu-item:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.file-input {
-  display: none;
-}
-
-.menu-divider {
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
-  margin: 1em 0;
-}
-
 /* ヘッダー */
 .header {
   position: fixed;
@@ -332,6 +241,65 @@ input:focus {
   transition: width 0.3s ease;
 }
 
+/* ============================================
+   位置情報表示スタイル（新規追加）
+   ============================================ */
+
+/* 位置情報表示エリア */
+.location-info {
+  background: rgba(74, 144, 226, 0.08);
+  border-left: 3px solid #4a90e2;
+  padding: 10px 14px;
+  margin: 12px 0;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.location-info:hover {
+  background: rgba(74, 144, 226, 0.12);
+  box-shadow: 0 2px 8px rgba(74, 144, 226, 0.15);
+  transform: translateX(2px);
+}
+
+/* 位置情報のラベル */
+.location-info .label {
+  color: #4a90e2;
+  font-weight: bold;
+  font-size: 0.9em;
+  min-width: 90px;
+}
+
+/* 位置情報のテキスト */
+.location-text {
+  color: #2c3e50;
+  font-size: 0.92em;
+  font-weight: 500;
+  flex: 1;
+}
+
+/* 位置情報取得中のアニメーション */
+.location-text:empty::after {
+  content: '取得中...';
+  color: #95a5a6;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+/* ============================================
+   以下、元のスタイル（続き）
+   ============================================ */
+
 .date-badge {
   background: rgba(149, 165, 166, 0.1);
   color: #7f8c8d;
@@ -380,32 +348,6 @@ input:focus {
   background: #2980b9;
   transform: translateY(-2px);
   box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
-}
-
-/* 通知表示（home.cssから追加） */
-.notification {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  background: rgba(0, 200, 0, 0.9);
-  color: white;
-  padding: 10px 20px;
-  border-radius: 8px;
-  font-size: 0.9em;
-  z-index: 1001;
-  opacity: 0;
-  transform: translateX(100%);
-  transition: all 0.3s ease;
-  font-family: 'Mochiy Pop One', sans-serif;
-}
-
-.notification.show {
-  opacity: 1;
-  transform: translateX(0);
-}
-
-.notification.error {
-  background: rgba(200, 0, 0, 0.9);
 }
 
 /* 雲の装飾 */
@@ -505,5 +447,22 @@ input:focus {
   .toggle-btn {
     font-size: 12px;
     padding: 6px 12px;
+  }
+
+  /* 位置情報のレスポンシブ対応 */
+  .location-info {
+    padding: 8px 12px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .location-info .label {
+    font-size: 0.85em;
+    min-width: auto;
+  }
+
+  .location-text {
+    font-size: 0.88em;
   }
 }

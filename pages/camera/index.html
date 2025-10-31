@@ -2,14 +2,13 @@
 <html lang="ja">
 
 <head>
-  
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>動植物識別AR</title>
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.0.0/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
   <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
   <script src="https://unpkg.com/aframe-troika-text/dist/aframe-troika-text.min.js"></script>
-  <link rel="stylesheet" href="../../css/camera.css">
+  <link   rel="stylesheet" href="../assets/css/camera.css">
 </head>
 
 <body>
@@ -59,10 +58,10 @@
     </a-entity>
 
     <a-assets>
-      <a-asset-item id="notojpFont" src="fonts/MPLUSRounded1c-Black.ttf"></a-asset-item>
+      <a-asset-item id="notojpFont" src="AR_fonts/MPLUSRounded1c-Black.ttf"></a-asset-item>
     </a-assets>
 
-    <a-entity id="infoBubble" visible="false" scale="0.8 0.8 0.8" face-camera-y tail-update>
+    <a-entity id="infoBubble" visible="false" scale="0.8 0.8 0.8" face-camera-full tail-update>
       <a-plane color="#8b5a2b" width="2.1" height="1.1" position="0 0 -0.005"
         material="shader: flat; opacity: 1"></a-plane>
       <a-plane color="#34495e" width="2.0" height="1.0" position="0 0 0" material="shader: flat; opacity: 1"></a-plane>
@@ -75,7 +74,7 @@
     </a-entity>
   </a-scene>
 
-  <script src="../../js/camera.js"></script>
+  <script src="../assets/js/camera.js"></script>
 </body>
 
 </html>

@@ -18,16 +18,16 @@ def apply_data_augmentation(image):
     augmented_images = []
     
     # パターン1: 明るく
-    bright_img = cv2.convertScaleAbs(image, alpha=1, beta=30)
+    bright_img = cv2.convertScaleAbs(image, alpha=1, beta=40)
     augmented_images.append(bright_img)
     
     # パターン2: 暗く
-    dark_img = cv2.convertScaleAbs(image, alpha=1, beta=-30)
+    dark_img = cv2.convertScaleAbs(image, alpha=1, beta=-50)
     augmented_images.append(dark_img)
     
     # パターン3: ノイズ追加
     noise_img = image.copy()
-    noise = np.random.normal(0, 100, noise_img.shape).astype(np.int16)
+    noise = np.random.normal(0, 20, noise_img.shape).astype(np.int16)
     noise_img = np.clip(noise_img.astype(np.int16) + noise, 0, 255).astype(np.uint8)
     augmented_images.append(noise_img)
     

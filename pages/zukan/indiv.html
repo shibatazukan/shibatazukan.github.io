@@ -3,13 +3,14 @@
 
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport"  content="width=device-width, initial-scale=1.0">
+  <title>マイずかん - カードビュー</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&display=swap" rel="stylesheet">
-  <title>マイずかん - カードビュー</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&display=swap">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-  <link rel="stylesheet" href="../../css/indiv.css">
+  <link rel="stylesheet" href="../assets/css/indiv.css">
+  <link rel="stylesheet" href="../assets/css/hamburger_menu.css">
 </head>
 
 <body>
@@ -19,10 +20,10 @@
       <i class="fa-solid fa-user"></i>
       <span id="userNameDisplay">ユーザー名</span>
     </div>
-    <a href="../home/home.html"><i class="fa-solid fa-house"></i> ホーム</a>
+    <a href="../home/index.html"><i class="fa-solid fa-house"></i> ホーム</a>
     <a href="list.html"><i class="fa-solid fa-scroll"></i> ずかん</a>
-    <a href="../camera/camera.html"><i class="fa-solid fa-camera"></i> カメラ</a>
-    <a href="../map/re.html"><i class="fa-solid fa-map"></i> マップ</a>
+    <a href="../camera/index.html"><i class="fa-solid fa-camera"></i> カメラ</a>
+    <a href="../map/index.html"><i class="fa-solid fa-map"></i> マップ</a>
 
     <div class="menu-divider"></div>
 
@@ -37,7 +38,7 @@
     <div class="menu-divider"></div>
 
     <a href="../home/settings.html"><i class="fa-solid fa-gear"></i> せってい</a>
-    <a href="../help/help.html"><i class="fa-solid fa-circle-question"></i> ヘルプ</a>
+    <a href="../help/index.html"><i class="fa-solid fa-circle-question"></i> ヘルプ</a>
   </nav>
 
   <div class="menu-toggle" id="menuToggle">
@@ -68,7 +69,7 @@
       <h2>まだ登録されていません</h2>
       <p>動植物識別ARアプリで生き物を発見して<br>あなただけのマイずかんを作りましょう！</p>
       <div class="back-to-scan">
-        <a href="../camera/camera.html">みつけにいく</a>
+        <a href="../camera/index.html">みつけにいく</a>
       </div>
     </div>
   </div>
@@ -79,8 +80,8 @@
     <button class="nav-btn" id="prevBtn" onclick="prevCard()">←</button>
     <button class="nav-btn" id="nextBtn" onclick="nextCard()">→</button>
   </div>
-
-  <script src="../../js/indiv.js"></script>
+  <script src="../assets/js/indiv.js"></script>
+  <script src="../assets/js/hamburger_menu.js"></script>
 </body>
 
 </html>

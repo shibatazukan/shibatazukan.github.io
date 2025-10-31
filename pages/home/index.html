@@ -3,20 +3,21 @@
 
     <head>
         <meta charset="UTF-8">
+        <meta name="viewport"  content="width=device-width, initial-scale=1.0">
         <title>新発田ずかん</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&display=swap">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-        <link rel="stylesheet" href="../../css/home.css">
+        <link rel="stylesheet" href="../assets/css/home.css">
+        <link rel="stylesheet" href="../assets/css/hamburger_menu.css">
     </head>
 
     <body>
         <nav class="side-menu" id="sideMenu">
             <div class="menu-title"><i class="fa-solid fa-user"></i> <span id="userNameDisplay">ユーザー名</span></div>
-            <a href="home.html"><i class="fa-solid fa-house"></i> ホーム</a>
+            <a href="index.html"><i class="fa-solid fa-house"></i> ホーム</a>
             <a href="../zukan/list.html"><i class="fa-solid fa-scroll"></i> ずかん</a>
-            <a href="../camera/camera.html"><i class="fa-solid fa-camera"></i> カメラ</a>
-            <a href="../map/re.html"><i class="fa-solid fa-map"></i> マップ</a>
+            <a href="../camera/index.html"><i class="fa-solid fa-camera"></i> カメラ</a>
+            <a href="../map/index.html"><i class="fa-solid fa-map"></i> マップ</a>
 
             <div class="menu-divider"></div>
 
@@ -31,7 +32,7 @@
             <div class="menu-divider"></div>
 
             <a href="settings.html"><i class="fa-solid fa-gear"></i> せってい</a>
-            <a href="../help/help.html"><i class="fa-solid fa-circle-question"></i> ヘルプ</a>
+            <a href="../help/index.html"><i class="fa-solid fa-circle-question"></i> ヘルプ</a>
         </nav>
         <div class="menu-toggle" id="menuToggle">
             <i class="fa-solid fa-bars"></i>
@@ -45,12 +46,13 @@
             </div>
             <div class="buttons">
                 <a href="../zukan/list.html" class="button-link"><i class="fa-solid fa-scroll"></i>ずかんを開く </a>
-                <a href="../camera/camera.html" class="button-link"><i class="fa-solid fa-camera"></i>カメラを開く</a>
-                <a href="../map/re.html" class="button-link"><i class="fa-solid fa-map"></i>マップを開く</a>
+                <a href="../camera/index.html" class="button-link"><i class="fa-solid fa-camera"></i>カメラを開く</a>
+                <a href="../map/index.html" class="button-link"><i class="fa-solid fa-map"></i>マップを開く</a>
             </div>
         </div>
         <div class="notification" id="notification"></div>
-        <script src="../../js/home.js"></script>
+        <script src="../assets/js/home.js"></script>
+        <script src="../assets/js/hamburger_menu.js"></script>
     </body>
 
 </html>
