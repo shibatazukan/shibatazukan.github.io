@@ -299,6 +299,7 @@ function calculateConfidenceVariance(scores) {
 /**
  * 最適化された境界計算（洗練版）
  * 外れ値除去、適切なパディング、境界チェックを統合
+ * 線の太さを考慮した計算に改善
  */
 function calculateOptimalBounds(points) {
   if (points.length < 2) {
@@ -338,12 +339,21 @@ function calculateOptimalBounds(points) {
   let maxX = Math.max(...validPoints.map(p => p.x));
   let maxY = Math.max(...validPoints.map(p => p.y));
   
+  // 線の太さを考慮した補正
+  // 線の太さが8ピクセルなので、実際の描画範囲は線の中心から半径4ピクセル（線幅/2）広がる
+  const lineRadius = FREEHAND_LINE_WIDTH / 2; // 4ピクセル
+  minX -= lineRadius;
+  minY -= lineRadius;
+  maxX += lineRadius;
+  maxY += lineRadius;
+  
   // パディング計算（領域サイズに応じて適応的）
   const rawWidth = maxX - minX;
   const rawHeight = maxY - minY;
   const area = rawWidth * rawHeight;
   
   // パディング: 小さい領域ほど大きなパディング、大きい領域ほど小さなパディング
+  // 線が太くなった分、パディングを少し調整
   let paddingRatio;
   if (area < 1000) {
     paddingRatio = 0.15; // 小さな領域: 15%
@@ -354,7 +364,8 @@ function calculateOptimalBounds(points) {
   }
   
   // 最小パディング（ピクセル単位）
-  const minPadding = 5;
+  // 線が太くなったので、最小パディングも少し増やす
+  const minPadding = Math.max(5, lineRadius); // 線の半径と最小パディングの大きい方
   const maxPadding = Math.min(drawingCanvas.width * 0.1, drawingCanvas.height * 0.1, 20);
   
   const paddingX = Math.max(minPadding, Math.min(maxPadding, rawWidth * paddingRatio));
@@ -580,8 +591,12 @@ function getLocation() {
   );
 }
 
-ctx.strokeStyle = '#007bff';
-ctx.lineWidth = 5;
+// フリーハンド描画用の定数
+const FREEHAND_LINE_WIDTH = 8; // 5から8に変更（少し太く）
+const FREEHAND_STROKE_COLOR = '#000000'; // 黒に変更
+
+ctx.strokeStyle = FREEHAND_STROKE_COLOR;
+ctx.lineWidth = FREEHAND_LINE_WIDTH;
 ctx.lineCap = 'round';
 ctx.lineJoin = 'round';
 
@@ -669,8 +684,8 @@ function drawFreehand(points) {
   ctx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
   if (points.length < 2) return;
   
-  ctx.strokeStyle = '#007bff';
-  ctx.lineWidth = 5;
+  ctx.strokeStyle = FREEHAND_STROKE_COLOR;
+  ctx.lineWidth = FREEHAND_LINE_WIDTH;
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
   ctx.beginPath();
@@ -748,6 +763,10 @@ function handleFreehandStart(e) {
   isDrawing = true;
   const coords = getCanvasCoordinates(e);
   points = [coords];
+  ctx.strokeStyle = FREEHAND_STROKE_COLOR;
+  ctx.lineWidth = FREEHAND_LINE_WIDTH;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
   ctx.beginPath();
   ctx.moveTo(coords.x, coords.y);
 }
