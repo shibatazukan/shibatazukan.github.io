@@ -64,6 +64,7 @@ let points           = [];
 let identifiedObject = null;
 let lastPrediction   = null;
 let currentLocation  = null;
+let detectionModel   = null; // coco-ssd 物体検出モデル
 
 // 矩形選択用の変数
 let isSelecting = false;
@@ -517,6 +518,58 @@ tf.loadLayersModel(modelPath).then(m => model = m).catch(err => {
   showNotification("モデルの読み込みに失敗しました。", true);
   console.error("Model load error:", err);
 });
+
+// 物体検出モデルを読み込み（coco-ssd）
+(async function loadDetectionModel() {
+  try {
+    if (window.cocoSsd && typeof window.cocoSsd.load === 'function') {
+      detectionModel = await window.cocoSsd.load({ base: 'lite_mobilenet_v2' });
+      console.log('coco-ssd loaded');
+    } else {
+      console.warn('coco-ssd is not available');
+    }
+  } catch (e) {
+    console.warn('Failed to load detection model', e);
+  }
+})();
+
+// fullモードで自動的に対象領域を抽出
+async function getAutoBoundsForFullMode() {
+  // 検出モデルがない場合はnull
+  if (!detectionModel) return null;
+  try {
+    // 現フレームから検出
+    const predictions = await detectionModel.detect(video);
+    // 信頼度で降順ソート
+    predictions.sort((a, b) => b.score - a.score);
+    // 上位から、極端に小さすぎないものを採用
+    const minArea = (drawingCanvas.width * drawingCanvas.height) * 0.02; // 2%
+    for (const p of predictions) {
+      const [x, y, w, h] = p.bbox; // coco-ssdは動画要素座標基準
+      const area = w * h;
+      if (area < minArea) continue;
+      const minX = Math.max(0, Math.floor(x));
+      const minY = Math.max(0, Math.floor(y));
+      const maxX = Math.min(drawingCanvas.width, Math.ceil(x + w));
+      const maxY = Math.min(drawingCanvas.height, Math.ceil(y + h));
+      const width = Math.max(0, maxX - minX);
+      const height = Math.max(0, maxY - minY);
+      if (width <= 0 || height <= 0) continue;
+      return {
+        minX, minY, maxX, maxY,
+        width, height,
+        centerX: (minX + maxX) / 2,
+        centerY: (minY + maxY) / 2,
+        area: width * height,
+        aspectRatio: width / height
+      };
+    }
+    return null;
+  } catch (e) {
+    console.warn('Detection failed', e);
+    return null;
+  }
+}
 
 async function setupCamera() {
   try {
@@ -1094,19 +1147,29 @@ predictButton.addEventListener('click', async () => {
   const mode = getCurrentMode();
   
   if (mode === 'full') {
-    // 素で判別：画像全体を使用
-    rawBounds = {
-      minX: 0,
-      minY: 0,
-      maxX: drawingCanvas.width,
-      maxY: drawingCanvas.height,
-      width: drawingCanvas.width,
-      height: drawingCanvas.height,
-      centerX: drawingCanvas.width / 2,
-      centerY: drawingCanvas.height / 2,
-      area: drawingCanvas.width * drawingCanvas.height,
-      aspectRatio: drawingCanvas.width / drawingCanvas.height
-    };
+    // 素で判別：まず物体検出で自動領域抽出を試みる
+    const detected = await getAutoBoundsForFullMode();
+    if (detected) {
+      rawBounds = detected;
+    } else {
+      // フォールバック：画像中央の少し小さめの領域（80%）を使用
+      const w = Math.floor(drawingCanvas.width * 0.8);
+      const h = Math.floor(drawingCanvas.height * 0.8);
+      const minX = Math.floor((drawingCanvas.width - w) / 2);
+      const minY = Math.floor((drawingCanvas.height - h) / 2);
+      rawBounds = {
+        minX,
+        minY,
+        maxX: minX + w,
+        maxY: minY + h,
+        width: w,
+        height: h,
+        centerX: minX + w / 2,
+        centerY: minY + h / 2,
+        area: w * h,
+        aspectRatio: w / h
+      };
+    }
   } else if (mode === 'rectangle') {
     // 矩形選択モード
     if (!currentSelection) {
@@ -1146,7 +1209,12 @@ predictButton.addEventListener('click', async () => {
   if (!bounds) {
     showProgressIndicator(false);
     predictButton.disabled = false;
-    showNotification("有効な領域を選択してください。", true);
+    // fullモードかつ検出モデルが未ロード/検出失敗の場合の案内を出す
+    if (mode === 'full' && !detectionModel) {
+      showNotification("モデル準備中です。数秒後にお試しください。", false, true);
+    } else {
+      showNotification("有効な領域を選択してください。", true);
+    }
     return;
   }
 
