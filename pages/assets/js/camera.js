@@ -40,18 +40,6 @@ const labelInfo   = {
 };
 
 // DOM要素の取得
-<<<<<<< HEAD:js/camera.js
-const video = document.getElementById('webcam');
-const drawingCanvas = document.getElementById('drawingCanvas');
-const ctx = drawingCanvas.getContext('2d');
-const predictButton = document.getElementById('predictButton');
-const saveButton = document.getElementById('saveButton');
-const clearButton = document.getElementById('clearButton');
-const controlPanel = document.getElementById('controlPanel');
-const modeSelector = document.getElementById('modeSelector');
-const scene = document.querySelector('a-scene');
-const infoBubble = document.getElementById('infoBubble');
-=======
 const video               = document.getElementById('webcam');
 const drawingCanvas       = document.getElementById('drawingCanvas');
 const ctx                 = drawingCanvas.getContext('2d');
@@ -59,9 +47,9 @@ const predictButton       = document.getElementById('predictButton');
 const saveButton          = document.getElementById('saveButton');
 const clearButton         = document.getElementById('clearButton');
 const controlPanel        = document.getElementById('controlPanel');
+const modeSelector        = document.getElementById('modeSelector');
 const scene               = document.querySelector('a-scene');
 const infoBubble          = document.getElementById('infoBubble');
->>>>>>> e47c7b375dd6c75c4807ad184a5f228db9a12e92:pages/assets/js/camera.js
 const notificationMessage = document.getElementById('notificationMessage');
 const progressIndicator   = document.getElementById('progressIndicator');
 const progressText        = document.getElementById('progressText');
@@ -464,7 +452,6 @@ ctx.lineWidth = 5;
 ctx.lineCap = 'round';
 ctx.lineJoin = 'round';
 
-<<<<<<< HEAD:js/camera.js
 // 矩形選択の描画
 function drawRectangle(startX, startY, endX, endY) {
   // 既存の描画をクリア
@@ -564,10 +551,6 @@ function setupEventListeners() {
 // フリーハンド描画のハンドラ
 function handleFreehandStart(e) {
   if (getCurrentMode() !== 'freehand') return;
-=======
-drawingCanvas.addEventListener('touchstart', e => {
-  if (e.touches.length !== 1) return;
->>>>>>> e47c7b375dd6c75c4807ad184a5f228db9a12e92:pages/assets/js/camera.js
   e.preventDefault();
   isDrawing = true;
   const coords = getCanvasCoordinates(e);
@@ -657,13 +640,10 @@ document.querySelectorAll('input[name="selectionMode"]').forEach(radio => {
   });
 });
 
-<<<<<<< HEAD:js/camera.js
 // 初期設定
 setupEventListeners();
 
 // 消去ボタンのイベントリスナー
-=======
->>>>>>> e47c7b375dd6c75c4807ad184a5f228db9a12e92:pages/assets/js/camera.js
 clearButton.addEventListener('click', () => {
   clearCanvas();
   points = [];
@@ -748,7 +728,6 @@ predictButton.addEventListener('click', async () => {
   saveButton.disabled = true;
   showProgressIndicator(true);
 
-<<<<<<< HEAD:js/camera.js
   // モードに応じて領域を決定
   let bounds = null;
   const mode = getCurrentMode();
@@ -790,9 +769,6 @@ predictButton.addEventListener('click', async () => {
     bounds = calculateOptimalBounds(points);
   }
 
-=======
-  const bounds = calculateOptimalBounds(points);
->>>>>>> e47c7b375dd6c75c4807ad184a5f228db9a12e92:pages/assets/js/camera.js
   const { minX, minY, maxX, maxY, width, height } = bounds;
 
   if (width <= 0 || height <= 0 || width * height < 100) {
@@ -997,7 +973,6 @@ predictButton.addEventListener('click', async () => {
     saveButton.disabled = true;
   }
 
-<<<<<<< HEAD:js/camera.js
   // 描画をクリア（モードに応じて）
   const currentMode = getCurrentMode();
   if (currentMode === 'freehand') {
@@ -1006,10 +981,6 @@ predictButton.addEventListener('click', async () => {
     currentSelection = null;
   }
   clearCanvas();
-=======
-  ctx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
-  points = [];
->>>>>>> e47c7b375dd6c75c4807ad184a5f228db9a12e92:pages/assets/js/camera.js
   predictButton.disabled = false;
 });
 
