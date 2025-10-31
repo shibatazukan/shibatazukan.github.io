@@ -22,6 +22,21 @@
   <video id="webcam" autoplay playsinline muted></video>
   <canvas id="drawingCanvas"></canvas>
 
+  <div id="modeSelector">
+    <label class="mode-option">
+      <input type="radio" name="selectionMode" value="full" checked>
+      <span>素で判別</span>
+    </label>
+    <label class="mode-option">
+      <input type="radio" name="selectionMode" value="rectangle">
+      <span>枠で選択</span>
+    </label>
+    <label class="mode-option">
+      <input type="radio" name="selectionMode" value="freehand">
+      <span>フリーハンド</span>
+    </label>
+  </div>
+
   <div id="controlPanel">
     <button id="predictButton" disabled>分類する</button>
     <button id="saveButton" disabled>登録する</button>

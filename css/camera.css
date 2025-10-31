@@ -58,6 +58,56 @@ body {
   /* 初期状態では無効 */
 }
 
+/* モード選択UI */
+#modeSelector {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 255, 255, 0.95);
+  padding: 8px;
+  border-radius: 8px;
+  z-index: 11;
+  font-family: 'Mochiy Pop One', sans-serif;
+  display: none;
+  /* 初期状態では非表示 */
+  flex-direction: row;
+  gap: 5px;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.mode-option {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+  user-select: none;
+}
+
+.mode-option:hover {
+  background-color: rgba(76, 175, 80, 0.1);
+}
+
+.mode-option input[type="radio"] {
+  margin-right: 6px;
+  cursor: pointer;
+}
+
+.mode-option span {
+  font-size: 14px;
+  color: #333;
+}
+
+.mode-option input[type="radio"]:checked + span {
+  color: #4caf50;
+  font-weight: bold;
+}
+
 /* コントロールパネル */
 #controlPanel {
   position: absolute;

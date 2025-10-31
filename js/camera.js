@@ -47,6 +47,7 @@ const predictButton = document.getElementById('predictButton');
 const saveButton = document.getElementById('saveButton');
 const clearButton = document.getElementById('clearButton');
 const controlPanel = document.getElementById('controlPanel');
+const modeSelector = document.getElementById('modeSelector');
 const scene = document.querySelector('a-scene');
 const infoBubble = document.getElementById('infoBubble');
 const notificationMessage = document.getElementById('notificationMessage');
@@ -62,6 +63,18 @@ let isDrawing = false;
 let points = [];
 let identifiedObject = null;
 let lastPrediction = null;
+
+// 矩形選択用の変数
+let isSelecting = false;
+let selectionStart = { x: 0, y: 0 };
+let selectionEnd = { x: 0, y: 0 };
+let currentSelection = null; // { minX, minY, maxX, maxY }
+
+// 現在のモードを取得
+function getCurrentMode() {
+  const selected = document.querySelector('input[name="selectionMode"]:checked');
+  return selected ? selected.value : 'full';
+}
 
 // ImageNet標準化用の定数
 const IMAGENET_MEAN = tf.tensor1d([123.68, 116.779, 103.939]);
@@ -318,8 +331,18 @@ async function setupCamera() {
     await new Promise(resolve => setTimeout(resolve, 1500)); // ARシーンの準備を待つ
 
     controlPanel.style.display = 'flex';
-    drawingCanvas.style.pointerEvents = "auto";
-    showNotification("カメラ準備完了。対象を囲んでください。");
+    modeSelector.style.display = 'flex';
+    
+    // 初期モードに応じて設定
+    const initialMode = getCurrentMode();
+    if (initialMode === 'full') {
+      drawingCanvas.style.pointerEvents = "none";
+      predictButton.disabled = false;
+      showNotification("カメラ準備完了。分類するボタンを押してください。");
+    } else {
+      drawingCanvas.style.pointerEvents = "auto";
+      showNotification("カメラ準備完了。対象を選択してください。");
+    }
 
   } catch (err) {
     showNotification("カメラへのアクセスを許可してください。", true);
@@ -338,42 +361,204 @@ ctx.lineWidth = 5;
 ctx.lineCap = 'round';
 ctx.lineJoin = 'round';
 
-// 描画イベント（タッチデバイス用）
-drawingCanvas.addEventListener('touchstart', e => {
-  if (e.touches.length !== 1) return;
+// 矩形選択の描画
+function drawRectangle(startX, startY, endX, endY) {
+  // 既存の描画をクリア
+  ctx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+  
+  // 矩形を描画
+  ctx.strokeStyle = '#007bff';
+  ctx.lineWidth = 3;
+  ctx.setLineDash([5, 5]);
+  
+  const minX = Math.min(startX, endX);
+  const minY = Math.min(startY, endY);
+  const maxX = Math.max(startX, endX);
+  const maxY = Math.max(startY, endY);
+  
+  ctx.strokeRect(minX, minY, maxX - minX, maxY - minY);
+  ctx.setLineDash([]);
+}
+
+// フリーハンド描画
+function drawFreehand(points) {
+  ctx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+  if (points.length < 2) return;
+  
+  ctx.strokeStyle = '#007bff';
+  ctx.lineWidth = 5;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.beginPath();
+  ctx.moveTo(points[0].x, points[0].y);
+  for (let i = 1; i < points.length; i++) {
+    ctx.lineTo(points[i].x, points[i].y);
+  }
+  ctx.stroke();
+}
+
+// マウス/タッチイベントハンドラ（モードに応じて切り替え）
+function getCanvasCoordinates(e) {
+  const rect = drawingCanvas.getBoundingClientRect();
+  if (e.touches) {
+    return {
+      x: e.touches[0].clientX - rect.left,
+      y: e.touches[0].clientY - rect.top
+    };
+  } else {
+    return {
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
+    };
+  }
+}
+
+// 統合されたイベントハンドラ（モードに応じて処理を分岐）
+function handleCanvasStart(e) {
+  const mode = getCurrentMode();
+  if (mode === 'freehand') {
+    handleFreehandStart(e);
+  } else if (mode === 'rectangle') {
+    handleRectangleStart(e);
+  }
+}
+
+function handleCanvasMove(e) {
+  const mode = getCurrentMode();
+  if (mode === 'freehand') {
+    handleFreehandMove(e);
+  } else if (mode === 'rectangle') {
+    handleRectangleMove(e);
+  }
+}
+
+function handleCanvasEnd(e) {
+  const mode = getCurrentMode();
+  if (mode === 'freehand') {
+    handleFreehandEnd(e);
+  } else if (mode === 'rectangle') {
+    handleRectangleEnd(e);
+  }
+}
+
+// イベントリスナーの設定（一度だけ）
+function setupEventListeners() {
+  drawingCanvas.style.pointerEvents = "auto";
+  
+  // マウスイベント
+  drawingCanvas.addEventListener('mousedown', handleCanvasStart);
+  drawingCanvas.addEventListener('mousemove', handleCanvasMove);
+  drawingCanvas.addEventListener('mouseup', handleCanvasEnd);
+  drawingCanvas.addEventListener('mouseleave', handleCanvasEnd);
+  
+  // タッチイベント
+  drawingCanvas.addEventListener('touchstart', handleCanvasStart);
+  drawingCanvas.addEventListener('touchmove', handleCanvasMove);
+  drawingCanvas.addEventListener('touchend', handleCanvasEnd);
+}
+
+// フリーハンド描画のハンドラ
+function handleFreehandStart(e) {
+  if (getCurrentMode() !== 'freehand') return;
   e.preventDefault();
   isDrawing = true;
-  const t = e.touches[0];
-  points = [{
-    x: t.clientX,
-    y: t.clientY
-  }];
+  const coords = getCanvasCoordinates(e);
+  points = [coords];
   ctx.beginPath();
-  ctx.moveTo(t.clientX, t.clientY);
-});
+  ctx.moveTo(coords.x, coords.y);
+}
 
-drawingCanvas.addEventListener('touchmove', e => {
-  if (!isDrawing || e.touches.length !== 1) return;
+function handleFreehandMove(e) {
+  if (!isDrawing || getCurrentMode() !== 'freehand') return;
   e.preventDefault();
-  const t = e.touches[0];
-  points.push({
-    x: t.clientX,
-    y: t.clientY
-  });
-  ctx.lineTo(t.clientX, t.clientY);
+  const coords = getCanvasCoordinates(e);
+  points.push(coords);
+  ctx.lineTo(coords.x, coords.y);
   ctx.stroke();
   predictButton.disabled = false;
-});
+}
 
-drawingCanvas.addEventListener('touchend', () => {
+function handleFreehandEnd(e) {
+  if (getCurrentMode() !== 'freehand') return;
+  e.preventDefault();
   isDrawing = false;
   ctx.closePath();
+}
+
+// 矩形選択のハンドラ
+function handleRectangleStart(e) {
+  if (getCurrentMode() !== 'rectangle') return;
+  e.preventDefault();
+  isSelecting = true;
+  const coords = getCanvasCoordinates(e);
+  selectionStart = coords;
+  selectionEnd = coords;
+  currentSelection = null;
+}
+
+function handleRectangleMove(e) {
+  if (!isSelecting || getCurrentMode() !== 'rectangle') return;
+  e.preventDefault();
+  const coords = getCanvasCoordinates(e);
+  selectionEnd = coords;
+  drawRectangle(selectionStart.x, selectionStart.y, selectionEnd.x, selectionEnd.y);
+}
+
+function handleRectangleEnd(e) {
+  if (getCurrentMode() !== 'rectangle') return;
+  e.preventDefault();
+  isSelecting = false;
+  
+  if (selectionStart && selectionEnd) {
+    const minX = Math.min(selectionStart.x, selectionEnd.x);
+    const minY = Math.min(selectionStart.y, selectionEnd.y);
+    const maxX = Math.max(selectionStart.x, selectionEnd.x);
+    const maxY = Math.max(selectionStart.y, selectionEnd.y);
+    
+    if (maxX - minX > 10 && maxY - minY > 10) {
+      currentSelection = { minX, minY, maxX, maxY };
+      predictButton.disabled = false;
+    }
+  }
+}
+
+// キャンバスをクリア
+function clearCanvas() {
+  ctx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+}
+
+// モード変更時のイベントリスナー
+document.querySelectorAll('input[name="selectionMode"]').forEach(radio => {
+  radio.addEventListener('change', () => {
+    clearCanvas();
+    points = [];
+    currentSelection = null;
+    isDrawing = false;
+    isSelecting = false;
+    
+    // モードに応じてキャンバスの描画設定とボタンの状態を調整
+    const mode = getCurrentMode();
+    if (mode === 'full') {
+      drawingCanvas.style.pointerEvents = "none";
+      // 素で判別モードでは常にボタンを有効化
+      predictButton.disabled = false;
+    } else {
+      drawingCanvas.style.pointerEvents = "auto";
+      predictButton.disabled = true;
+    }
+  });
 });
+
+// 初期設定
+setupEventListeners();
 
 // 消去ボタンのイベントリスナー
 clearButton.addEventListener('click', () => {
-  ctx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+  clearCanvas();
   points = [];
+  currentSelection = null;
+  isDrawing = false;
+  isSelecting = false;
   predictButton.disabled = true;
   saveButton.disabled = true;
   infoBubble.setAttribute('visible', false);
@@ -461,8 +646,8 @@ function evaluateImageQuality(canvas) {
 // --- 識別処理関数 ---
 
 predictButton.addEventListener('click', async () => {
-  if (!model || points.length < 2) {
-    showNotification("囲いがありません。", true);
+  if (!model) {
+    showNotification("モデルが読み込まれていません。", true);
     return;
   }
 
@@ -470,8 +655,47 @@ predictButton.addEventListener('click', async () => {
   saveButton.disabled = true;
   showProgressIndicator(true);
 
-  // 囲まれた領域の座標を計算（最適化された境界計算）
-  const bounds = calculateOptimalBounds(points);
+  // モードに応じて領域を決定
+  let bounds = null;
+  const mode = getCurrentMode();
+  
+  if (mode === 'full') {
+    // 素で判別：画像全体を使用
+    bounds = {
+      minX: 0,
+      minY: 0,
+      maxX: drawingCanvas.width,
+      maxY: drawingCanvas.height,
+      width: drawingCanvas.width,
+      height: drawingCanvas.height
+    };
+  } else if (mode === 'rectangle') {
+    // 矩形選択モード
+    if (!currentSelection) {
+      showProgressIndicator(false);
+      predictButton.disabled = false;
+      showNotification("領域を選択してください。", true);
+      return;
+    }
+    bounds = {
+      minX: currentSelection.minX,
+      minY: currentSelection.minY,
+      maxX: currentSelection.maxX,
+      maxY: currentSelection.maxY,
+      width: currentSelection.maxX - currentSelection.minX,
+      height: currentSelection.maxY - currentSelection.minY
+    };
+  } else if (mode === 'freehand') {
+    // フリーハンドモード
+    if (points.length < 2) {
+      showProgressIndicator(false);
+      predictButton.disabled = false;
+      showNotification("囲いがありません。", true);
+      return;
+    }
+    bounds = calculateOptimalBounds(points);
+  }
+
   const { minX, minY, maxX, maxY, width, height } = bounds;
 
   if (width <= 0 || height <= 0 || width * height < 100) {
@@ -705,9 +929,14 @@ predictButton.addEventListener('click', async () => {
     saveButton.disabled = true;
   }
 
-  // 描画をクリア
-  ctx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
-  points = [];
+  // 描画をクリア（モードに応じて）
+  const currentMode = getCurrentMode();
+  if (currentMode === 'freehand') {
+    points = [];
+  } else if (currentMode === 'rectangle') {
+    currentSelection = null;
+  }
+  clearCanvas();
   predictButton.disabled = false;
 });
 
