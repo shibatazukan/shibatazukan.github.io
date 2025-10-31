@@ -592,7 +592,7 @@ function getLocation() {
 }
 
 // フリーハンド描画用の定数
-const FREEHAND_LINE_WIDTH = 8; // 5から8に変更（少し太く）
+const FREEHAND_LINE_WIDTH = 6; // 少し細めに調整
 const FREEHAND_STROKE_COLOR = '#000000'; // 黒に変更
 
 ctx.strokeStyle = FREEHAND_STROKE_COLOR;
