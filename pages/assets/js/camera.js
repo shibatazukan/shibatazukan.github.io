@@ -70,6 +70,10 @@ let isSelecting = false;
 let selectionStart = { x: 0, y: 0 };
 let selectionEnd = { x: 0, y: 0 };
 let currentSelection = null; // { minX, minY, maxX, maxY }
+let isResizing = false;
+let resizeHandle = null; // 'nw', 'ne', 'sw', 'se', 'n', 's', 'e', 'w', 'move', null
+let initialSelection = null; // リサイズ開始時の選択範囲
+let initialMousePos = { x: 0, y: 0 }; // リサイズ開始時のマウス位置
 
 // 現在のモードを取得
 function getCurrentMode() {
@@ -292,11 +296,16 @@ function calculateConfidenceVariance(scores) {
   return Math.sqrt(variance);
 }
 
+/**
+ * 最適化された境界計算（洗練版）
+ * 外れ値除去、適切なパディング、境界チェックを統合
+ */
 function calculateOptimalBounds(points) {
   if (points.length < 2) {
-    return { minX: 0, minY: 0, maxX: 0, maxY: 0, width: 0, height: 0 };
+    return { minX: 0, minY: 0, maxX: 0, maxY: 0, width: 0, height: 0, centerX: 0, centerY: 0 };
   }
   
+  // 統計的に外れ値を除去
   const xValues = points.map(p => p.x).sort((a, b) => a - b);
   const yValues = points.map(p => p.y).sort((a, b) => a - b);
   
@@ -308,32 +317,141 @@ function calculateOptimalBounds(points) {
   const xIQR = xQ3 - xQ1;
   const yIQR = yQ3 - yQ1;
   
-  const xLowerBound = xQ1 - 1.5 * xIQR;
-  const xUpperBound = xQ3 + 1.5 * xIQR;
-  const yLowerBound = yQ1 - 1.5 * yIQR;
-  const yUpperBound = yQ3 + 1.5 * yIQR;
+  // IQRが小さい場合（点が密集している場合）は、より厳格な外れ値除去を使用
+  const outlierMultiplier = (xIQR < 10 || yIQR < 10) ? 1.0 : 1.5;
+  
+  const xLowerBound = xQ1 - outlierMultiplier * xIQR;
+  const xUpperBound = xQ3 + outlierMultiplier * xIQR;
+  const yLowerBound = yQ1 - outlierMultiplier * yIQR;
+  const yUpperBound = yQ3 + outlierMultiplier * yIQR;
   
   const filteredPoints = points.filter(p => 
     p.x >= xLowerBound && p.x <= xUpperBound &&
     p.y >= yLowerBound && p.y <= yUpperBound
   );
   
-  const validPoints = filteredPoints.length >= 2 ? filteredPoints : points;
+  const validPoints = filteredPoints.length >= Math.max(2, points.length * 0.5) ? filteredPoints : points;
   
-  const minX = Math.min(...validPoints.map(p => p.x));
-  const minY = Math.min(...validPoints.map(p => p.y));
-  const maxX = Math.max(...validPoints.map(p => p.x));
-  const maxY = Math.max(...validPoints.map(p => p.y));
+  // 基本境界を計算
+  let minX = Math.min(...validPoints.map(p => p.x));
+  let minY = Math.min(...validPoints.map(p => p.y));
+  let maxX = Math.max(...validPoints.map(p => p.x));
+  let maxY = Math.max(...validPoints.map(p => p.y));
   
-  const padding = Math.min(10, Math.min(maxX - minX, maxY - minY) * 0.1);
+  // パディング計算（領域サイズに応じて適応的）
+  const rawWidth = maxX - minX;
+  const rawHeight = maxY - minY;
+  const area = rawWidth * rawHeight;
+  
+  // パディング: 小さい領域ほど大きなパディング、大きい領域ほど小さなパディング
+  let paddingRatio;
+  if (area < 1000) {
+    paddingRatio = 0.15; // 小さな領域: 15%
+  } else if (area < 10000) {
+    paddingRatio = 0.12; // 中程度の領域: 12%
+  } else {
+    paddingRatio = 0.08; // 大きな領域: 8%
+  }
+  
+  // 最小パディング（ピクセル単位）
+  const minPadding = 5;
+  const maxPadding = Math.min(drawingCanvas.width * 0.1, drawingCanvas.height * 0.1, 20);
+  
+  const paddingX = Math.max(minPadding, Math.min(maxPadding, rawWidth * paddingRatio));
+  const paddingY = Math.max(minPadding, Math.min(maxPadding, rawHeight * paddingRatio));
+  
+  // パディングを適用
+  minX -= paddingX;
+  minY -= paddingY;
+  maxX += paddingX;
+  maxY += paddingY;
+  
+  // 境界チェックと調整
+  minX = Math.max(0, Math.floor(minX));
+  minY = Math.max(0, Math.floor(minY));
+  maxX = Math.min(drawingCanvas.width, Math.ceil(maxX));
+  maxY = Math.min(drawingCanvas.height, Math.ceil(maxY));
+  
+  const width = maxX - minX;
+  const height = maxY - minY;
+  const centerX = (minX + maxX) / 2;
+  const centerY = (minY + maxY) / 2;
   
   return {
-    minX: Math.max(0, minX - padding),
-    minY: Math.max(0, minY - padding),
-    maxX: Math.min(drawingCanvas.width, maxX + padding),
-    maxY: Math.min(drawingCanvas.height, maxY + padding),
-    width: Math.max(0, maxX - minX + 2 * padding),
-    height: Math.max(0, maxY - minY + 2 * padding)
+    minX,
+    minY,
+    maxX,
+    maxY,
+    width,
+    height,
+    centerX,
+    centerY,
+    area: width * height,
+    aspectRatio: width / height
+  };
+}
+
+/**
+ * 領域を正規化・検証する関数
+ */
+function normalizeAndValidateBounds(bounds) {
+  if (!bounds || bounds.width <= 0 || bounds.height <= 0) {
+    return null;
+  }
+  
+  const { minX, minY, maxX, maxY, width, height } = bounds;
+  
+  // 最小サイズチェック（224x224は一般的なモデル入力サイズ）
+  const MIN_WIDTH = 50;
+  const MIN_HEIGHT = 50;
+  const MIN_AREA = 2500; // 50x50
+  
+  if (width < MIN_WIDTH || height < MIN_HEIGHT || width * height < MIN_AREA) {
+    return null;
+  }
+  
+  // 境界がキャンバス内に収まっているか確認
+  if (minX < 0 || minY < 0 || maxX > drawingCanvas.width || maxY > drawingCanvas.height) {
+    // 境界を調整
+    const adjustedMinX = Math.max(0, Math.floor(minX));
+    const adjustedMinY = Math.max(0, Math.floor(minY));
+    const adjustedMaxX = Math.min(drawingCanvas.width, Math.ceil(maxX));
+    const adjustedMaxY = Math.min(drawingCanvas.height, Math.ceil(maxY));
+    
+    const adjustedWidth = adjustedMaxX - adjustedMinX;
+    const adjustedHeight = adjustedMaxY - adjustedMinY;
+    
+    // 調整後も最小サイズを満たすか確認
+    if (adjustedWidth < MIN_WIDTH || adjustedHeight < MIN_HEIGHT || adjustedWidth * adjustedHeight < MIN_AREA) {
+      return null;
+    }
+    
+    return {
+      minX: adjustedMinX,
+      minY: adjustedMinY,
+      maxX: adjustedMaxX,
+      maxY: adjustedMaxY,
+      width: adjustedWidth,
+      height: adjustedHeight,
+      centerX: (adjustedMinX + adjustedMaxX) / 2,
+      centerY: (adjustedMinY + adjustedMaxY) / 2,
+      area: adjustedWidth * adjustedHeight,
+      aspectRatio: adjustedWidth / adjustedHeight
+    };
+  }
+  
+  // 整数座標に正規化
+  return {
+    minX: Math.floor(minX),
+    minY: Math.floor(minY),
+    maxX: Math.ceil(maxX),
+    maxY: Math.ceil(maxY),
+    width: Math.ceil(width),
+    height: Math.ceil(height),
+    centerX: (minX + maxX) / 2,
+    centerY: (minY + maxY) / 2,
+    area: width * height,
+    aspectRatio: width / height
   };
 }
 
@@ -365,6 +483,21 @@ function showProgressIndicator(show = true) {
 function resizeCanvas() {
   drawingCanvas.width = video.offsetWidth;
   drawingCanvas.height = video.offsetHeight;
+  
+  // 矩形選択モードでデフォルト枠が表示されている場合は再描画
+  if (getCurrentMode() === 'rectangle' && currentSelection) {
+    // キャンバスサイズ変更に応じて枠を調整（画面の中心に配置）
+    const defaultSize = Math.min(drawingCanvas.width, drawingCanvas.height) * 0.6;
+    const centerX = drawingCanvas.width / 2;
+    const centerY = drawingCanvas.height / 2;
+    currentSelection = {
+      minX: centerX - defaultSize / 2,
+      minY: centerY - defaultSize / 2,
+      maxX: centerX + defaultSize / 2,
+      maxY: centerY + defaultSize / 2
+    };
+    drawResizableRectangle(currentSelection);
+  }
 }
 window.addEventListener('resize', resizeCanvas);
 video.addEventListener('loadedmetadata', resizeCanvas);
@@ -452,7 +585,67 @@ ctx.lineWidth = 5;
 ctx.lineCap = 'round';
 ctx.lineJoin = 'round';
 
-// 矩形選択の描画
+// 矩形選択の描画（リサイズ可能な枠）
+function drawResizableRectangle(selection) {
+  if (!selection) return;
+  
+  const { minX, minY, maxX, maxY } = selection;
+  const width = maxX - minX;
+  const height = maxY - minY;
+  const handleSize = 12; // ハンドルのサイズ
+  
+  // 矩形を描画
+  ctx.strokeStyle = '#007bff';
+  ctx.lineWidth = 3;
+  ctx.setLineDash([5, 5]);
+  ctx.strokeRect(minX, minY, width, height);
+  ctx.setLineDash([]);
+  
+  // ハンドルを描画（四隅）
+  ctx.fillStyle = '#007bff';
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = 2;
+  
+  const handles = [
+    { x: minX, y: minY, type: 'nw' }, // 左上
+    { x: maxX, y: minY, type: 'ne' }, // 右上
+    { x: minX, y: maxY, type: 'sw' }, // 左下
+    { x: maxX, y: maxY, type: 'se' }  // 右下
+  ];
+  
+  handles.forEach(handle => {
+    ctx.fillRect(handle.x - handleSize/2, handle.y - handleSize/2, handleSize, handleSize);
+    ctx.strokeRect(handle.x - handleSize/2, handle.y - handleSize/2, handleSize, handleSize);
+  });
+}
+
+// どのハンドル（または枠本体）がクリックされたかを判定
+function getResizeHandle(mouseX, mouseY, selection) {
+  if (!selection) return null;
+  
+  const { minX, minY, maxX, maxY } = selection;
+  const handleSize = 12;
+  const tolerance = handleSize / 2 + 5; // クリック可能範囲を少し広げる
+  
+  // 四隅のハンドルをチェック
+  if (Math.abs(mouseX - minX) < tolerance && Math.abs(mouseY - minY) < tolerance) return 'nw';
+  if (Math.abs(mouseX - maxX) < tolerance && Math.abs(mouseY - minY) < tolerance) return 'ne';
+  if (Math.abs(mouseX - minX) < tolerance && Math.abs(mouseY - maxY) < tolerance) return 'sw';
+  if (Math.abs(mouseX - maxX) < tolerance && Math.abs(mouseY - maxY) < tolerance) return 'se';
+  
+  // 辺のハンドルをチェック
+  if (Math.abs(mouseY - minY) < tolerance && mouseX >= minX && mouseX <= maxX) return 'n';
+  if (Math.abs(mouseY - maxY) < tolerance && mouseX >= minX && mouseX <= maxX) return 's';
+  if (Math.abs(mouseX - minX) < tolerance && mouseY >= minY && mouseY <= maxY) return 'w';
+  if (Math.abs(mouseX - maxX) < tolerance && mouseY >= minY && mouseY <= maxY) return 'e';
+  
+  // 枠の内部をクリックした場合は移動
+  if (mouseX >= minX && mouseX <= maxX && mouseY >= minY && mouseY <= maxY) return 'move';
+  
+  return null;
+}
+
+// 矩形選択の描画（旧方式、互換性のため残す）
 function drawRectangle(startX, startY, endX, endY) {
   // 既存の描画をクリア
   ctx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
@@ -576,40 +769,144 @@ function handleFreehandEnd(e) {
   ctx.closePath();
 }
 
-// 矩形選択のハンドラ
+// リサイズ処理
+function resizeSelection(handle, initialSel, initialMouse, currentMouse) {
+  const dx = currentMouse.x - initialMouse.x;
+  const dy = currentMouse.y - initialMouse.y;
+  
+  let { minX, minY, maxX, maxY } = { ...initialSel };
+  
+  switch (handle) {
+    case 'nw': // 左上
+      minX = Math.max(0, Math.min(initialSel.minX + dx, initialSel.maxX - 20));
+      minY = Math.max(0, Math.min(initialSel.minY + dy, initialSel.maxY - 20));
+      break;
+    case 'ne': // 右上
+      maxX = Math.min(drawingCanvas.width, Math.max(initialSel.maxX + dx, initialSel.minX + 20));
+      minY = Math.max(0, Math.min(initialSel.minY + dy, initialSel.maxY - 20));
+      break;
+    case 'sw': // 左下
+      minX = Math.max(0, Math.min(initialSel.minX + dx, initialSel.maxX - 20));
+      maxY = Math.min(drawingCanvas.height, Math.max(initialSel.maxY + dy, initialSel.minY + 20));
+      break;
+    case 'se': // 右下
+      maxX = Math.min(drawingCanvas.width, Math.max(initialSel.maxX + dx, initialSel.minX + 20));
+      maxY = Math.min(drawingCanvas.height, Math.max(initialSel.maxY + dy, initialSel.minY + 20));
+      break;
+    case 'n': // 上辺
+      minY = Math.max(0, Math.min(initialSel.minY + dy, initialSel.maxY - 20));
+      break;
+    case 's': // 下辺
+      maxY = Math.min(drawingCanvas.height, Math.max(initialSel.maxY + dy, initialSel.minY + 20));
+      break;
+    case 'w': // 左辺
+      minX = Math.max(0, Math.min(initialSel.minX + dx, initialSel.maxX - 20));
+      break;
+    case 'e': // 右辺
+      maxX = Math.min(drawingCanvas.width, Math.max(initialSel.maxX + dx, initialSel.minX + 20));
+      break;
+    case 'move': // 移動
+      const width = initialSel.maxX - initialSel.minX;
+      const height = initialSel.maxY - initialSel.minY;
+      minX = Math.max(0, Math.min(initialSel.minX + dx, drawingCanvas.width - width));
+      minY = Math.max(0, Math.min(initialSel.minY + dy, drawingCanvas.height - height));
+      maxX = minX + width;
+      maxY = minY + height;
+      break;
+  }
+  
+  return { minX, minY, maxX, maxY };
+}
+
+// 矩形選択のハンドラ（リサイズ可能な枠）
 function handleRectangleStart(e) {
   if (getCurrentMode() !== 'rectangle') return;
   e.preventDefault();
-  isSelecting = true;
+  
   const coords = getCanvasCoordinates(e);
-  selectionStart = coords;
-  selectionEnd = coords;
-  currentSelection = null;
+  
+  // 既存の選択範囲がない場合は、デフォルトの枠を表示
+  if (!currentSelection) {
+    const defaultSize = Math.min(drawingCanvas.width, drawingCanvas.height) * 0.6;
+    const centerX = drawingCanvas.width / 2;
+    const centerY = drawingCanvas.height / 2;
+    currentSelection = {
+      minX: centerX - defaultSize / 2,
+      minY: centerY - defaultSize / 2,
+      maxX: centerX + defaultSize / 2,
+      maxY: centerY + defaultSize / 2
+    };
+    predictButton.disabled = false;
+    drawResizableRectangle(currentSelection);
+    return;
+  }
+  
+  // どのハンドル（または枠）をクリックしたか判定
+  resizeHandle = getResizeHandle(coords.x, coords.y, currentSelection);
+  
+  if (resizeHandle) {
+    isResizing = true;
+    initialSelection = { ...currentSelection };
+    initialMousePos = { x: coords.x, y: coords.y };
+    
+    // カーソルスタイルを変更
+    const cursorMap = {
+      'nw': 'nw-resize',
+      'ne': 'ne-resize',
+      'sw': 'sw-resize',
+      'se': 'se-resize',
+      'n': 'n-resize',
+      's': 's-resize',
+      'w': 'w-resize',
+      'e': 'e-resize',
+      'move': 'move'
+    };
+    drawingCanvas.style.cursor = cursorMap[resizeHandle] || 'default';
+  }
 }
 
 function handleRectangleMove(e) {
-  if (!isSelecting || getCurrentMode() !== 'rectangle') return;
-  e.preventDefault();
+  if (getCurrentMode() !== 'rectangle') return;
+  
   const coords = getCanvasCoordinates(e);
-  selectionEnd = coords;
-  drawRectangle(selectionStart.x, selectionStart.y, selectionEnd.x, selectionEnd.y);
+  
+  // リサイズ中の場合
+  if (isResizing && resizeHandle && initialSelection) {
+    e.preventDefault();
+    currentSelection = resizeSelection(resizeHandle, initialSelection, initialMousePos, coords);
+    clearCanvas();
+    drawResizableRectangle(currentSelection);
+    return;
+  }
+  
+  // リサイズ中でない場合、カーソルを更新
+  if (currentSelection) {
+    const handle = getResizeHandle(coords.x, coords.y, currentSelection);
+    const cursorMap = {
+      'nw': 'nw-resize',
+      'ne': 'ne-resize',
+      'sw': 'sw-resize',
+      'se': 'se-resize',
+      'n': 'n-resize',
+      's': 's-resize',
+      'w': 'w-resize',
+      'e': 'e-resize',
+      'move': 'move'
+    };
+    drawingCanvas.style.cursor = handle ? (cursorMap[handle] || 'default') : 'default';
+  }
 }
 
 function handleRectangleEnd(e) {
   if (getCurrentMode() !== 'rectangle') return;
-  e.preventDefault();
-  isSelecting = false;
   
-  if (selectionStart && selectionEnd) {
-    const minX = Math.min(selectionStart.x, selectionEnd.x);
-    const minY = Math.min(selectionStart.y, selectionEnd.y);
-    const maxX = Math.max(selectionStart.x, selectionEnd.x);
-    const maxY = Math.max(selectionStart.y, selectionEnd.y);
-    
-    if (maxX - minX > 10 && maxY - minY > 10) {
-      currentSelection = { minX, minY, maxX, maxY };
-      predictButton.disabled = false;
-    }
+  if (isResizing) {
+    e.preventDefault();
+    isResizing = false;
+    resizeHandle = null;
+    initialSelection = null;
+    initialMousePos = { x: 0, y: 0 };
+    drawingCanvas.style.cursor = 'default';
   }
 }
 
@@ -626,12 +923,31 @@ document.querySelectorAll('input[name="selectionMode"]').forEach(radio => {
     currentSelection = null;
     isDrawing = false;
     isSelecting = false;
+    isResizing = false;
+    resizeHandle = null;
+    initialSelection = null;
+    initialMousePos = { x: 0, y: 0 };
+    drawingCanvas.style.cursor = 'default';
     
     // モードに応じてキャンバスの描画設定とボタンの状態を調整
     const mode = getCurrentMode();
     if (mode === 'full') {
       drawingCanvas.style.pointerEvents = "none";
       // 素で判別モードでは常にボタンを有効化
+      predictButton.disabled = false;
+    } else if (mode === 'rectangle') {
+      drawingCanvas.style.pointerEvents = "auto";
+      // 矩形選択モードでは最初からデフォルト枠を表示
+      const defaultSize = Math.min(drawingCanvas.width, drawingCanvas.height) * 0.6;
+      const centerX = drawingCanvas.width / 2;
+      const centerY = drawingCanvas.height / 2;
+      currentSelection = {
+        minX: centerX - defaultSize / 2,
+        minY: centerY - defaultSize / 2,
+        maxX: centerX + defaultSize / 2,
+        maxY: centerY + defaultSize / 2
+      };
+      drawResizableRectangle(currentSelection);
       predictButton.disabled = false;
     } else {
       drawingCanvas.style.pointerEvents = "auto";
@@ -650,7 +966,33 @@ clearButton.addEventListener('click', () => {
   currentSelection = null;
   isDrawing = false;
   isSelecting = false;
-  predictButton.disabled = true;
+  isResizing = false;
+  resizeHandle = null;
+  initialSelection = null;
+  initialMousePos = { x: 0, y: 0 };
+  drawingCanvas.style.cursor = 'default';
+  
+  // モードに応じてボタンの状態を調整
+  const mode = getCurrentMode();
+  if (mode === 'rectangle') {
+    // 矩形選択モードの場合はデフォルト枠を再表示
+    const defaultSize = Math.min(drawingCanvas.width, drawingCanvas.height) * 0.6;
+    const centerX = drawingCanvas.width / 2;
+    const centerY = drawingCanvas.height / 2;
+    currentSelection = {
+      minX: centerX - defaultSize / 2,
+      minY: centerY - defaultSize / 2,
+      maxX: centerX + defaultSize / 2,
+      maxY: centerY + defaultSize / 2
+    };
+    drawResizableRectangle(currentSelection);
+    predictButton.disabled = false;
+  } else if (mode === 'full') {
+    predictButton.disabled = false;
+  } else {
+    predictButton.disabled = true;
+  }
+  
   saveButton.disabled = true;
   infoBubble.setAttribute('visible', false);
   if (identifiedObject) {
@@ -729,18 +1071,22 @@ predictButton.addEventListener('click', async () => {
   showProgressIndicator(true);
 
   // モードに応じて領域を決定
-  let bounds = null;
+  let rawBounds = null;
   const mode = getCurrentMode();
   
   if (mode === 'full') {
     // 素で判別：画像全体を使用
-    bounds = {
+    rawBounds = {
       minX: 0,
       minY: 0,
       maxX: drawingCanvas.width,
       maxY: drawingCanvas.height,
       width: drawingCanvas.width,
-      height: drawingCanvas.height
+      height: drawingCanvas.height,
+      centerX: drawingCanvas.width / 2,
+      centerY: drawingCanvas.height / 2,
+      area: drawingCanvas.width * drawingCanvas.height,
+      aspectRatio: drawingCanvas.width / drawingCanvas.height
     };
   } else if (mode === 'rectangle') {
     // 矩形選択モード
@@ -750,13 +1096,19 @@ predictButton.addEventListener('click', async () => {
       showNotification("領域を選択してください。", true);
       return;
     }
-    bounds = {
+    const width = currentSelection.maxX - currentSelection.minX;
+    const height = currentSelection.maxY - currentSelection.minY;
+    rawBounds = {
       minX: currentSelection.minX,
       minY: currentSelection.minY,
       maxX: currentSelection.maxX,
       maxY: currentSelection.maxY,
-      width: currentSelection.maxX - currentSelection.minX,
-      height: currentSelection.maxY - currentSelection.minY
+      width: width,
+      height: height,
+      centerX: (currentSelection.minX + currentSelection.maxX) / 2,
+      centerY: (currentSelection.minY + currentSelection.maxY) / 2,
+      area: width * height,
+      aspectRatio: width / height
     };
   } else if (mode === 'freehand') {
     // フリーハンドモード
@@ -766,17 +1118,20 @@ predictButton.addEventListener('click', async () => {
       showNotification("囲いがありません。", true);
       return;
     }
-    bounds = calculateOptimalBounds(points);
+    rawBounds = calculateOptimalBounds(points);
+  }
+
+  // 領域を正規化・検証
+  const bounds = normalizeAndValidateBounds(rawBounds);
+  
+  if (!bounds) {
+    showProgressIndicator(false);
+    predictButton.disabled = false;
+    showNotification("有効な領域を選択してください。", true);
+    return;
   }
 
   const { minX, minY, maxX, maxY, width, height } = bounds;
-
-  if (width <= 0 || height <= 0 || width * height < 100) {
-    showProgressIndicator(false);
-    predictButton.disabled = false;
-    showNotification("小さすぎる領域です。", true);
-    return;
-  }
 
   const originalCanvas = document.createElement('canvas');
   originalCanvas.width = width;
