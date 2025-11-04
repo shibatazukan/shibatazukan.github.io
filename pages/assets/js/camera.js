@@ -991,57 +991,83 @@ predictButton.addEventListener('click', async () => {
   const { minX, minY, maxX, maxY, width, height } = bounds;
 
   // ★ シンプルな推論処理（10回のみ、前処理なし）★
-   // ★ Teachable Machine最適化版推論処理 ★
   const predictions = [];
-  const totalSamples = 15; // サンプル数を増やして安定性向上
-
-  // 一時キャンバスを事前作成（パフォーマンス向上）
-  const tempCanvas = document.createElement('canvas');
-  tempCanvas.width = 224;
-  tempCanvas.height = 224;
-  const tempCtx = tempCanvas.getContext('2d', { 
-    willReadFrequently: true,
-    alpha: false  // アルファチャンネル不要
-  });
+  const totalSamples = 10;
 
   for (let i = 0; i < totalSamples; i++) {
     updateProgress(i + 1, totalSamples);
 
-    // 高品質リサイズ設定
-    tempCtx.imageSmoothingEnabled = true;
-    tempCtx.imageSmoothingQuality = 'high';
-    
-    // ビデオフレームを224x224にリサイズ
-    tempCtx.drawImage(video, minX, minY, width, height, 0, 0, 224, 224);
+    // 元画像を224x224にリサイズするだけ（前処理なし）
+    const resizedCanvas = document.createElement('canvas');
+    resizedCanvas.width = 224;
+    resizedCanvas.height = 224;
+    const resizedCtx = resizedCanvas.getContext('2d');
+    resizedCtx.drawImage(video, minX, minY, width, height, 0, 0, 224, 224);
 
-    // Teachable Machine標準の前処理
+    // Teachable Machine標準の正規化（0-1スケール）
     const tensor = tf.tidy(() => {
-      return tf.browser.fromPixels(tempCanvas, 3)  // RGB 3チャンネル明示
+      return tf.browser.fromPixels(resizedCanvas)
         .toFloat()
-        .div(127.5)   // Teachable Machineの標準正規化
-        .sub(1.0)     // -1 to 1 範囲に変換
-        .expandDims(0);
+        .div(255.0)  // 0-1に正規化するだけ
+        .expandDims();
     });
 
     const predictionArray = await model.predict(tensor).array();
     tensor.dispose();
 
-    const scores = predictionArray[0];  // バッチ次元を削除
-    
-    // 全てのスコアを記録（閾値なし）
-    const maxScore = Math.max(...scores);
-    const topResultIndex = scores.indexOf(maxScore);
+    const scores = predictionArray ? predictionArray.flat() : [];
+    const topResultIndex = scores.indexOf(Math.max(...scores));
+    const topScore = scores[topResultIndex];
     const topLabel = classLabels[topResultIndex];
 
-    predictions.push({
-      label: topLabel,
-      confidence: maxScore,
-      allScores: [...scores]  // 全クラスのスコアを保存
-    });
-
-    // フレーム間の微小な待機（ビデオフレーム更新を待つ）
-    await new Promise(resolve => setTimeout(resolve, 50));
+    if (topLabel && topScore >= 0.5) {
+      predictions.push({
+        label: topLabel,
+        confidence: topScore
+      });
+    }
   }
+
+  showProgressIndicator(false);
+
+  if (identifiedObject) {
+    identifiedObject.parentNode.removeChild(identifiedObject);
+    identifiedObject = null;
+  }
+
+  // 最も頻繁に予測されたラベルを選択
+  const labelCounts = {};
+  const labelScores = {};
+  
+  predictions.forEach(p => {
+    if (!labelCounts[p.label]) {
+      labelCounts[p.label] = 0;
+      labelScores[p.label] = 0;
+    }
+    labelCounts[p.label]++;
+    labelScores[p.label] += p.confidence;
+  });
+
+  let finalLabel = null;
+  let maxCount = 0;
+  
+  Object.keys(labelCounts).forEach(label => {
+    if (labelCounts[label] > maxCount) {
+      maxCount = labelCounts[label];
+      finalLabel = label;
+    }
+  });
+
+  const bubbleText = document.getElementById('bubbleText');
+
+  if (finalLabel && maxCount >= 5) {  // 10回中5回以上
+    const labelData = labelInfo[finalLabel];
+    const avgConfidence = labelScores[finalLabel] / labelCounts[finalLabel];
+    const confidencePercent = Math.round(avgConfidence * 100);
+    const template = `なまえ：${labelData.name}\n種類　：${labelData.category}\n説明　：${labelData.description}\n一致回数：${maxCount}/${totalSamples}回\n信頼度：${confidencePercent}%`;
+
+    await new Promise(resolve => setTimeout(resolve, 200));
+
     const camera = document.querySelector('#mainCamera');
     const bubble = document.getElementById('infoBubble');
     const bubbleTextEl = document.getElementById('bubbleText');
