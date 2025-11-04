@@ -1,8 +1,6 @@
 // 定数
 const modelPath   = 'model/model.json';
 
-
-
 /*****************モデル変更時更新*********************/
 const classLabels = ['オナガガモ', 'カラス','カルガモ','カワセミ','キンクロハジロ','サギ'];
 const labelInfo = {
@@ -51,9 +49,6 @@ const labelInfo = {
 };
 /****************************************************************************/
 
-
-
-
 // DOM要素の取得
 const video               = document.getElementById('webcam');
 const drawingCanvas       = document.getElementById('drawingCanvas');
@@ -79,17 +74,17 @@ let points           = [];
 let identifiedObject = null;
 let lastPrediction   = null;
 let currentLocation  = null;
-let detectionModel   = null; // coco-ssd 物体検出モデル
+let detectionModel   = null;
 
 // 矩形選択用の変数
 let isSelecting = false;
 let selectionStart = { x: 0, y: 0 };
 let selectionEnd = { x: 0, y: 0 };
-let currentSelection = null; // { minX, minY, maxX, maxY }
+let currentSelection = null;
 let isResizing = false;
-let resizeHandle = null; // 'nw', 'ne', 'sw', 'se', 'n', 's', 'e', 'w', 'move', null
-let initialSelection = null; // リサイズ開始時の選択範囲
-let initialMousePos = { x: 0, y: 0 }; // リサイズ開始時のマウス位置
+let resizeHandle = null;
+let initialSelection = null;
+let initialMousePos = { x: 0, y: 0 };
 
 // 現在のモードを取得
 function getCurrentMode() {
@@ -97,16 +92,10 @@ function getCurrentMode() {
   return selected ? selected.value : 'full';
 }
 
-// ImageNet標準化用の定数
-const IMAGENET_MEAN = tf.tensor1d([123.68, 116.779, 103.939]);
-const IMAGENET_STD  = tf.tensor1d([58.393, 57.12, 57.375]);
-
 // 緯度経度から住所を取得（localStorageにキャッシュ）
 async function getAddressFromCoords(latitude, longitude) {
-  // 座標をキーとして使用
   const cacheKey = `${latitude.toFixed(4)},${longitude.toFixed(4)}`;
   
-  // localStorageのキャッシュを確認
   const cache = JSON.parse(localStorage.getItem('addressCache') || '{}');
   if (cache[cacheKey]) {
     console.log('キャッシュから住所取得:', cacheKey);
@@ -123,25 +112,20 @@ async function getAddressFromCoords(latitude, longitude) {
       const addr = data.address;
       const parts = [];
       
-      // 都道府県
       const prefecture = addr.state || addr.prefecture || '';
       if (prefecture) parts.push(prefecture);
       
-      // 市区町村
       const city = addr.city || addr.town || addr.village || '';
       if (city) parts.push(city);
       
-      // 町名・地区名
       const district = addr.suburb || addr.quarter || addr.neighbourhood || '';
       if (district) parts.push(district);
       
-      // 番地・house_number（丁目や番地の情報）
       const houseNumber = addr.house_number || '';
       if (houseNumber) parts.push(houseNumber);
       
       if (parts.length > 0) {
         const address = parts.join('');
-        // localStorageに保存
         cache[cacheKey] = address;
         localStorage.setItem('addressCache', JSON.stringify(cache));
         console.log('新規住所取得:', address);
@@ -214,115 +198,14 @@ AFRAME.registerComponent('tail-update', {
   }
 });
 
-function applyImageEnhancement(ctx, canvas, options = {}) {
-  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  const data = imageData.data;
-  
-  if (options.noiseReduction) {
-    applyGaussianBlur(data, canvas.width, canvas.height, 1);
-  }
-  
-  if (options.contrast !== 1.0) {
-    applyContrastAdjustment(data, options.contrast);
-  }
-  
-  if (options.sharpness !== 1.0) {
-    applySharpnessAdjustment(data, canvas.width, canvas.height, options.sharpness);
-  }
-  
-  ctx.putImageData(imageData, 0, 0);
-}
-
-function applyGaussianBlur(data, width, height, radius) {
-  const temp = new Uint8ClampedArray(data);
-  const sigma = radius / 3;
-  
-  for (let y = 1; y < height - 1; y++) {
-    for (let x = 1; x < width - 1; x++) {
-      let r = 0, g = 0, b = 0, a = 0;
-      let weight = 0;
-      
-      for (let dy = -1; dy <= 1; dy++) {
-        for (let dx = -1; dx <= 1; dx++) {
-          const idx = ((y + dy) * width + (x + dx)) * 4;
-          const w = Math.exp(-(dx * dx + dy * dy) / (2 * sigma * sigma));
-          r += temp[idx] * w;
-          g += temp[idx + 1] * w;
-          b += temp[idx + 2] * w;
-          a += temp[idx + 3] * w;
-          weight += w;
-        }
-      }
-      
-      const idx = (y * width + x) * 4;
-      data[idx] = r / weight;
-      data[idx + 1] = g / weight;
-      data[idx + 2] = b / weight;
-      data[idx + 3] = a / weight;
-    }
-  }
-}
-
-function applyContrastAdjustment(data, contrast) {
-  const factor = (259 * (contrast + 255)) / (255 * (259 - contrast));
-  
-  for (let i = 0; i < data.length; i += 4) {
-    data[i] = Math.max(0, Math.min(255, factor * (data[i] - 128) + 128));
-    data[i + 1] = Math.max(0, Math.min(255, factor * (data[i + 1] - 128) + 128));
-    data[i + 2] = Math.max(0, Math.min(255, factor * (data[i + 2] - 128) + 128));
-  }
-}
-
-function applySharpnessAdjustment(data, width, height, sharpness) {
-  const temp = new Uint8ClampedArray(data);
-  const kernel = [
-    0, -sharpness, 0,
-    -sharpness, 1 + 4 * sharpness, -sharpness,
-    0, -sharpness, 0
-  ];
-  
-  for (let y = 1; y < height - 1; y++) {
-    for (let x = 1; x < width - 1; x++) {
-      let r = 0, g = 0, b = 0;
-      
-      for (let ky = 0; ky < 3; ky++) {
-        for (let kx = 0; kx < 3; kx++) {
-          const idx = ((y + ky - 1) * width + (x + kx - 1)) * 4;
-          const weight = kernel[ky * 3 + kx];
-          r += temp[idx] * weight;
-          g += temp[idx + 1] * weight;
-          b += temp[idx + 2] * weight;
-        }
-      }
-      
-      const idx = (y * width + x) * 4;
-      data[idx] = Math.max(0, Math.min(255, r));
-      data[idx + 1] = Math.max(0, Math.min(255, g));
-      data[idx + 2] = Math.max(0, Math.min(255, b));
-    }
-  }
-}
-
-function calculateConfidenceVariance(scores) {
-  if (scores.length < 2) return 0;
-  
-  const mean = scores.reduce((sum, score) => sum + score, 0) / scores.length;
-  const variance = scores.reduce((sum, score) => sum + Math.pow(score - mean, 2), 0) / scores.length;
-  
-  return Math.sqrt(variance);
-}
-
 /**
- * 最適化された境界計算（洗練版）
- * 外れ値除去、適切なパディング、境界チェックを統合
- * 線の太さを考慮した計算に改善
+ * 最適化された境界計算
  */
 function calculateOptimalBounds(points) {
   if (points.length < 2) {
     return { minX: 0, minY: 0, maxX: 0, maxY: 0, width: 0, height: 0, centerX: 0, centerY: 0 };
   }
   
-  // 統計的に外れ値を除去
   const xValues = points.map(p => p.x).sort((a, b) => a - b);
   const yValues = points.map(p => p.y).sort((a, b) => a - b);
   
@@ -334,7 +217,6 @@ function calculateOptimalBounds(points) {
   const xIQR = xQ3 - xQ1;
   const yIQR = yQ3 - yQ1;
   
-  // IQRが小さい場合（点が密集している場合）は、より厳格な外れ値除去を使用
   const outlierMultiplier = (xIQR < 10 || yIQR < 10) ? 1.0 : 1.5;
   
   const xLowerBound = xQ1 - outlierMultiplier * xIQR;
@@ -349,51 +231,42 @@ function calculateOptimalBounds(points) {
   
   const validPoints = filteredPoints.length >= Math.max(2, points.length * 0.5) ? filteredPoints : points;
   
-  // 基本境界を計算
   let minX = Math.min(...validPoints.map(p => p.x));
   let minY = Math.min(...validPoints.map(p => p.y));
   let maxX = Math.max(...validPoints.map(p => p.x));
   let maxY = Math.max(...validPoints.map(p => p.y));
   
-  // 線の太さを考慮した補正
-  // 線の太さが8ピクセルなので、実際の描画範囲は線の中心から半径4ピクセル（線幅/2）広がる
-  const lineRadius = FREEHAND_LINE_WIDTH / 2; // 4ピクセル
+  const FREEHAND_LINE_WIDTH = 6;
+  const lineRadius = FREEHAND_LINE_WIDTH / 2;
   minX -= lineRadius;
   minY -= lineRadius;
   maxX += lineRadius;
   maxY += lineRadius;
   
-  // パディング計算（領域サイズに応じて適応的）
   const rawWidth = maxX - minX;
   const rawHeight = maxY - minY;
   const area = rawWidth * rawHeight;
   
-  // パディング: 小さい領域ほど大きなパディング、大きい領域ほど小さなパディング
-  // 線が太くなった分、パディングを少し調整
   let paddingRatio;
   if (area < 1000) {
-    paddingRatio = 0.15; // 小さな領域: 15%
+    paddingRatio = 0.15;
   } else if (area < 10000) {
-    paddingRatio = 0.12; // 中程度の領域: 12%
+    paddingRatio = 0.12;
   } else {
-    paddingRatio = 0.08; // 大きな領域: 8%
+    paddingRatio = 0.08;
   }
   
-  // 最小パディング（ピクセル単位）
-  // 線が太くなったので、最小パディングも少し増やす
-  const minPadding = Math.max(5, lineRadius); // 線の半径と最小パディングの大きい方
+  const minPadding = Math.max(5, lineRadius);
   const maxPadding = Math.min(drawingCanvas.width * 0.1, drawingCanvas.height * 0.1, 20);
   
   const paddingX = Math.max(minPadding, Math.min(maxPadding, rawWidth * paddingRatio));
   const paddingY = Math.max(minPadding, Math.min(maxPadding, rawHeight * paddingRatio));
   
-  // パディングを適用
   minX -= paddingX;
   minY -= paddingY;
   maxX += paddingX;
   maxY += paddingY;
   
-  // 境界チェックと調整
   minX = Math.max(0, Math.floor(minX));
   minY = Math.max(0, Math.floor(minY));
   maxX = Math.min(drawingCanvas.width, Math.ceil(maxX));
@@ -428,18 +301,15 @@ function normalizeAndValidateBounds(bounds) {
   
   const { minX, minY, maxX, maxY, width, height } = bounds;
   
-  // 最小サイズチェック（224x224は一般的なモデル入力サイズ）
   const MIN_WIDTH = 50;
   const MIN_HEIGHT = 50;
-  const MIN_AREA = 2500; // 50x50
+  const MIN_AREA = 2500;
   
   if (width < MIN_WIDTH || height < MIN_HEIGHT || width * height < MIN_AREA) {
     return null;
   }
   
-  // 境界がキャンバス内に収まっているか確認
   if (minX < 0 || minY < 0 || maxX > drawingCanvas.width || maxY > drawingCanvas.height) {
-    // 境界を調整
     const adjustedMinX = Math.max(0, Math.floor(minX));
     const adjustedMinY = Math.max(0, Math.floor(minY));
     const adjustedMaxX = Math.min(drawingCanvas.width, Math.ceil(maxX));
@@ -448,7 +318,6 @@ function normalizeAndValidateBounds(bounds) {
     const adjustedWidth = adjustedMaxX - adjustedMinX;
     const adjustedHeight = adjustedMaxY - adjustedMinY;
     
-    // 調整後も最小サイズを満たすか確認
     if (adjustedWidth < MIN_WIDTH || adjustedHeight < MIN_HEIGHT || adjustedWidth * adjustedHeight < MIN_AREA) {
       return null;
     }
@@ -467,7 +336,6 @@ function normalizeAndValidateBounds(bounds) {
     };
   }
   
-  // 整数座標に正規化
   return {
     minX: Math.floor(minX),
     minY: Math.floor(minY),
@@ -511,9 +379,7 @@ function resizeCanvas() {
   drawingCanvas.width = video.offsetWidth;
   drawingCanvas.height = video.offsetHeight;
   
-  // 矩形選択モードでデフォルト枠が表示されている場合は再描画
   if (getCurrentMode() === 'rectangle' && currentSelection) {
-    // キャンバスサイズ変更に応じて枠を調整（画面の中心に配置）
     const defaultSize = Math.min(drawingCanvas.width, drawingCanvas.height) * 0.6;
     const centerX = drawingCanvas.width / 2;
     const centerY = drawingCanvas.height / 2;
@@ -534,7 +400,7 @@ tf.loadLayersModel(modelPath).then(m => model = m).catch(err => {
   console.error("Model load error:", err);
 });
 
-// 物体検出モデルを読み込み（coco-ssd）
+// 物体検出モデルを読み込み
 (async function loadDetectionModel() {
   try {
     if (window.cocoSsd && typeof window.cocoSsd.load === 'function') {
@@ -550,17 +416,13 @@ tf.loadLayersModel(modelPath).then(m => model = m).catch(err => {
 
 // fullモードで自動的に対象領域を抽出
 async function getAutoBoundsForFullMode() {
-  // 検出モデルがない場合はnull
   if (!detectionModel) return null;
   try {
-    // 現フレームから検出
     const predictions = await detectionModel.detect(video);
-    // 信頼度で降順ソート
     predictions.sort((a, b) => b.score - a.score);
-    // 上位から、極端に小さすぎないものを採用
-    const minArea = (drawingCanvas.width * drawingCanvas.height) * 0.02; // 2%
+    const minArea = (drawingCanvas.width * drawingCanvas.height) * 0.02;
     for (const p of predictions) {
-      const [x, y, w, h] = p.bbox; // coco-ssdは動画要素座標基準
+      const [x, y, w, h] = p.bbox;
       const area = w * h;
       if (area < minArea) continue;
       const minX = Math.max(0, Math.floor(x));
@@ -606,7 +468,6 @@ async function setupCamera() {
     controlPanel.style.display = 'flex';
     modeSelector.style.display = 'flex';
     
-    // 初期モードに応じて設定
     const initialMode = getCurrentMode();
     if (initialMode === 'full') {
       drawingCanvas.style.pointerEvents = "none";
@@ -660,8 +521,8 @@ function getLocation() {
 }
 
 // フリーハンド描画用の定数
-const FREEHAND_LINE_WIDTH = 6; // 少し細めに調整
-const FREEHAND_STROKE_COLOR = '#000000'; // 黒に変更
+const FREEHAND_LINE_WIDTH = 6;
+const FREEHAND_STROKE_COLOR = '#000000';
 
 ctx.strokeStyle = FREEHAND_STROKE_COLOR;
 ctx.lineWidth = FREEHAND_LINE_WIDTH;
@@ -675,25 +536,23 @@ function drawResizableRectangle(selection) {
   const { minX, minY, maxX, maxY } = selection;
   const width = maxX - minX;
   const height = maxY - minY;
-  const handleSize = 12; // ハンドルのサイズ
+  const handleSize = 12;
   
-  // 矩形を描画
   ctx.strokeStyle = '#007bff';
   ctx.lineWidth = 3;
   ctx.setLineDash([5, 5]);
   ctx.strokeRect(minX, minY, width, height);
   ctx.setLineDash([]);
   
-  // ハンドルを描画（四隅）
   ctx.fillStyle = '#007bff';
   ctx.strokeStyle = '#ffffff';
   ctx.lineWidth = 2;
   
   const handles = [
-    { x: minX, y: minY, type: 'nw' }, // 左上
-    { x: maxX, y: minY, type: 'ne' }, // 右上
-    { x: minX, y: maxY, type: 'sw' }, // 左下
-    { x: maxX, y: maxY, type: 'se' }  // 右下
+    { x: minX, y: minY, type: 'nw' },
+    { x: maxX, y: minY, type: 'ne' },
+    { x: minX, y: maxY, type: 'sw' },
+    { x: maxX, y: maxY, type: 'se' }
   ];
   
   handles.forEach(handle => {
@@ -708,43 +567,21 @@ function getResizeHandle(mouseX, mouseY, selection) {
   
   const { minX, minY, maxX, maxY } = selection;
   const handleSize = 12;
-  const tolerance = handleSize / 2 + 5; // クリック可能範囲を少し広げる
+  const tolerance = handleSize / 2 + 5;
   
-  // 四隅のハンドルをチェック
   if (Math.abs(mouseX - minX) < tolerance && Math.abs(mouseY - minY) < tolerance) return 'nw';
   if (Math.abs(mouseX - maxX) < tolerance && Math.abs(mouseY - minY) < tolerance) return 'ne';
   if (Math.abs(mouseX - minX) < tolerance && Math.abs(mouseY - maxY) < tolerance) return 'sw';
   if (Math.abs(mouseX - maxX) < tolerance && Math.abs(mouseY - maxY) < tolerance) return 'se';
   
-  // 辺のハンドルをチェック
   if (Math.abs(mouseY - minY) < tolerance && mouseX >= minX && mouseX <= maxX) return 'n';
   if (Math.abs(mouseY - maxY) < tolerance && mouseX >= minX && mouseX <= maxX) return 's';
   if (Math.abs(mouseX - minX) < tolerance && mouseY >= minY && mouseY <= maxY) return 'w';
   if (Math.abs(mouseX - maxX) < tolerance && mouseY >= minY && mouseY <= maxY) return 'e';
   
-  // 枠の内部をクリックした場合は移動
   if (mouseX >= minX && mouseX <= maxX && mouseY >= minY && mouseY <= maxY) return 'move';
   
   return null;
-}
-
-// 矩形選択の描画（旧方式、互換性のため残す）
-function drawRectangle(startX, startY, endX, endY) {
-  // 既存の描画をクリア
-  ctx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
-  
-  // 矩形を描画
-  ctx.strokeStyle = '#007bff';
-  ctx.lineWidth = 3;
-  ctx.setLineDash([5, 5]);
-  
-  const minX = Math.min(startX, endX);
-  const minY = Math.min(startY, endY);
-  const maxX = Math.max(startX, endX);
-  const maxY = Math.max(startY, endY);
-  
-  ctx.strokeRect(minX, minY, maxX - minX, maxY - minY);
-  ctx.setLineDash([]);
 }
 
 // フリーハンド描画
@@ -764,7 +601,7 @@ function drawFreehand(points) {
   ctx.stroke();
 }
 
-// マウス/タッチイベントハンドラ（モードに応じて切り替え）
+// マウス/タッチイベントハンドラ
 function getCanvasCoordinates(e) {
   const rect = drawingCanvas.getBoundingClientRect();
   if (e.touches) {
@@ -780,7 +617,6 @@ function getCanvasCoordinates(e) {
   }
 }
 
-// 統合されたイベントハンドラ（モードに応じて処理を分岐）
 function handleCanvasStart(e) {
   const mode = getCurrentMode();
   if (mode === 'freehand') {
@@ -808,23 +644,19 @@ function handleCanvasEnd(e) {
   }
 }
 
-// イベントリスナーの設定（一度だけ）
 function setupEventListeners() {
   drawingCanvas.style.pointerEvents = "auto";
   
-  // マウスイベント
   drawingCanvas.addEventListener('mousedown', handleCanvasStart);
   drawingCanvas.addEventListener('mousemove', handleCanvasMove);
   drawingCanvas.addEventListener('mouseup', handleCanvasEnd);
   drawingCanvas.addEventListener('mouseleave', handleCanvasEnd);
   
-  // タッチイベント
   drawingCanvas.addEventListener('touchstart', handleCanvasStart);
   drawingCanvas.addEventListener('touchmove', handleCanvasMove);
   drawingCanvas.addEventListener('touchend', handleCanvasEnd);
 }
 
-// フリーハンド描画のハンドラ
 function handleFreehandStart(e) {
   if (getCurrentMode() !== 'freehand') return;
   e.preventDefault();
@@ -856,7 +688,6 @@ function handleFreehandEnd(e) {
   ctx.closePath();
 }
 
-// リサイズ処理
 function resizeSelection(handle, initialSel, initialMouse, currentMouse) {
   const dx = currentMouse.x - initialMouse.x;
   const dy = currentMouse.y - initialMouse.y;
@@ -864,35 +695,35 @@ function resizeSelection(handle, initialSel, initialMouse, currentMouse) {
   let { minX, minY, maxX, maxY } = { ...initialSel };
   
   switch (handle) {
-    case 'nw': // 左上
+    case 'nw':
       minX = Math.max(0, Math.min(initialSel.minX + dx, initialSel.maxX - 20));
       minY = Math.max(0, Math.min(initialSel.minY + dy, initialSel.maxY - 20));
       break;
-    case 'ne': // 右上
+    case 'ne':
       maxX = Math.min(drawingCanvas.width, Math.max(initialSel.maxX + dx, initialSel.minX + 20));
       minY = Math.max(0, Math.min(initialSel.minY + dy, initialSel.maxY - 20));
       break;
-    case 'sw': // 左下
+    case 'sw':
       minX = Math.max(0, Math.min(initialSel.minX + dx, initialSel.maxX - 20));
       maxY = Math.min(drawingCanvas.height, Math.max(initialSel.maxY + dy, initialSel.minY + 20));
       break;
-    case 'se': // 右下
+    case 'se':
       maxX = Math.min(drawingCanvas.width, Math.max(initialSel.maxX + dx, initialSel.minX + 20));
       maxY = Math.min(drawingCanvas.height, Math.max(initialSel.maxY + dy, initialSel.minY + 20));
       break;
-    case 'n': // 上辺
+    case 'n':
       minY = Math.max(0, Math.min(initialSel.minY + dy, initialSel.maxY - 20));
       break;
-    case 's': // 下辺
+    case 's':
       maxY = Math.min(drawingCanvas.height, Math.max(initialSel.maxY + dy, initialSel.minY + 20));
       break;
-    case 'w': // 左辺
+    case 'w':
       minX = Math.max(0, Math.min(initialSel.minX + dx, initialSel.maxX - 20));
       break;
-    case 'e': // 右辺
+    case 'e':
       maxX = Math.min(drawingCanvas.width, Math.max(initialSel.maxX + dx, initialSel.minX + 20));
       break;
-    case 'move': // 移動
+    case 'move':
       const width = initialSel.maxX - initialSel.minX;
       const height = initialSel.maxY - initialSel.minY;
       minX = Math.max(0, Math.min(initialSel.minX + dx, drawingCanvas.width - width));
@@ -905,14 +736,12 @@ function resizeSelection(handle, initialSel, initialMouse, currentMouse) {
   return { minX, minY, maxX, maxY };
 }
 
-// 矩形選択のハンドラ（リサイズ可能な枠）
 function handleRectangleStart(e) {
   if (getCurrentMode() !== 'rectangle') return;
   e.preventDefault();
   
   const coords = getCanvasCoordinates(e);
   
-  // 既存の選択範囲がない場合は、デフォルトの枠を表示
   if (!currentSelection) {
     const defaultSize = Math.min(drawingCanvas.width, drawingCanvas.height) * 0.6;
     const centerX = drawingCanvas.width / 2;
@@ -928,7 +757,6 @@ function handleRectangleStart(e) {
     return;
   }
   
-  // どのハンドル（または枠）をクリックしたか判定
   resizeHandle = getResizeHandle(coords.x, coords.y, currentSelection);
   
   if (resizeHandle) {
@@ -936,7 +764,6 @@ function handleRectangleStart(e) {
     initialSelection = { ...currentSelection };
     initialMousePos = { x: coords.x, y: coords.y };
     
-    // カーソルスタイルを変更
     const cursorMap = {
       'nw': 'nw-resize',
       'ne': 'ne-resize',
@@ -957,7 +784,6 @@ function handleRectangleMove(e) {
   
   const coords = getCanvasCoordinates(e);
   
-  // リサイズ中の場合
   if (isResizing && resizeHandle && initialSelection) {
     e.preventDefault();
     currentSelection = resizeSelection(resizeHandle, initialSelection, initialMousePos, coords);
@@ -966,7 +792,6 @@ function handleRectangleMove(e) {
     return;
   }
   
-  // リサイズ中でない場合、カーソルを更新
   if (currentSelection) {
     const handle = getResizeHandle(coords.x, coords.y, currentSelection);
     const cursorMap = {
@@ -997,12 +822,10 @@ function handleRectangleEnd(e) {
   }
 }
 
-// キャンバスをクリア
 function clearCanvas() {
   ctx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
 }
 
-// モード変更時のイベントリスナー
 document.querySelectorAll('input[name="selectionMode"]').forEach(radio => {
   radio.addEventListener('change', () => {
     clearCanvas();
@@ -1016,15 +839,12 @@ document.querySelectorAll('input[name="selectionMode"]').forEach(radio => {
     initialMousePos = { x: 0, y: 0 };
     drawingCanvas.style.cursor = 'default';
     
-    // モードに応じてキャンバスの描画設定とボタンの状態を調整
     const mode = getCurrentMode();
     if (mode === 'full') {
       drawingCanvas.style.pointerEvents = "none";
-      // 素で判別モードでは常にボタンを有効化
       predictButton.disabled = false;
     } else if (mode === 'rectangle') {
       drawingCanvas.style.pointerEvents = "auto";
-      // 矩形選択モードでは最初からデフォルト枠を表示
       const defaultSize = Math.min(drawingCanvas.width, drawingCanvas.height) * 0.6;
       const centerX = drawingCanvas.width / 2;
       const centerY = drawingCanvas.height / 2;
@@ -1043,10 +863,8 @@ document.querySelectorAll('input[name="selectionMode"]').forEach(radio => {
   });
 });
 
-// 初期設定
 setupEventListeners();
 
-// 消去ボタンのイベントリスナー
 clearButton.addEventListener('click', () => {
   clearCanvas();
   points = [];
@@ -1059,10 +877,8 @@ clearButton.addEventListener('click', () => {
   initialMousePos = { x: 0, y: 0 };
   drawingCanvas.style.cursor = 'default';
   
-  // モードに応じてボタンの状態を調整
   const mode = getCurrentMode();
   if (mode === 'rectangle') {
-    // 矩形選択モードの場合はデフォルト枠を再表示
     const defaultSize = Math.min(drawingCanvas.width, drawingCanvas.height) * 0.6;
     const centerX = drawingCanvas.width / 2;
     const centerY = drawingCanvas.height / 2;
@@ -1090,63 +906,8 @@ clearButton.addEventListener('click', () => {
   showProgressIndicator(false);
 });
 
-function applyBrightnessAdjustment(ctx, canvas, factor) {
-  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  const data = imageData.data;
-
-  for (let i = 0; i < data.length; i += 4) {
-    data[i] = Math.min(255, data[i] * factor);
-    data[i + 1] = Math.min(255, data[i + 1] * factor);
-    data[i + 2] = Math.min(255, data[i + 2] * factor);
-  }
-
-  ctx.putImageData(imageData, 0, 0);
-}
-
-function applyHorizontalFlip(ctx, canvas, sourceCanvas) {
-  ctx.save();
-  ctx.scale(-1, 1);
-  ctx.drawImage(sourceCanvas, -canvas.width, 0);
-  ctx.restore();
-}
-
-function getAugmentationStrategy(sampleIndex) {
-  const strategies = [
-    { rotation: true, brightness: 0.5, flip: false },
-    { rotation: false, brightness: 1.2, flip: false },
-    { rotation: false, brightness: 0.8, flip: false },
-    { rotation: true, brightness: 1.0, flip: true },
-    { rotation: false, brightness: 1.0, flip: false },
-    { rotation: true, brightness: 1.1, flip: false },
-    { rotation: false, brightness: 0.9, flip: true },
-    { rotation: true, brightness: 0.7, flip: false }
-  ];
-
-  return strategies[sampleIndex % strategies.length];
-}
-
-function evaluateImageQuality(canvas) {
-  const ctx = canvas.getContext('2d');
-  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  const data = imageData.data;
-
-  let brightness = 0;
-  let pixelCount = 0;
-
-  for (let i = 0; i < data.length; i += 4) {
-    const gray = (data[i] + data[i + 1] + data[i + 2]) / 3;
-    brightness += gray;
-    pixelCount++;
-  }
-
-  const avgBrightness = brightness / pixelCount;
-
-  return {
-    brightness: avgBrightness / 255,
-    objectSize: canvas.width * canvas.height
-  };
-}
-
+// ★★★ ここが最も重要な変更箇所 ★★★
+// 余計な前処理を全て削除し、シンプルな推論に変更
 predictButton.addEventListener('click', async () => {
   if (!model) {
     showNotification("モデルが読み込まれていません。", true);
@@ -1162,12 +923,10 @@ predictButton.addEventListener('click', async () => {
   const mode = getCurrentMode();
   
   if (mode === 'full') {
-    // 素で判別：まず物体検出で自動領域抽出を試みる
     const detected = await getAutoBoundsForFullMode();
     if (detected) {
       rawBounds = detected;
     } else {
-      // フォールバック：画像中央の少し小さめの領域（80%）を使用
       const w = Math.floor(drawingCanvas.width * 0.8);
       const h = Math.floor(drawingCanvas.height * 0.8);
       const minX = Math.floor((drawingCanvas.width - w) / 2);
@@ -1186,7 +945,6 @@ predictButton.addEventListener('click', async () => {
       };
     }
   } else if (mode === 'rectangle') {
-    // 矩形選択モード
     if (!currentSelection) {
       showProgressIndicator(false);
       predictButton.disabled = false;
@@ -1208,7 +966,6 @@ predictButton.addEventListener('click', async () => {
       aspectRatio: width / height
     };
   } else if (mode === 'freehand') {
-    // フリーハンドモード
     if (points.length < 2) {
       showProgressIndicator(false);
       predictButton.disabled = false;
@@ -1218,13 +975,11 @@ predictButton.addEventListener('click', async () => {
     rawBounds = calculateOptimalBounds(points);
   }
 
-  // 領域を正規化・検証
   const bounds = normalizeAndValidateBounds(rawBounds);
   
   if (!bounds) {
     showProgressIndicator(false);
     predictButton.disabled = false;
-    // fullモードかつ検出モデルが未ロード/検出失敗の場合の案内を出す
     if (mode === 'full' && !detectionModel) {
       showNotification("モデル準備中です。数秒後にお試しください。", false, true);
     } else {
@@ -1235,79 +990,26 @@ predictButton.addEventListener('click', async () => {
 
   const { minX, minY, maxX, maxY, width, height } = bounds;
 
-  const originalCanvas = document.createElement('canvas');
-  originalCanvas.width = width;
-  originalCanvas.height = height;
-  const originalCtx = originalCanvas.getContext('2d');
-  originalCtx.drawImage(video, minX, minY, width, height, 0, 0, width, height);
-
-  const quality = evaluateImageQuality(originalCanvas);
-
-  if (quality.brightness < 0.2) {
-    showNotification('もう少し明るい場所で試してください', false, true);
-  } else if (quality.brightness > 0.95) {
-    showNotification('逆光が強すぎます。角度を調整してください', false, true);
-  }
-
+  // ★ シンプルな推論処理（10回のみ、前処理なし）★
   const predictions = [];
-  const highConfidenceThreshold = 0.95;
-  const mediumConfidenceThreshold = 0.85;
-  const lowConfidenceThreshold = 0.70;
-  const minimumConfidenceThreshold = 0.60;
-  const totalSamples = 100;
+  const totalSamples = 10;
 
   for (let i = 0; i < totalSamples; i++) {
     updateProgress(i + 1, totalSamples);
 
-    const processedCanvas = document.createElement('canvas');
-    processedCanvas.width = width;
-    processedCanvas.height = height;
-    const processedCtx = processedCanvas.getContext('2d');
-
-    const strategy = getAugmentationStrategy(i);
-
-    if (strategy.rotation) {
-      const rotationAngle = (Math.random() - 0.5) * 15 * Math.PI / 180;
-      processedCtx.save();
-      processedCtx.translate(width / 2, height / 2);
-      processedCtx.rotate(rotationAngle);
-      processedCtx.drawImage(originalCanvas, -width / 2, -height / 2, width, height);
-      processedCtx.restore();
-    } else {
-      processedCtx.drawImage(originalCanvas, 0, 0);
-    }
-
-    if (strategy.flip) {
-      const tempCanvas = document.createElement('canvas');
-      tempCanvas.width = width;
-      tempCanvas.height = height;
-      const tempCtx = tempCanvas.getContext('2d');
-      tempCtx.drawImage(processedCanvas, 0, 0);
-      applyHorizontalFlip(processedCtx, processedCanvas, tempCanvas);
-    }
-
+    // 元画像を224x224にリサイズするだけ（前処理なし）
     const resizedCanvas = document.createElement('canvas');
     resizedCanvas.width = 224;
     resizedCanvas.height = 224;
     const resizedCtx = resizedCanvas.getContext('2d');
-    resizedCtx.drawImage(processedCanvas, 0, 0, 224, 224);
+    resizedCtx.drawImage(video, minX, minY, width, height, 0, 0, 224, 224);
 
-    if (strategy.brightness !== 1.0) {
-      applyBrightnessAdjustment(resizedCtx, resizedCanvas, strategy.brightness);
-    }
-    
-    const enhancementOptions = {
-      noiseReduction: Math.random() < 0.3,
-      contrast: 0.8 + Math.random() * 0.4,
-      sharpness: 0.8 + Math.random() * 0.4
-    };
-    applyImageEnhancement(resizedCtx, resizedCanvas, enhancementOptions);
-
-    const resizedImageData = resizedCtx.getImageData(0, 0, 224, 224);
-
+    // Teachable Machine標準の正規化（0-1スケール）
     const tensor = tf.tidy(() => {
-      const pixelsTensor = tf.browser.fromPixels(resizedImageData).toFloat();
-      return pixelsTensor.sub(IMAGENET_MEAN).div(IMAGENET_STD).expandDims();
+      return tf.browser.fromPixels(resizedCanvas)
+        .toFloat()
+        .div(255.0)  // 0-1に正規化するだけ
+        .expandDims();
     });
 
     const predictionArray = await model.predict(tensor).array();
@@ -1316,54 +1018,15 @@ predictButton.addEventListener('click', async () => {
     const scores = predictionArray ? predictionArray.flat() : [];
     const topResultIndex = scores.indexOf(Math.max(...scores));
     const topScore = scores[topResultIndex];
-    const topLabel = classLabels.length > 0 && topResultIndex >= 0 ? classLabels[topResultIndex] : null;
+    const topLabel = classLabels[topResultIndex];
 
-    if (topLabel && topScore >= minimumConfidenceThreshold) {
-      const confidenceVariance = calculateConfidenceVariance(scores);
-      
+    if (topLabel && topScore >= 0.5) {
       predictions.push({
         label: topLabel,
-        confidence: topScore,
-        variance: confidenceVariance,
-        tier: topScore >= highConfidenceThreshold ? 'high' :
-          topScore >= mediumConfidenceThreshold ? 'medium' :
-            topScore >= lowConfidenceThreshold ? 'low' : 'verylow'
+        confidence: topScore
       });
     }
   }
-
-  const weightedScores = {};
-  const labelCounts = {};
-
-  predictions.forEach(p => {
-    const baseWeight = p.tier === 'high' ? 1.0 :
-      p.tier === 'medium' ? 0.7 :
-        p.tier === 'low' ? 0.4 : 0.1;
-    
-    const varianceWeight = Math.max(0.5, 1.0 - p.variance);
-    const finalWeight = baseWeight * varianceWeight;
-
-    if (!weightedScores[p.label]) {
-      weightedScores[p.label] = 0;
-      labelCounts[p.label] = 0;
-    }
-
-    weightedScores[p.label] += p.confidence * finalWeight;
-    labelCounts[p.label]++;
-  });
-
-  let finalLabel = null;
-  let maxAvgWeightedScore = 0;
-  let finalCount = 0;
-
-  Object.keys(weightedScores).forEach(label => {
-    const avgWeightedScore = weightedScores[label] / labelCounts[label];
-    if (avgWeightedScore > maxAvgWeightedScore) {
-      maxAvgWeightedScore = avgWeightedScore;
-      finalLabel = label;
-      finalCount = labelCounts[label];
-    }
-  });
 
   showProgressIndicator(false);
 
@@ -1372,13 +1035,36 @@ predictButton.addEventListener('click', async () => {
     identifiedObject = null;
   }
 
-  const bubbleText = document.getElementById('bubbleText');
-  const rawConfidence = Math.round((finalCount / totalSamples) * 100);
+  // 最も頻繁に予測されたラベルを選択
+  const labelCounts = {};
+  const labelScores = {};
+  
+  predictions.forEach(p => {
+    if (!labelCounts[p.label]) {
+      labelCounts[p.label] = 0;
+      labelScores[p.label] = 0;
+    }
+    labelCounts[p.label]++;
+    labelScores[p.label] += p.confidence;
+  });
 
-  if (finalLabel && rawConfidence >= 50) {
+  let finalLabel = null;
+  let maxCount = 0;
+  
+  Object.keys(labelCounts).forEach(label => {
+    if (labelCounts[label] > maxCount) {
+      maxCount = labelCounts[label];
+      finalLabel = label;
+    }
+  });
+
+  const bubbleText = document.getElementById('bubbleText');
+
+  if (finalLabel && maxCount >= 5) {  // 10回中5回以上
     const labelData = labelInfo[finalLabel];
-    const convertedConfidence = Math.round(((rawConfidence - 50) / 50) * 100);
-    const template = `なまえ：${labelData.name}\n種類　：${labelData.category}\n説明　：${labelData.description}\n一致回数：${finalCount}/${totalSamples}回\n信頼度：${convertedConfidence}%`;
+    const avgConfidence = labelScores[finalLabel] / labelCounts[finalLabel];
+    const confidencePercent = Math.round(avgConfidence * 100);
+    const template = `なまえ：${labelData.name}\n種類　：${labelData.category}\n説明　：${labelData.description}\n一致回数：${maxCount}/${totalSamples}回\n信頼度：${confidencePercent}%`;
 
     await new Promise(resolve => setTimeout(resolve, 200));
 
@@ -1405,9 +1091,9 @@ predictButton.addEventListener('click', async () => {
 
     lastPrediction = {
       label: finalLabel,
-      count: finalCount,
+      count: maxCount,
       total: totalSamples,
-      confidence: maxAvgWeightedScore
+      confidence: avgConfidence
     };
     saveButton.disabled = false;
 
@@ -1430,7 +1116,6 @@ predictButton.addEventListener('click', async () => {
     saveButton.disabled = true;
   }
 
-  // 描画をクリア（モードに応じて）
   const currentMode = getCurrentMode();
   if (currentMode === 'freehand') {
     points = [];
@@ -1444,7 +1129,6 @@ predictButton.addEventListener('click', async () => {
 saveButton.addEventListener('click', async () => {
   if (!lastPrediction) return;
 
-  // 保存ボタンを一時的に無効化して二重登録を防ぐ
   saveButton.disabled = true;
   showNotification('登録中...', false, false);
 
@@ -1452,7 +1136,6 @@ saveButton.addEventListener('click', async () => {
   const now = new Date().toISOString();
   const labelData = labelInfo[label];
   
-  // 位置情報がある場合は住所を取得
   let locationData = null;
   if (currentLocation) {
     const address = await getAddressFromCoords(
@@ -1465,7 +1148,7 @@ saveButton.addEventListener('click', async () => {
       longitude: currentLocation.longitude,
       accuracy: currentLocation.accuracy,
       timestamp: currentLocation.timestamp,
-      address: address  // 住所を追加
+      address: address
     };
   }
   
