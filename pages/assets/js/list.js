@@ -9,13 +9,19 @@ function loadData() {
 
 // レア度を星で表示
 function getRarityStars(name) {
+    /*****モデル更新時変更*****/
   const rarityMap = {
     'あやめ': 3,
     'さくら': 4,
-    '赤とんぼ': 2,
     'カブトムシ': 4,
-    'クワガタ': 5
+    'オナガガモ': 3,
+    'カラス': 2,
+    'カルガモ': 3,
+    'カワセミ': 3,
+    'キンクロハジロ': 3,
+    'サギ': 3
   };
+  /*************************/
 
   const rarity = rarityMap[name] || 3;
   let stars = '';

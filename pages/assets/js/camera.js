@@ -1,43 +1,79 @@
 // 定数
 const modelPath   = 'model/model.json';
-const classLabels = ['あやめ', 'さくら', '赤とんぼ', 'カブトムシ', 'クワガタ'];
-const labelInfo   = {
+
+
+
+/*****************モデル変更時更新*********************/
+const classLabels = ['あやめ', 'さくら', 'カブトムシ', 'オナガガモ', 'カラス','カルガモ','カワセミ','キンクロハジロ','サギ'];
+const labelInfo = {
   'あやめ': {
     name: 'あやめ',
     category: '草花',
-    description: 'きれいなむらさき色の花だよ！\n春になると咲いて、\n水の近くで見つけられるよ。',
+    description: 'むらさき色のきれいな花だよ！\n春になるとさいて、水のそばで見つかるよ。',
     show3DObject: false,
     model: 'model/model.json'
   },
   'さくら': {
     name: 'さくら',
     category: '木の花',
-    description: 'ピンク色のとってもきれいな花だよ！\n春の一番人気の花で、\nお花見でみんなが見に来るよ。',
-    show3DObject: false,
-    model: 'model/model.json'
-  },
-  '赤とんぼ': {
-    name: '赤とんぼ',
-    category: '昆虫',
-    description: '赤い色のとんぼだよ！\n大きな羽で空をとんで、\nとってもはやく飛べるんだ。',
+    description: 'うすピンクのかわいい花だよ！\n春になると木いっぱいにさいて、みんなでお花見をするよ。',
     show3DObject: false,
     model: 'model/model.json'
   },
   'カブトムシ': {
     name: 'カブトムシ',
     category: '昆虫',
-    description: '黒くてかっこいい虫だよ！\n頭に大きな角があって、\n夏になると元気に活動するよ。',
+    description: 'つよくてかっこいい虫だよ！\nあたまに大きなツノがあって、夏のよるに森で会えるよ。',
     show3DObject: false,
     model: 'model/model.json'
   },
-  'クワガタ': {
-    name: 'クワガタ',
-    category: '昆虫',
-    description: '大きなあごがとくちょうの虫だよ！\nはさみみたいなあごで、\n夏になるとたくさん見つかるよ。',
+  'オナガガモ': {
+    name: 'オナガガモ',
+    category: '鳥',
+    description: 'しっぽがながいカモのなかまだよ！\n冬になると川や池でゆったりおよいでいるよ。',
+    show3DObject: false,
+    model: 'model/model.json'
+  },
+  'カラス': {
+    name: 'カラス',
+    category: '鳥',
+    description: 'まっ黒で頭のいい鳥だよ！\n「カーカー」となく声がとくちょうなんだ。',
+    show3DObject: false,
+    model: 'model/model.json'
+  },
+  'カルガモ': {
+    name: 'カルガモ',
+    category: '鳥',
+    description: 'かわいい茶色のカモだよ！\nお母さんのあとをならんで歩く赤ちゃんがとってもかわいいんだ。',
+    show3DObject: false,
+    model: 'model/model.json'
+  },
+  'カワセミ': {
+    name: 'カワセミ',
+    category: '鳥',
+    description: '青くてとてもきれいな鳥だよ！\n川のそばにいて、水にとびこんで魚をつかまえるよ。',
+    show3DObject: false,
+    model: 'model/model.json'
+  },
+  'キンクロハジロ': {
+    name: 'キンクロハジロ',
+    category: '鳥',
+    description: '黒と白のきれいなカモのなかま！\nオスは金色の目がピカッとひかるよ。',
+    show3DObject: false,
+    model: 'model/model.json'
+  },
+  'サギ': {
+    name: 'サギ',
+    category: '鳥',
+    description: '白くて足の長い鳥だよ！\n川や田んぼで魚やカエルをとってたべるんだ。',
     show3DObject: false,
     model: 'model/model.json'
   }
 };
+/****************************************************************************/
+
+
+
 
 // DOM要素の取得
 const video               = document.getElementById('webcam');

@@ -16,13 +16,20 @@ function loadData() {
 
 // レア度を星で表示
 function getRarityStars(name) {
+
+  /*****モデル更新時変更*****/
   const rarityMap = {
     'あやめ': 3,
     'さくら': 4,
-    '赤とんぼ': 2,
     'カブトムシ': 4,
-    'クワガタ': 5
+    'オナガガモ': 3,
+    'カラス': 2,
+    'カルガモ': 3,
+    'カワセミ': 3,
+    'キンクロハジロ': 3,
+    'サギ': 3
   };
+  /*************************/
 
   const rarity = rarityMap[name] || 3;
   let stars = '';
@@ -34,14 +41,21 @@ function getRarityStars(name) {
 
 // 写真データのマッピング
 function getImagePath(name) {
+
+   /*****モデル更新時変更*****/
   const imageMap = {
-    'あやめ': '../assets/img/あやめ.jpg',
-    'さくら': '../assets/img/さくら.jpg',
-    'カブトムシ': '../assets/img/カブトムシ.jpg',
-    'クワガタ': '../assets/img/クワガタ.jpg',
-    '赤とんぼ': '../assets/img/赤とんぼ.jpg'
+    'あやめ':        '../assets/img/あやめ.jpg',
+    'さくら':        '../assets/img/さくら.jpg',
+    'カブトムシ':    '../assets/img/カブトムシ.jpg',
+    'オナガガモ':    '../assets/img/オナガガモ.jpg',
+    'カラス':        '../assets/img/カラス.jpg',
+    'カルガモ':      '../assets/img/カルガモ.jpg',
+    'カワセミ':      '../assets/img/カワセミ.jpg',
+    'キンクロハジロ': '../assets/img/キンクロハジロ.jpg',
+    'サギ':          '../assets/img/サギ.jpg'
   };
- 
+  /*****モデル更新時変更*****/
+
   // 完全一致を試す
   if (imageMap[name]) {
     return imageMap[name];
