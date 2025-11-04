@@ -1,1 +1,1 @@
-{"tfjsVersion":"1.7.4","tmVersion":"2.4.10","packageVersion":"0.8.4-alpha2","packageName":"@teachablemachine/image","timeStamp":"2025-11-04T06:13:41.140Z","userMetadata":{},"modelName":"文化祭モデル","labels":["オナガガモ","カラス","カルガモ","カワセミ","キンクロハジロ","サギ"],"imageSize":224}
+{"tfjsVersion":"1.7.4","tmVersion":"2.4.10","packageVersion":"0.8.4-alpha2","packageName":"@teachablemachine/image","timeStamp":"2025-11-04T07:16:30.078Z","userMetadata":{},"modelName":"文化祭モデル","labels":["オナガガモ","カラス","カルガモ","カワセミ","キンクロハジロ","サギ"],"imageSize":224}
