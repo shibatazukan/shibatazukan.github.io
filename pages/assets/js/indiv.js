@@ -19,9 +19,6 @@ function getRarityStars(name) {
 
   /*****モデル更新時変更*****/
   const rarityMap = {
-    'あやめ': 3,
-    'さくら': 4,
-    'カブトムシ': 4,
     'オナガガモ': 3,
     'カラス': 2,
     'カルガモ': 3,
@@ -44,9 +41,6 @@ function getImagePath(name) {
 
    /*****モデル更新時変更*****/
   const imageMap = {
-    'あやめ':        '../assets/img/あやめ.jpg',
-    'さくら':        '../assets/img/さくら.jpg',
-    'カブトムシ':    '../assets/img/カブトムシ.jpg',
     'オナガガモ':    '../assets/img/オナガガモ.jpg',
     'カラス':        '../assets/img/カラス.jpg',
     'カルガモ':      '../assets/img/カルガモ.jpg',

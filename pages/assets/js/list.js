@@ -11,9 +11,6 @@ function loadData() {
 function getRarityStars(name) {
     /*****モデル更新時変更*****/
   const rarityMap = {
-    'あやめ': 3,
-    'さくら': 4,
-    'カブトムシ': 4,
     'オナガガモ': 3,
     'カラス': 2,
     'カルガモ': 3,

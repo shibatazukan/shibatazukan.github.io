@@ -4,29 +4,8 @@ const modelPath   = 'model/model.json';
 
 
 /*****************モデル変更時更新*********************/
-const classLabels = ['あやめ', 'さくら', 'カブトムシ', 'オナガガモ', 'カラス','カルガモ','カワセミ','キンクロハジロ','サギ'];
+const classLabels = ['オナガガモ', 'カラス','カルガモ','カワセミ','キンクロハジロ','サギ'];
 const labelInfo = {
-  'あやめ': {
-    name: 'あやめ',
-    category: '草花',
-    description: 'むらさき色のきれいな花だよ！\n春になるとさいて、水のそばで見つかるよ。',
-    show3DObject: false,
-    model: 'model/model.json'
-  },
-  'さくら': {
-    name: 'さくら',
-    category: '木の花',
-    description: 'うすピンクのかわいい花だよ！\n春になると木いっぱいにさいて、みんなでお花見をするよ。',
-    show3DObject: false,
-    model: 'model/model.json'
-  },
-  'カブトムシ': {
-    name: 'カブトムシ',
-    category: '昆虫',
-    description: 'つよくてかっこいい虫だよ！\nあたまに大きなツノがあって、夏のよるに森で会えるよ。',
-    show3DObject: false,
-    model: 'model/model.json'
-  },
   'オナガガモ': {
     name: 'オナガガモ',
     category: '鳥',
@@ -44,7 +23,7 @@ const labelInfo = {
   'カルガモ': {
     name: 'カルガモ',
     category: '鳥',
-    description: 'かわいい茶色のカモだよ！\nお母さんのあとをならんで歩く赤ちゃんがとってもかわいいんだ。',
+    description: 'かわいい茶色のカモだよ！\nお母さんのあとをならんで歩く赤ちゃんが\nとってもかわいいんだ。',
     show3DObject: false,
     model: 'model/model.json'
   },
