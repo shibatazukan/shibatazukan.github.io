@@ -18,14 +18,20 @@ function loadData() {
 function getRarityStars(name) {
 
   /*****モデル更新時変更*****/
-  const rarityMap = {
+ const rarityMap = {
     'オナガガモ': 3,
     'カラス': 2,
     'カルガモ': 3,
     'カワセミ': 3,
     'キンクロハジロ': 3,
-    'サギ': 3
-  };
+    'サギ': 3,
+    'カワラバト': 2, // よく見かける
+    'ハクチョウ': 4, // 季節限定の渡り鳥
+    'スズメ': 2, // 非常によく見かける
+    'メジロ': 3, // 比較的よく見かける
+    'シジュウカラ': 3, // 比較的よく見かける
+    'ツグミ': 4 // 冬鳥として飛来
+};
   /*************************/
 
   const rarity = rarityMap[name] || 3;
@@ -46,8 +52,15 @@ function getImagePath(name) {
     'カルガモ':      '../assets/img/カルガモ.jpg',
     'カワセミ':      '../assets/img/カワセミ.jpg',
     'キンクロハジロ': '../assets/img/キンクロハジロ.jpg',
-    'サギ':          '../assets/img/サギ.jpg'
-  };
+    'サギ':          '../assets/img/サギ.jpg',
+    // --- ここから追加 ---
+    'カワラバト':    '../assets/img/カワラバト.jpg',
+    'ハクチョウ':    '../assets/img/ハクチョウ.jpg',
+    'スズメ':        '../assets/img/スズメ.jpg',
+    'メジロ':        '../assets/img/メジロ.jpg',
+    'シジュウカラ':  '../assets/img/シジュウカラ.jpg',
+    'ツグミ':        '../assets/img/ツグミ.jpg'
+};
   /*****モデル更新時変更*****/
 
   // 完全一致を試す
