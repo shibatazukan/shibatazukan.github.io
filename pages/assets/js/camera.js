@@ -989,11 +989,11 @@ predictButton.addEventListener('click', async () => {
 
   const { minX, minY, maxX, maxY, width, height } = bounds;
 
-  // ★ Teachable Machine完全互換の推論処理 ★
+  //Teachable Machine互換推論処理
   const predictions = [];
   const totalSamples = 10;
 
-  // 一時キャンバスを事前作成（パフォーマンス向上）
+  // 一時キャンバスを事前作成
   const tempCanvas = document.createElement('canvas');
   tempCanvas.width = 224;
   tempCanvas.height = 224;
@@ -1002,7 +1002,7 @@ predictButton.addEventListener('click', async () => {
   for (let i = 0; i < totalSamples; i++) {
     updateProgress(i + 1, totalSamples);
 
-    // 高品質リサイズ
+    //リサイズ
     tempCtx.imageSmoothingEnabled = true;
     tempCtx.imageSmoothingQuality = 'high';
     tempCtx.drawImage(video, minX, minY, width, height, 0, 0, 224, 224);
@@ -1026,7 +1026,7 @@ predictButton.addEventListener('click', async () => {
     await new Promise(resolve => setTimeout(resolve, 80));
   }
 
-  // ★ 信頼度重み付け平均による最終判定 ★
+  //信頼度重み付け平均による最終判定
   showProgressIndicator(false);
 
   // 各クラスの平均スコアを計算
