@@ -2,7 +2,8 @@
 const modelPath   = 'model/model.json';
 
 /*****************モデル変更時更新*********************/
-const classLabels = ['オナガガモ', 'カラス','カルガモ','カワセミ','キンクロハジロ','サギ'];
+const classLabels 
+= ['オナガガモ', 'カラス','カルガモ','カワセミ','キンクロハジロ','サギ', 'カワラバト', 'ハクチョウ', 'スズメ', 'メジロ', 'シジュウカラ', 'ツグミ'];
 const labelInfo = {
   'オナガガモ': {
     name: 'オナガガモ',
@@ -43,6 +44,48 @@ const labelInfo = {
     name: 'サギ',
     category: '鳥',
     description: '白くて足の長い鳥だよ！\n川や田んぼで魚やカエルをとってたべるんだ。',
+    show3DObject: false,
+    model: 'model/model.json'
+  },
+  'カワラバト': {
+    name: 'カワラバト',
+    category: '鳥',
+    description: '公園などでよく見かけるハトだよ！\nもともとは人が飼っていたハトが野生になったんだ。',
+    show3DObject: false,
+    model: 'model/model.json'
+  },
+  'ハクチョウ': {
+    name: 'ハクチョウ',
+    category: '鳥',
+    description: '大きくて白い、とてもきれいな水鳥だよ！\n冬になると、北の国から飛んできて池や湖で過ごすんだ。',
+    show3DObject: false,
+    model: 'model/model.json'
+  },
+  'スズメ': {
+    name: 'スズメ',
+    category: '鳥',
+    description: '小さくて茶色い、街中で一番見かける鳥だよ！\n「チュンチュン」と元気になくよ。',
+    show3DObject: false,
+    model: 'model/model.json'
+  },
+  'メジロ': {
+    name: 'メジロ',
+    category: '鳥',
+    description: '目のまわりが白い、緑色の小さな鳥だよ！\n花のミツや果物が大好きなんだ。',
+    show3DObject: false,
+    model: 'model/model.json'
+  },
+  'シジュウカラ': {
+    name: 'シジュウカラ',
+    category: '鳥',
+    description: '白と黒の体にくろいネクタイのようなもようがある鳥だよ！\n「ツツピー」「チュクチュク」と色々な声で話すのがとくちょうだよ。',
+    show3DObject: false,
+    model: 'model/model.json'
+  },
+  'ツグミ': {
+    name: 'ツグミ',
+    category: '鳥',
+    description: '茶色と白の体をした、冬になるとやってくる鳥だよ！\n地面でエサをさがすとき、ピョンピョンはねるのがかわいいね。',
     show3DObject: false,
     model: 'model/model.json'
   }
