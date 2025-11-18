@@ -200,7 +200,7 @@ function renderListView() {
       </div>
       
       <div class="info">
-        <span class="label">一致度:</span> ${entry.matchCount || 0}/${entry.totalSamples || 30}回 (${accuracy}%)
+        <span class="label">一致度:</span> ${entry.matchCount || 0}/${entry.totalSamples || 10}回 (${accuracy}%)
         <div class="accuracy-bar">
           <div class="accuracy-fill" style="width: ${accuracy}%"></div>
         </div>
