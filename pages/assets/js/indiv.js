@@ -168,7 +168,7 @@ function createCard(entry, index) {
       <div style="margin-bottom: 8px;"><strong>これは${entry.name}です。</strong></div>
       <div style="margin-bottom: 8px;"><strong>種類:</strong> ${entry.category}</div>
       <div style="margin-bottom: 8px;"><strong>特徴:</strong> ${entry.description}</div>
-      <div style="margin-bottom: 8px;"><strong>一致度:</strong> ${entry.matchCount || 0}/${entry.totalSamples || 30}回</div>
+      <div style="margin-bottom: 8px;"><strong>一致度:</strong> ${entry.matchCount || 0}/${entry.totalSamples || 10}回</div>
       ${locationHTML}
     </div>
     <div class="card-meta">発見日: ${dateStr}</div>
