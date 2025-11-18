@@ -1168,7 +1168,7 @@ saveButton.addEventListener('click', async () => {
   saveButton.disabled = true;
   showNotification('登録中...', false, false);
 
-  const { label, confidence } = lastPrediction;
+  const { label, confidence, avgScores } = lastPrediction; // avgScoresも取得
   const now = new Date().toISOString();
   const labelData = labelInfo[label];
   
@@ -1188,12 +1188,25 @@ saveButton.addEventListener('click', async () => {
     };
   }
   
+  // ★★★ 一致枚数を計算 ★★★
+  const totalSamples = 10; // 推論時のサンプル数
+  const classIndex = classLabels.indexOf(label);
+  let matchCount = 0;
+  
+  // lastPredictionに保存されている全予測結果から、
+  // このクラスが最高スコアだった回数をカウント
+  // ※ただし、avgScoresしか保存していない場合は概算値を使用
+  // より正確にするには、predictButtonの処理で全予測を保存する
+  matchCount = Math.round(confidence * totalSamples); // 簡易的な計算
+  
   const entry = {
     name: labelData.name,
     category: labelData.category,
     description: labelData.description,
     date: now,
     confidence: confidence,
+    matchCount: matchCount,        // ★追加
+    totalSamples: totalSamples,    // ★追加
     location: locationData
   };
 
