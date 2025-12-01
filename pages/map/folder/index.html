@@ -274,7 +274,49 @@
 				//表示するタイルレイヤのURLとAttributionコントロールの記述を設定して、地図に追加する
 				//L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png', {
 				//attribution: "<a href='https://maps.gsi.go.jp/development/ichiran.html' target='_blank'>タイルレイヤ：地理院タイル</a>"
-				//}).addTo(map); //								
+				//}).addTo(map); //
+				
+				// 追加: マイずかんのピンを表示する機能
+				let markersLayer = null; // ピンを管理するレイヤーグループ
+				
+				function displayZukanPins(map) {
+					// 既存のピンをクリア
+					if (markersLayer) {
+						map.removeLayer(markersLayer);
+					}
+					markersLayer = L.layerGroup().addTo(map);
+					
+					// localStorageからマイずかんデータを取得
+					const zukan = JSON.parse(localStorage.getItem('myZukan') || '[]');
+					
+					zukan.forEach((entry, index) => {
+						if (entry.location && entry.location.latitude && entry.location.longitude) {
+							const { latitude, longitude, address } = entry.location;
+							const { name, category, date, confidence } = entry;
+							
+							// ピンを作成
+							const marker = L.marker([latitude, longitude]);
+							
+							// ポップアップの内容
+							const popupContent = `
+								<div style="min-width: 200px;">
+									<h3 style="margin: 0 0 8px 0;">${name}</h3>
+									<p style="margin: 4px 0;"><strong>種類:</strong> ${category}</p>
+									<p style="margin: 4px 0;"><strong>場所:</strong> ${address || '位置情報あり'}</p>
+									<p style="margin: 4px 0;"><strong>登録日:</strong> ${new Date(date).toLocaleString('ja-JP')}</p>
+									<p style="margin: 4px 0;"><strong>信頼度:</strong> ${(confidence * 100).toFixed(1)}%</p>
+								</div>
+							`;
+							
+							marker.bindPopup(popupContent);
+							marker.addTo(markersLayer);
+						}
+					});
+					
+					console.log(`${zukan.length}件中、位置情報付きのピンを表示しました`);
+				}
+				// 追加終了
+								
 				function init() {
 					//地図を表示するdiv要素のidを設定    
 					var map = L.map('mapcontainer',{ renderer: L.canvas() });
@@ -353,6 +395,17 @@
 					*/
 					L.control.layers(overlayMaps,earthMaps,baseMaps).addTo(map);													  
 					gsi.addTo(map);
+					
+					// 追加: 地図読み込み後にピンを表示 ★★★
+					displayZukanPins(map);
+					
+					// 追加: localStorageの変更を監視してピンを更新 ★★★
+					window.addEventListener('storage', function(e) {
+						if (e.key === 'myZukan') {
+							displayZukanPins(map);
+						}
+					});
+					// 追加終了
 				}
 
 			/*
@@ -420,7 +473,7 @@
 		<body onload="init()">
 		<div id="mapcontainer" style="position:absolute;top:0;left:0;right:0;bottom:0;"></div>
 		<div id="map" style="position:absolute;top:0;left:0;right:0;bottom:0;"></div>
-			//Leafletのサンプル（EPSG:4326編）。
+			//Leafletのサンプル(EPSG:4326編)。
 			<div id="map"></div>
 			<script src="example1.js" type="module"></script>
 	</body>
