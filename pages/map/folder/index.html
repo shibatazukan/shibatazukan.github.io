@@ -56,7 +56,7 @@
 		<button type="button" onclick="ShowAlert()">ここをクリック</button>
 		<button type="image" onclick="onSignInButtonClick()">ここをクリック</button>						 
 		<div> <!--div始まり ----------------------------------------------------------->
-			< <div id="mapcontainer" style="width:600px;height:600px"></div>				    							-->
+			<div id="mapcontainer" style="width:600px;height:600px"></div>				    							-->
 			 <div id="map" style="width:600px;height:600px"></div>	
 			 <div class="txt-margin">
 				 <p>緯度：<span id="latitude">???</span><span>度</span></p>
@@ -69,7 +69,7 @@
 		</div>			
 		<template>
 		<div id="rain_fall" ref="rainFall">
-			<canvas ref="map" />
+			<canvas ref="map"></canvas>
 		</div>						
 		<div>
 			<input type="date" v-model="dateInput" />
@@ -80,10 +80,10 @@
 		
 		<!-- JAXA Earth API for JavaScript を読み込み（API ドキュメントに従って取得） -->				 	
 		<main>										<!-- canvasその1 -->
-			<div id "mapid"></div>
+			<div id="mapid"></div>
 			<div id="map_canvas1" style="width:300px; height:300px"></div>	
 			<canvas id="canvas" width="200" height="200"> </canvas> 
-			<canvas  width=100height=100 style="border: solid 5pt orange"> SOMETHING GOES WRONG </canvas>
+			<canvas width=100 height=100 style="border: solid 5pt orange"> SOMETHING GOES WRONG </canvas>
 
 			<canvas id="stockGraph" width="150" height="150">
   				現在の株価: $3.15 + 0.15
@@ -276,7 +276,7 @@
 				//attribution: "<a href='https://maps.gsi.go.jp/development/ichiran.html' target='_blank'>タイルレイヤ：地理院タイル</a>"
 				//}).addTo(map); //
 				
-				// 追加: マイずかんのピンを表示する機能
+				// 居城追加: マイずかんのピンを表示する機能
 				let markersLayer = null; // ピンを管理するレイヤーグループ
 				
 				function displayZukanPins(map) {
@@ -396,10 +396,10 @@
 					L.control.layers(overlayMaps,earthMaps,baseMaps).addTo(map);													  
 					gsi.addTo(map);
 					
-					// 追加: 地図読み込み後にピンを表示 ★★★
+					// 居城追加: 地図読み込み後にピンを表示 
 					displayZukanPins(map);
 					
-					// 追加: localStorageの変更を監視してピンを更新 ★★★
+					// 居城追加: localStorageの変更を監視してピンを更新 
 					window.addEventListener('storage', function(e) {
 						if (e.key === 'myZukan') {
 							displayZukanPins(map);

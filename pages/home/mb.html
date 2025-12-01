@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MobileNet画像分類</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.11.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.0"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 800px;
+            width: 100%;
+            padding: 40px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.9em;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+        button:hover:not(:disabled) {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .file-input {
+            display: none;
+        }
+        .file-label {
+            background: #764ba2;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .file-label:hover {
+            background: #653a8a;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(118, 75, 162, 0.4);
+        }
+        .preview-container {
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        #imagePreview, #videoPreview {
+            max-width: 100%;
+            max-height: 400px;
+            border-radius: 12px;
+            display: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        #videoPreview {
+            transform: scaleX(-1);
+        }
+        .loading {
+            text-align: center;
+            color: #667eea;
+            font-weight: 600;
+            margin: 20px 0;
+            display: none;
+        }
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .results {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            display: none;
+        }
+        .results h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        .prediction {
+            background: white;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .prediction-label {
+            font-weight: 600;
+            color: #333;
+            flex: 1;
+        }
+        .prediction-bar {
+            flex: 2;
+            margin: 0 15px;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .prediction-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+        .prediction-value {
+            font-weight: 600;
+            color: #667eea;
+            min-width: 60px;
+            text-align: right;
+        }
+        .status {
+            text-align: center;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 600;
+            display: none;
+        }
+        .status.info {
+            background: #e3f2fd;
+            color: #1976d2;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 画像認識AI</h1>
+        <p class="subtitle">MobileNet + TensorFlow.jsで物体を識別</p>
+        
+        <div class="status info" id="status">モデルを読み込み中...</div>
+        
+        <div class="controls">
+            <button id="cameraBtn" onclick="startCamera()" disabled>📸 カメラで撮影</button>
+            <label for="fileInput" class="file-label" id="fileLabel">📁 画像を選択</label>
+            <input type="file" id="fileInput" class="file-input" accept="image/*" onchange="handleFile(event)" disabled>
+            <button id="captureBtn" onclick="captureImage()" style="display:none;">📷 撮影</button>
+            <button id="stopBtn" onclick="stopCamera()" style="display:none;">⏹️ 停止</button>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>分析中...</p>
+        </div>
+        
+        <div class="preview-container">
+            <img id="imagePreview" alt="Preview">
+            <video id="videoPreview" autoplay playsinline></video>
+        </div>
+        
+        <div class="results" id="results">
+            <h2>認識結果</h2>
+            <div id="predictions"></div>
+        </div>
+    </div>
+
+    <script>
+        let model;
+        let stream;
+        const video = document.getElementById('videoPreview');
+        const img = document.getElementById('imagePreview');
+        const loading = document.getElementById('loading');
+        const results = document.getElementById('results');
+        const predictions = document.getElementById('predictions');
+        const status = document.getElementById('status');
+
+        async function loadModel() {
+            try {
+                status.textContent = 'モデルを読み込み中...';
+                model = await mobilenet.load();
+                status.textContent = '準備完了！画像を選択またはカメラで撮影してください';
+                document.getElementById('cameraBtn').disabled = false;
+                document.getElementById('fileInput').disabled = false;
+            } catch (error) {
+                status.textContent = 'エラー: モデルの読み込みに失敗しました';
+                status.className = 'status';
+                status.style.background = '#ffebee';
+                status.style.color = '#c62828';
+                console.error('Model load error:', error);
+            }
+        }
+
+        async function startCamera() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: 'environment' } 
+                });
+                video.srcObject = stream;
+                video.style.display = 'block';
+                img.style.display = 'none';
+                results.style.display = 'none';
+                
+                document.getElementById('cameraBtn').style.display = 'none';
+                document.getElementById('fileLabel').style.display = 'none';
+                document.getElementById('captureBtn').style.display = 'inline-block';
+                document.getElementById('stopBtn').style.display = 'inline-block';
+            } catch (error) {
+                alert('カメラへのアクセスに失敗しました');
+                console.error('Camera error:', error);
+            }
+        }
+
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                video.style.display = 'none';
+            }
+            document.getElementById('cameraBtn').style.display = 'inline-block';
+            document.getElementById('fileLabel').style.display = 'inline-block';
+            document.getElementById('captureBtn').style.display = 'none';
+            document.getElementById('stopBtn').style.display = 'none';
+        }
+
+        async function captureImage() {
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            
+            img.src = canvas.toDataURL('image/jpeg');
+            img.style.display = 'block';
+            
+            stopCamera();
+            await classifyImage(img);
+        }
+
+        async function handleFile(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    img.src = e.target.result;
+                    img.style.display = 'block';
+                    video.style.display = 'none';
+                    await classifyImage(img);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        async function classifyImage(element) {
+            loading.style.display = 'block';
+            results.style.display = 'none';
+            
+            try {
+                const preds = await model.classify(element);
+                displayResults(preds);
+            } catch (error) {
+                alert('分類に失敗しました');
+                console.error('Classification error:', error);
+            }
+            
+            loading.style.display = 'none';
+        }
+
+        function displayResults(preds) {
+            predictions.innerHTML = '';
+            
+            preds.forEach((pred, index) => {
+                const percentage = (pred.probability * 100).toFixed(1);
+                const predDiv = document.createElement('div');
+                predDiv.className = 'prediction';
+                predDiv.innerHTML = `
+                    <span class="prediction-label">${index + 1}. ${pred.className}</span>
+                    <div class="prediction-bar">
+                        <div class="prediction-fill" style="width: ${percentage}%"></div>
+                    </div>
+                    <span class="prediction-value">${percentage}%</span>
+                `;
+                predictions.appendChild(predDiv);
+            });
+            
+            results.style.display = 'block';
+        }
+
+        loadModel();
+    </script>
+</body>
+</html>
