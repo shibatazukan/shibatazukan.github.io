@@ -4,6 +4,8 @@ let stream;
 let isClassifying = false;
 let lastTime = Date.now();
 let frameCount = 0;
+let lastClassificationTime = 0;
+const CLASSIFICATION_INTERVAL = 500; // 500ms間隔で分類（1秒に2回）
 
 const status = document.getElementById('status');
 const startBtn = document.getElementById('startBtn');
@@ -77,6 +79,7 @@ async function startClassification() {
         
         isClassifying = true;
         lastTime = Date.now();
+        lastClassificationTime = 0;
         frameCount = 0;
         
         classifyFrame();
@@ -103,22 +106,28 @@ function stopClassification() {
 async function classifyFrame() {
     if (!isClassifying) return;
 
-    try {
-        // MobileNetで上位5つの予測を取得
-        const predictions = await model.classify(video, 5);
-        
-        displayPredictions(predictions);
-        
-        // FPS計算
-        frameCount++;
-        const currentTime = Date.now();
-        if (currentTime - lastTime >= 1000) {
-            document.getElementById('fps').textContent = frameCount;
-            frameCount = 0;
-            lastTime = currentTime;
+    const currentTime = Date.now();
+    
+    // 指定した間隔が経過した場合のみ分類を実行
+    if (currentTime - lastClassificationTime >= CLASSIFICATION_INTERVAL) {
+        try {
+            // MobileNetで上位3つの予測を取得
+            const predictions = await model.classify(video, 3);
+            
+            displayPredictions(predictions);
+            
+            lastClassificationTime = currentTime;
+        } catch (error) {
+            console.error('Classification error:', error);
         }
-    } catch (error) {
-        console.error('Classification error:', error);
+    }
+    
+    // FPS計算
+    frameCount++;
+    if (currentTime - lastTime >= 1000) {
+        document.getElementById('fps').textContent = frameCount;
+        frameCount = 0;
+        lastTime = currentTime;
     }
     
     requestAnimationFrame(classifyFrame);
