@@ -949,7 +949,7 @@ clearButton.addEventListener('click', () => {
   showProgressIndicator(false);
 });
 
-// ★★★ Teachable Machine完全互換の推論処理 ★★★
+//Teachable Machine互換の推論処理
 predictButton.addEventListener('click', async () => {
   if (!model) {
     showNotification("モデルが読み込まれていません。", true);
@@ -1188,7 +1188,7 @@ saveButton.addEventListener('click', async () => {
     };
   }
   
-  // ★★★ 一致枚数を計算 ★★★
+  //一致枚数を計算 
   const totalSamples = 10; // 推論時のサンプル数
   const classIndex = classLabels.indexOf(label);
   let matchCount = 0;
@@ -1205,8 +1205,8 @@ saveButton.addEventListener('click', async () => {
     description: labelData.description,
     date: now,
     confidence: confidence,
-    matchCount: matchCount,        // ★追加
-    totalSamples: totalSamples,    // ★追加
+    matchCount: matchCount,        // 追加
+    totalSamples: totalSamples,    // 追加
     location: locationData
   };
 
