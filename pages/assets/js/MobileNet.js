@@ -1,10 +1,7 @@
 let model;
 let video;
-let canvas;
-let ctx;
 let stream;
-let isDetecting = false;
-let detectionCount = 0;
+let isClassifying = false;
 let lastTime = Date.now();
 let frameCount = 0;
 
@@ -13,15 +10,17 @@ const startBtn = document.getElementById('startBtn');
 const stopBtn = document.getElementById('stopBtn');
 const videoContainer = document.getElementById('videoContainer');
 const stats = document.getElementById('stats');
+const predictionsDiv = document.getElementById('predictions');
 
 async function loadModel() {
     try {
         status.textContent = 'モデルを読み込み中...';
         status.className = 'status info';
         
-        model = await cocoSsd.load();
+        // MobileNetモデルをロード
+        model = await window.mobilenet.load();
         
-        status.textContent = '準備完了！検出を開始してください';
+        status.textContent = '準備完了！分類を開始してください';
         status.className = 'status success';
         startBtn.disabled = false;
     } catch (error) {
@@ -33,8 +32,6 @@ async function loadModel() {
 
 async function setupWebcam() {
     video = document.getElementById('videoElement');
-    canvas = document.getElementById('canvas');
-    ctx = canvas.getContext('2d');
 
     try {
         stream = await navigator.mediaDevices.getUserMedia({
@@ -50,8 +47,6 @@ async function setupWebcam() {
 
         return new Promise((resolve) => {
             video.onloadedmetadata = () => {
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
                 resolve();
             };
         });
@@ -63,7 +58,7 @@ async function setupWebcam() {
     }
 }
 
-async function startDetection() {
+async function startClassification() {
     try {
         await setupWebcam();
         
@@ -71,22 +66,21 @@ async function startDetection() {
         stats.style.display = 'block';
         startBtn.style.display = 'none';
         stopBtn.style.display = 'inline-block';
-        status.textContent = '検出中...';
+        status.textContent = '分類中...';
         status.className = 'status success';
         
-        isDetecting = true;
-        detectionCount = 0;
+        isClassifying = true;
         lastTime = Date.now();
         frameCount = 0;
         
-        detectObjects();
+        classifyFrame();
     } catch (error) {
-        console.error('Start detection error:', error);
+        console.error('Start classification error:', error);
     }
 }
 
-function stopDetection() {
-    isDetecting = false;
+function stopClassification() {
+    isClassifying = false;
     
     if (stream) {
         stream.getTracks().forEach(track => track.stop());
@@ -96,56 +90,55 @@ function stopDetection() {
     stats.style.display = 'none';
     startBtn.style.display = 'inline-block';
     stopBtn.style.display = 'none';
-    status.textContent = '準備完了！検出を開始してください';
+    status.textContent = '準備完了！分類を開始してください';
     status.className = 'status success';
 }
 
-async function detectObjects() {
-    if (!isDetecting) return;
+async function classifyFrame() {
+    if (!isClassifying) return;
 
-    const predictions = await model.detect(video);
-    
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    detectionCount = predictions.length;
-    document.getElementById('detectionCount').textContent = detectionCount;
-    
-    predictions.forEach(prediction => {
-        const [x, y, width, height] = prediction.bbox;
-        const score = (prediction.score * 100).toFixed(1);
+    try {
+        // MobileNetで上位5つの予測を取得
+        const predictions = await model.classify(video, 5);
         
-        // 枠を描画
-        ctx.strokeStyle = '#0F0';
-        ctx.lineWidth = 3;
-        ctx.strokeRect(x, y, width, height);
+        displayPredictions(predictions);
         
-        // ラベル背景
-        ctx.fillStyle = '#0F0';
-        const label = `${prediction.class} ${score}%`;
-        ctx.font = '16px sans-serif';
-        const textWidth = ctx.measureText(label).width;
-        ctx.fillRect(x, y - 25, textWidth + 10, 25);
-        
-        // ラベルテキスト
-        ctx.fillStyle = '#000';
-        ctx.fillText(label, x + 5, y - 7);
-    });
-    
-    // FPS計算
-    frameCount++;
-    const currentTime = Date.now();
-    if (currentTime - lastTime >= 1000) {
-        document.getElementById('fps').textContent = frameCount;
-        frameCount = 0;
-        lastTime = currentTime;
+        // FPS計算
+        frameCount++;
+        const currentTime = Date.now();
+        if (currentTime - lastTime >= 1000) {
+            document.getElementById('fps').textContent = frameCount;
+            frameCount = 0;
+            lastTime = currentTime;
+        }
+    } catch (error) {
+        console.error('Classification error:', error);
     }
     
-    requestAnimationFrame(detectObjects);
+    requestAnimationFrame(classifyFrame);
+}
+
+function displayPredictions(predictions) {
+    predictionsDiv.innerHTML = '';
+    
+    predictions.forEach((pred, index) => {
+        const percentage = (pred.probability * 100).toFixed(1);
+        const predDiv = document.createElement('div');
+        predDiv.className = 'prediction';
+        predDiv.innerHTML = `
+            <span class="prediction-label">${index + 1}. ${pred.className}</span>
+            <div class="prediction-bar">
+                <div class="prediction-fill" style="width: ${percentage}%"></div>
+            </div>
+            <span class="prediction-value">${percentage}%</span>
+        `;
+        predictionsDiv.appendChild(predDiv);
+    });
 }
 
 // イベントリスナー
-startBtn.addEventListener('click', startDetection);
-stopBtn.addEventListener('click', stopDetection);
+startBtn.addEventListener('click', startClassification);
+stopBtn.addEventListener('click', stopClassification);
 
 // 初期化
 loadModel();
