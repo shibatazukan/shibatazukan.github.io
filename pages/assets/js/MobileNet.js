@@ -136,7 +136,10 @@ async function classifyFrame() {
 function displayPredictions(predictions) {
     predictionsDiv.innerHTML = '';
     
-    predictions.forEach((pred, index) => {
+    // 上位3つのみ表示
+    const topPredictions = predictions.slice(0, 3);
+    
+    topPredictions.forEach((pred, index) => {
         const percentage = (pred.probability * 100).toFixed(1);
         const predDiv = document.createElement('div');
         predDiv.className = 'prediction';
