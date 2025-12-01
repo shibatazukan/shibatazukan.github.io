@@ -17,14 +17,20 @@ async function loadModel() {
         status.textContent = 'モデルを読み込み中...';
         status.className = 'status info';
         
-        // MobileNetモデルをロード
-        model = await window.mobilenet.load();
+        // TensorFlow.jsの準備を待つ
+        await tf.ready();
+        
+        // MobileNetモデルをロード（version: 1 = 軽量版）
+        model = await mobilenet.load({
+            version: 1,
+            alpha: 0.25  // 最も軽量なモデル
+        });
         
         status.textContent = '準備完了！分類を開始してください';
         status.className = 'status success';
         startBtn.disabled = false;
     } catch (error) {
-        status.textContent = 'エラー: モデルの読み込みに失敗しました';
+        status.textContent = 'エラー: ' + error.message;
         status.className = 'status error';
         console.error('Model load error:', error);
     }
