@@ -1,17 +1,321 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>Simple Example</title>
-    <meta charset="UTF-8" />
-  </head>
-
-  <body>
-    <h1>AI Sees You!</h1>
-    <div style="position: relative; ">
-      <video id="mystery" width="100%" autoplay></video>
-      <canvas id="detection" style="position: absolute; left: 0"></canvas>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>リアルタイム物体検出</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.11.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Mochiy Pop One', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 900px;
+            width: 100%;
+            padding: 40px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.9em;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+        button:hover:not(:disabled) {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .video-container {
+            position: relative;
+            margin-bottom: 20px;
+            display: none;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        #videoElement {
+            width: 100%;
+            display: block;
+            transform: scaleX(-1);
+        }
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transform: scaleX(-1);
+        }
+        .status {
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        .status.info {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        .status.success {
+            background: #e8f5e9;
+            color: #388e3c;
+        }
+        .status.error {
+            background: #ffebee;
+            color: #c62828;
+        }
+        .stats {
+            display: none;
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .stats h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+        .stat-item {
+            background: white;
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .stat-label {
+            color: #666;
+        }
+        .stat-value {
+            color: #667eea;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎥 リアルタイム物体検出</h1>
+        <p class="subtitle">COCO-SSD + TensorFlow.jsで物体を検出</p>
+        
+        <div class="status info" id="status">モデルを読み込み中...</div>
+        
+        <div class="controls">
+            <button id="startBtn" onclick="startDetection()" disabled>▶️ 検出開始</button>
+            <button id="stopBtn" onclick="stopDetection()" style="display:none;">⏹️ 停止</button>
+        </div>
+        
+        <div class="video-container" id="videoContainer">
+            <video id="videoElement" autoplay playsinline></video>
+            <canvas id="canvas"></canvas>
+        </div>
+        
+        <div class="stats" id="stats">
+            <h3>📊 検出統計</h3>
+            <div class="stat-item">
+                <span class="stat-label">検出数</span>
+                <span class="stat-value" id="detectionCount">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">FPS</span>
+                <span class="stat-value" id="fps">0</span>
+            </div>
+        </div>
     </div>
-    <div id="app"></div>
-    <script src="webcam.js"></script>
-  </body>
+
+    <script>
+        let model;
+        let video;
+        let canvas;
+        let ctx;
+        let stream;
+        let isDetecting = false;
+        let detectionCount = 0;
+        let lastTime = Date.now();
+        let frameCount = 0;
+
+        const status = document.getElementById('status');
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const videoContainer = document.getElementById('videoContainer');
+        const stats = document.getElementById('stats');
+
+        async function loadModel() {
+            try {
+                status.textContent = 'モデルを読み込み中...';
+                status.className = 'status info';
+                
+                model = await cocoSsd.load();
+                
+                status.textContent = '準備完了！検出を開始してください';
+                status.className = 'status success';
+                startBtn.disabled = false;
+            } catch (error) {
+                status.textContent = 'エラー: モデルの読み込みに失敗しました';
+                status.className = 'status error';
+                console.error('Model load error:', error);
+            }
+        }
+
+        async function setupWebcam() {
+            video = document.getElementById('videoElement');
+            canvas = document.getElementById('canvas');
+            ctx = canvas.getContext('2d');
+
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: { 
+                        facingMode: 'user',
+                        width: { ideal: 640 },
+                        height: { ideal: 480 }
+                    },
+                    audio: false
+                });
+
+                video.srcObject = stream;
+
+                return new Promise((resolve) => {
+                    video.onloadedmetadata = () => {
+                        canvas.width = video.videoWidth;
+                        canvas.height = video.videoHeight;
+                        resolve();
+                    };
+                });
+            } catch (error) {
+                status.textContent = 'カメラへのアクセスに失敗しました';
+                status.className = 'status error';
+                console.error('Camera error:', error);
+                throw error;
+            }
+        }
+
+        async function startDetection() {
+            try {
+                await setupWebcam();
+                
+                videoContainer.style.display = 'block';
+                stats.style.display = 'block';
+                startBtn.style.display = 'none';
+                stopBtn.style.display = 'inline-block';
+                status.textContent = '検出中...';
+                status.className = 'status success';
+                
+                isDetecting = true;
+                detectionCount = 0;
+                lastTime = Date.now();
+                frameCount = 0;
+                
+                detectObjects();
+            } catch (error) {
+                console.error('Start detection error:', error);
+            }
+        }
+
+        function stopDetection() {
+            isDetecting = false;
+            
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+            
+            videoContainer.style.display = 'none';
+            stats.style.display = 'none';
+            startBtn.style.display = 'inline-block';
+            stopBtn.style.display = 'none';
+            status.textContent = '準備完了！検出を開始してください';
+            status.className = 'status success';
+        }
+
+        async function detectObjects() {
+            if (!isDetecting) return;
+
+            const predictions = await model.detect(video);
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            detectionCount = predictions.length;
+            document.getElementById('detectionCount').textContent = detectionCount;
+            
+            predictions.forEach(prediction => {
+                const [x, y, width, height] = prediction.bbox;
+                const score = (prediction.score * 100).toFixed(1);
+                
+                // 枠を描画
+                ctx.strokeStyle = '#0F0';
+                ctx.lineWidth = 3;
+                ctx.strokeRect(x, y, width, height);
+                
+                // ラベル背景
+                ctx.fillStyle = '#0F0';
+                const label = `${prediction.class} ${score}%`;
+                ctx.font = '16px sans-serif';
+                const textWidth = ctx.measureText(label).width;
+                ctx.fillRect(x, y - 25, textWidth + 10, 25);
+                
+                // ラベルテキスト
+                ctx.fillStyle = '#000';
+                ctx.fillText(label, x + 5, y - 7);
+            });
+            
+            // FPS計算
+            frameCount++;
+            const currentTime = Date.now();
+            if (currentTime - lastTime >= 1000) {
+                document.getElementById('fps').textContent = frameCount;
+                frameCount = 0;
+                lastTime = currentTime;
+            }
+            
+            requestAnimationFrame(detectObjects);
+        }
+
+        loadModel();
+    </script>
+</body>
 </html>
