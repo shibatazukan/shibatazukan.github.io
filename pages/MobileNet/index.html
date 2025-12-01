@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>リアルタイム物体検出</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.11.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/MobileNet.css">
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 リアルタイム物体検出</h1>
+        
+        <div class="status info" id="status">モデルを読み込み中...</div>
+        
+        <div class="controls">
+            <button id="startBtn" disabled>▶️ 検出開始</button>
+            <button id="stopBtn" style="display:none;">⏹️ 停止</button>
+        </div>
+        
+        <div class="video-container" id="videoContainer">
+            <video id="videoElement" autoplay playsinline></video>
+            <canvas id="canvas"></canvas>
+        </div>
+        
+        <div class="stats" id="stats">
+            <h3>📊 検出統計</h3>
+            <div class="stat-item">
+                <span class="stat-label">検出数</span>
+                <span class="stat-value" id="detectionCount">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">FPS</span>
+                <span class="stat-value" id="fps">0</span>
+            </div>
+        </div>
+    </div>
+
+    <script src="../assets/js/MobileNet.js"></script>
+</body>
+</html>
