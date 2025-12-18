@@ -3,89 +3,239 @@ const modelPath   = 'model/model.json';
 
 /*****************モデル変更時更新*********************/
 const classLabels 
-= ['オナガガモ', 'カラス','カルガモ','カワセミ','キンクロハジロ','サギ', 'カワラバト', 'ハクチョウ', 'スズメ', 'メジロ', 'シジュウカラ', 'ツグミ'];
+= [
+  "あやめ",
+  "さくら",
+  "オナガガモ","カラス",
+  "カルガモ",
+  "カワセミ",
+  "キンクロハジロ",
+  "サギ",
+  "カワラバト",
+  "ハクチョウ",
+  "スズメ",
+  "メジロ",
+  "シジュウカラ",
+  "ツグミ",
+  "アオジ",
+  "アオバト",
+  "ウミネコ",
+  "オナガ",
+  "キジ",
+  "チョウゲンボウ",
+  "ハクセキレイ",
+  "ミコアイサ",
+  "モズ",
+  "ルリビタキ",
+  "アリアケスミレ",
+  "オオイヌノフグリ",
+  "オオバキスミレ",
+  "カモガヤ",
+  "シャガ",
+  "ススキ",
+  "セイタカアワダチソウ",
+  "タチツボスミレ",
+  "チガヤ",
+  "ナズナ",
+  "ノコンギク",
+  "ノジスミレ",
+  "ハナニラ",
+  "ヒメオドリコソウ",
+  "ハルシャギク"
+];
+
 const labelInfo = {
-  'オナガガモ': {
-    name: 'オナガガモ',
-    category: '鳥',
-    description: 'しっぽがながいカモのなかまだよ！\n冬になると川や池でゆったりおよいでいるよ。',
+  // ===== 植物 =====
+  'あやめ': {
+    name: 'あやめ',
+    category: '植物',
+    description: 'むらさき色のきれいな花だよ！\n春から初夏にかけて咲くんだ。',
     show3DObject: false,
     model: 'model/model.json'
   },
-  'カラス': {
-    name: 'カラス',
-    category: '鳥',
-    description: 'まっ黒で頭のいい鳥だよ！\n「カーカー」となく声がとくちょうなんだ。',
+  'さくら': {
+    name: 'さくら',
+    category: '植物',
+    description: '春になると日本中で咲く、とても有名な花だよ！\nピンク色の花びらがとってもきれいだね。',
     show3DObject: false,
     model: 'model/model.json'
   },
-  'カルガモ': {
-    name: 'カルガモ',
+
+  // ===== 鳥 =====
+  'アオジ': {
+    name: 'アオジ',
     category: '鳥',
-    description: 'かわいい茶色のカモだよ！\nお母さんのあとをならんで歩く赤ちゃんが\nとってもかわいいんだ。',
+    description: '黄色っぽいおなかをした小さな鳥だよ！\n冬によく見かけるんだ。',
     show3DObject: false,
     model: 'model/model.json'
   },
-  'カワセミ': {
-    name: 'カワセミ',
+  'アオバト': {
+    name: 'アオバト',
     category: '鳥',
-    description: '青くてとてもきれいな鳥だよ！\n川のそばにいて、水にとびこんで魚をつかまえるよ。',
+    description: '緑色の体がきれいなハトのなかまだよ！\n海に行ってしお水を飲むことがあるんだ。',
     show3DObject: false,
     model: 'model/model.json'
   },
-  'キンクロハジロ': {
-    name: 'キンクロハジロ',
+  'ウミネコ': {
+    name: 'ウミネコ',
     category: '鳥',
-    description: '黒と白のきれいなカモのなかま！\nオスは金色の目がピカッとひかるよ。',
+    description: '海の近くにいるカモメのなかまだよ！\n「ミャーオ」とねこのような声でなくんだ。',
     show3DObject: false,
     model: 'model/model.json'
   },
-  'サギ': {
-    name: 'サギ',
+  'オナガ': {
+    name: 'オナガ',
     category: '鳥',
-    description: '白くて足の長い鳥だよ！\n川や田んぼで魚やカエルをとってたべるんだ。',
+    description: 'しっぽがとても長い、青い色の鳥だよ！\n群れで行動することが多いんだ。',
     show3DObject: false,
     model: 'model/model.json'
   },
-  'カワラバト': {
-    name: 'カワラバト',
+  'キジ': {
+    name: 'キジ',
     category: '鳥',
-    description: '公園などでよく見かけるハトだよ！\nもともとは人が飼っていたハトが野生になったんだ。',
+    description: '日本の国鳥だよ！\nオスはとてもカラフルでかっこいいんだ。',
     show3DObject: false,
     model: 'model/model.json'
   },
-  'ハクチョウ': {
-    name: 'ハクチョウ',
+  'チョウゲンボウ': {
+    name: 'チョウゲンボウ',
     category: '鳥',
-    description: '大きくて白い、とてもきれいな水鳥だよ！\n冬になると、北の国から飛んできて池や湖で過ごすんだ。',
+    description: '小さなタカのなかまだよ！\n空中で止まるように飛ぶのがとくちょうだ。',
     show3DObject: false,
     model: 'model/model.json'
   },
-  'スズメ': {
-    name: 'スズメ',
+  'ハクセキレイ': {
+    name: 'ハクセキレイ',
     category: '鳥',
-    description: '小さくて茶色い、街中で一番見かける鳥だよ！\n「チュンチュン」と元気になくよ。',
+    description: '白と黒の体をした鳥だよ！\nしっぽを上下にフリフリするよ。',
     show3DObject: false,
     model: 'model/model.json'
   },
-  'メジロ': {
-    name: 'メジロ',
+  'ミコアイサ': {
+    name: 'ミコアイサ',
     category: '鳥',
-    description: '目のまわりが白い、緑色の小さな鳥だよ！\n花のミツや果物が大好きなんだ。',
+    description: '白黒のもようがかわいいカモだよ！\nオスはパンダみたいな顔をしているんだ。',
     show3DObject: false,
     model: 'model/model.json'
   },
-  'シジュウカラ': {
-    name: 'シジュウカラ',
+  'モズ': {
+    name: 'モズ',
     category: '鳥',
-    description: '白と黒の体にくろいネクタイのようなもようがある鳥だよ！\n「ツツピー」「チュクチュク」と色々な声で話すのがとくちょうだよ。',
+    description: 'いろいろな鳥の声をまねする鳥だよ！\n「はやにえ」をすることで知られているよ。',
     show3DObject: false,
     model: 'model/model.json'
   },
-  'ツグミ': {
-    name: 'ツグミ',
+  'ルリビタキ': {
+    name: 'ルリビタキ',
     category: '鳥',
-    description: '茶色と白の体をした、冬になるとやってくる鳥だよ！\n地面でエサをさがすとき、ピョンピョンはねるのがかわいいね。',
+    description: '青い体がとてもきれいな小鳥だよ！\n冬に山からおりてくるんだ。',
+    show3DObject: false,
+    model: 'model/model.json'
+  },
+
+  // ===== 草花 =====
+  'アリアケスミレ': {
+    name: 'アリアケスミレ',
+    category: '植物',
+    description: 'うすむらさき色の小さなスミレだよ！\n春に道ばたで見られるよ。',
+    show3DObject: false,
+    model: 'model/model.json'
+  },
+  'オオイヌノフグリ': {
+    name: 'オオイヌノフグリ',
+    category: '植物',
+    description: '青い小さな花を咲かせるよ！\n春を知らせてくれる花なんだ。',
+    show3DObject: false,
+    model: 'model/model.json'
+  },
+  'オオバキスミレ': {
+    name: 'オオバキスミレ',
+    category: '植物',
+    description: '大きな葉っぱをもつスミレだよ！\n黄色い花を咲かせるんだ。',
+    show3DObject: false,
+    model: 'model/model.json'
+  },
+  'カモガヤ': {
+    name: 'カモガヤ',
+    category: '植物',
+    description: '道ばたや草地に生える草だよ！\n細長い花をつけるんだ。',
+    show3DObject: false,
+    model: 'model/model.json'
+  },
+  'シャガ': {
+    name: 'シャガ',
+    category: '植物',
+    description: '白と青のもようがきれいな花だよ！\n日かげに咲くことが多いよ。',
+    show3DObject: false,
+    model: 'model/model.json'
+  },
+  'ススキ': {
+    name: 'ススキ',
+    category: '植物',
+    description: '秋になるとふわふわした穂を出す草だよ！\nお月見でかざることもあるね。',
+    show3DObject: false,
+    model: 'model/model.json'
+  },
+  'セイタカアワダチソウ': {
+    name: 'セイタカアワダチソウ',
+    category: '植物',
+    description: '秋に黄色い花をたくさん咲かせる草だよ！\nとても背が高くなるんだ。',
+    show3DObject: false,
+    model: 'model/model.json'
+  },
+  'タチツボスミレ': {
+    name: 'タチツボスミレ',
+    category: '植物',
+    description: '春にさく、むらさき色のスミレだよ！\n林の中でよく見かけるよ。',
+    show3DObject: false,
+    model: 'model/model.json'
+  },
+  'チガヤ': {
+    name: 'チガヤ',
+    category: '植物',
+    description: '春に白いふわふわした穂を出す草だよ！\n河原などで見られるよ。',
+    show3DObject: false,
+    model: 'model/model.json'
+  },
+  'ナズナ': {
+    name: 'ナズナ',
+    category: '植物',
+    description: 'ハートの形をした実がかわいい草だよ！\n春の七草のひとつだね。',
+    show3DObject: false,
+    model: 'model/model.json'
+  },
+  'ノコンギク': {
+    name: 'ノコンギク',
+    category: '植物',
+    description: '秋にむらさき色の花を咲かせるよ！\n野原でよく見られるんだ。',
+    show3DObject: false,
+    model: 'model/model.json'
+  },
+  'ノジスミレ': {
+    name: 'ノジスミレ',
+    category: '植物',
+    description: '野原に咲くスミレだよ！\n少しこいむらさき色の花がきれいだね。',
+    show3DObject: false,
+    model: 'model/model.json'
+  },
+  'ハナニラ': {
+    name: 'ハナニラ',
+    category: '植物',
+    description: '星の形をした白い花だよ！\n春になるとたくさん咲くんだ。',
+    show3DObject: false,
+    model: 'model/model.json'
+  },
+  'ヒメオドリコソウ': {
+    name: 'ヒメオドリコソウ',
+    category: '植物',
+    description: 'ピンク色の小さな花を咲かせるよ！\n春の道ばたでよく見られるね。',
+    show3DObject: false,
+    model: 'model/model.json'
+  },
+  'ハルシャギク': {
+    name: 'ハルシャギク',
+    category: '植物',
+    description: '黄色と赤のもようが目立つ花だよ！\n初夏に元気よく咲くんだ。',
     show3DObject: false,
     model: 'model/model.json'
   }
@@ -1098,7 +1248,7 @@ predictButton.addEventListener('click', async () => {
   const bubbleText = document.getElementById('bubbleText');
 
   // 信頼度チェック（閾値: 0.5）
-  if (confidence >= 0.98) {
+  if (confidence >= 0.94) {
     const labelData = labelInfo[finalLabel];
     const confidencePercent = (confidence * 100).toFixed(1);
     const template = `なまえ：${labelData.name}\n種類　：${labelData.category}\n説明　：${labelData.description}\n\n信頼度：${confidencePercent}%`;
