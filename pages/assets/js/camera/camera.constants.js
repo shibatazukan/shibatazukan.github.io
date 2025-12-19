@@ -47,7 +47,13 @@ const classLabels
 
 const labelInfo = {
   // ===== 植物 =====
-  'あやめ': {
+
+};
+
+// Note: labelInfo was redefined below — restore full object
+const labelInfo = (function(){
+  const info = {
+  // ===== 植物 =====  'あやめ': {
     name: 'あやめ',
     category: '植物',
     description: 'むらさき色のきれいな花だよ！\n春から初夏にかけて咲くんだ。',
@@ -117,6 +123,13 @@ const labelInfo = {
     name: 'ミコアイサ',
     category: '鳥',
     description: '白黒のもようがかわいいカモだよ！\nオスはパンダみたいな顔をしているんだ。',
+    show3DObject: false,
+    model: '../assets/model/model.json'
+  },
+  'カルガモ': {
+    name: 'カルガモ',
+    category: '鳥',
+    description: '公園や池でよく見かける、丸っこい体のカモだよ。水辺でのんびりしていることが多いね。',
     show3DObject: false,
     model: '../assets/model/model.json'
   },
@@ -242,4 +255,11 @@ const labelInfo = {
     model: '../assets/model/model.json'
   }
 };
+
+// Sanity check: warn about any labels present in model/classLabels but missing in labelInfo
+const missingLabels = classLabels.filter(l => !labelInfo[l]);
+if (missingLabels.length > 0) {
+  console.warn('labelInfo missing for:', missingLabels);
+}
+
 /****************************************************************************/
