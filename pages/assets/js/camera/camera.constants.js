@@ -83,7 +83,7 @@ const labelInfo = {
   'カルガモ': {
     name: 'カルガモ',
     category: '鳥',
-    description: '公園や池でよく見かける、丸っこい体のカモだよ。水辺でのんびりしていることが多いね。',
+    description: '公園や池でよく見かける、丸っこい体のカモだよ。\n水辺でのんびりしていることが多いね。',
     show3DObject: false,
     model: '../assets/model/model.json'
   },
