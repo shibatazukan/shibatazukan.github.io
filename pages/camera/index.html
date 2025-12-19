@@ -59,7 +59,7 @@
     </a-entity>
 
     <a-assets>
-      <a-asset-item id="notojpFont" src="AR_fonts/MPLUSRounded1c-Black.ttf"></a-asset-item>
+      <a-asset-item id="notojpFont" src="../assets/AR_fonts/MPLUSRounded1c-Black.ttf"></a-asset-item>
     </a-assets>
 
     <a-entity id="infoBubble" visible="false" scale="0.8 0.8 0.8" face-camera-full tail-update>
@@ -75,7 +75,12 @@
     </a-entity>
   </a-scene>
 
-  <script src="../assets/js/camera.js"></script>
+  <script src="../assets/js/camera/camera.constants.js"></script>
+  <script src="../assets/js/camera/camera.state.js"></script>
+  <script src="../assets/js/camera/camera.aframe.js"></script>
+  <script src="../assets/js/camera/camera.dom_utils.js"></script>
+  <script src="../assets/js/camera/camera.drawing.js"></script>
+  <script src="../assets/js/camera/camera.model.js"></script>
 </body>
 
 </html>
