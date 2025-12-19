@@ -263,9 +263,49 @@ predictButton.addEventListener('click', async () => {
   }
 
   // 最も高い平均スコアを持つクラスを選択
+  if (predictions.length === 0) {
+    showProgressIndicator(false);
+    showNotification("分類に必要な予測を取得できませんでした。後でもう一度お試しください。", true);
+    predictButton.disabled = false;
+    return;
+  }
+
+  // avgScores が数値で構成されていることを確認
+  if (!avgScores.every(s => Number.isFinite(s))) {
+    showProgressIndicator(false);
+    console.warn('Invalid avgScores', avgScores);
+    showNotification("分類に失敗しました（内部エラー）。", true);
+    predictButton.disabled = false;
+    return;
+  }
+
   const maxAvgScore = Math.max(...avgScores);
+  if (!Number.isFinite(maxAvgScore)) {
+    showProgressIndicator(false);
+    showNotification("分類に失敗しました（無効なスコア）。", true);
+    predictButton.disabled = false;
+    return;
+  }
+
   const finalIndex = avgScores.indexOf(maxAvgScore);
+  if (finalIndex < 0 || finalIndex >= classLabels.length) {
+    showProgressIndicator(false);
+    console.warn('finalIndex out of range', finalIndex, avgScores, classLabels.length);
+    showNotification("分類結果が不正です。", true);
+    predictButton.disabled = false;
+    return;
+  }
+
   const finalLabel = classLabels[finalIndex];
+  let labelData = labelInfo[finalLabel];
+  if (!labelData) {
+    showProgressIndicator(false);
+    console.warn('labelInfo missing for', finalLabel);
+    showNotification("分類に失敗しました（不明なラベル）。", true);
+    predictButton.disabled = false;
+    return;
+  }
+
   const confidence = maxAvgScore;
 
   if (identifiedObject) {
@@ -277,7 +317,6 @@ predictButton.addEventListener('click', async () => {
 
   // 信頼度チェック（閾値: 0.8）
   if (confidence >= 0.80) {
-    const labelData = labelInfo[finalLabel];
     const confidencePercent = (confidence * 100).toFixed(1);
     const template = `なまえ：${labelData.name}\n種類　：${labelData.category}\n説明　：${labelData.description}\n\n信頼度：${confidencePercent}%`;
 
