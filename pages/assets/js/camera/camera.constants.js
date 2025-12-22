@@ -45,9 +45,9 @@ const classLabels = [
   "ハルシャギク",
   
   "赤とんぼ",
-  "カブトムシ"
-];
+  "カブトムシ",
 
+  "セリ"
 const labelInfo = {
   // ===== 植物 =====
   'あやめ': {
@@ -365,7 +365,7 @@ const labelInfo = {
   },
 
   // == 昆虫 == //
-   '赤とんぼ': {
+  '赤とんぼ': {
     name: '赤とんぼ',
     category: '昆虫',
     description: '秋に見れる赤いとんぼだよ！\n夕暮れになると赤くなるよ。',
@@ -373,10 +373,18 @@ const labelInfo = {
     model: '../assets/model/model.json'
   },
 
-    'カブトムシ': {
+  'カブトムシ': {
     name: 'カブトムシ',
     category: '昆虫',
     description: '昆虫の王様カブトムシ！\n夏の夜にクヌギなどの樹液にあつまるよ。',
+    show3DObject: false,
+    model: '../assets/model/model.json'
+  },
+
+  'セリ': {
+    name: 'セリ',
+    category: '植物',
+    description: '冬が旬のシャキシャキとした触感の植物だよ！\n独特なにおいがするんだ。',
     show3DObject: false,
     model: '../assets/model/model.json'
   }
