@@ -42,7 +42,8 @@ const classLabels = [
   "ノジスミレ",
   "ハナニラ",
   "ヒメオドリコソウ",
-  "ハルシャギク"
+  "ハルシャギク",
+  "赤とんぼ"
 ];
 
 const labelInfo = {
@@ -357,6 +358,14 @@ const labelInfo = {
     name: 'ハルシャギク',
     category: '植物',
     description: '黄色と赤のもようが目立つ花だよ！\n初夏に元気よく咲くんだ。',
+    show3DObject: false,
+    model: '../assets/model/model.json'
+  },
+  
+   '赤とんぼ': {
+    name: '赤とんぼ',
+    category: '昆虫',
+    description: '秋に見れる赤いとんぼだよ！\n夕暮れになると赤くなるよ。',
     show3DObject: false,
     model: '../assets/model/model.json'
   }
