@@ -95,7 +95,7 @@ const IMAGE_MAP = {
   '赤とんぼ': '../assets/img/赤とんぼ.jpg',
   'カブトムシ': '../assets/img/カブトムシ.jpg',
 
-  'セリ': '../assets/img/セリ.jpg',
+  'セリ': '../assets/img/セリ.jpg'
 };
 
 // レア度を星表現で返す: {html, value}
