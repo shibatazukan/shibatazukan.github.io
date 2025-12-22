@@ -48,7 +48,7 @@ const classLabels = [
   "カブトムシ",
 
   "セリ"
-  ]
+  ];
 const labelInfo = {
   // ===== 植物 =====
   'あやめ': {
