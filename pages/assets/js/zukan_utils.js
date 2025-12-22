@@ -90,7 +90,7 @@ const IMAGE_MAP = {
   'ノジスミレ': '../assets/img/ノジスミレ.jpg',
   'ハナニラ': '../assets/img/ハナニラ.jpg',
   'ヒメオドリコソウ': '../assets/img/ヒメオドリコソウ.jpg',
-  'ハルシャギク': '../assets/img/ハルシャギク.jpg'
+  'ハルシャギク': '../assets/img/ハルシャギク.jpg',
 
   '赤とんぼ': '../assets/img/赤とんぼ.jpg',
   'カブトムシ': '../assets/img/カブトムシ.jpg',
