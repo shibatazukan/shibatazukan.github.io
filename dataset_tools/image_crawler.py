@@ -45,14 +45,13 @@ def download_images_no_duplicates(keyword, max_images):
     queries = [
         keyword,
         f"{keyword} 写真",
-        f"{keyword} 昆虫",
+        f"{keyword} 植物",
         f"{keyword} close up",
         f"{keyword} outdoor",
-        "rhinoceros beetle",
-        "rhinoceros beetle insect",
-        "rhinoceros beetle close up",
-        "dynastinae beetle",
-        "beetle insect macro",
+        //== ここに任意の検索ワードを追加 ==//
+
+    
+        //================================//
     ]
 
     print(f"\n目標枚数: {target}\n")
