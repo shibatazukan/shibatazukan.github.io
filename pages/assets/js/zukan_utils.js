@@ -2,6 +2,8 @@
 
 // レア度マップ（モデル更新時にここを更新）
 const RARITY_MAP = {
+  '赤とんぼ' : 3,
+  
   'オナガガモ': 3,
   'カラス': 2,
   'カルガモ': 3,
@@ -46,6 +48,7 @@ const RARITY_MAP = {
 
 // 画像マップ
 const IMAGE_MAP = {
+  '赤とんぼ': '../assets/img/赤とんぼ.jpg',
   'オナガガモ': '../assets/img/オナガガモ.jpg',
   'カラス': '../assets/img/カラス.jpg',
   'カルガモ': '../assets/img/カルガモ.jpg',
