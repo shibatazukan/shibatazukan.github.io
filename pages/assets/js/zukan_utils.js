@@ -44,7 +44,9 @@ const RARITY_MAP = {
   'ハルシャギク': 3,
 
   '赤とんぼ' : 3,
-  'カブトムシ' : 4
+  'カブトムシ' : 4,
+
+  'セリ' : 3
 };
 
 // 画像マップ
@@ -91,7 +93,9 @@ const IMAGE_MAP = {
   'ハルシャギク': '../assets/img/ハルシャギク.jpg'
 
   '赤とんぼ': '../assets/img/赤とんぼ.jpg',
-  'カブトムシ': '../assets/img/カブトムシ.jpg'
+  'カブトムシ': '../assets/img/カブトムシ.jpg',
+
+  'セリ': '../assets/img/セリ.jpg',
 };
 
 // レア度を星表現で返す: {html, value}
