@@ -43,7 +43,9 @@ const classLabels = [
   "ハナニラ",
   "ヒメオドリコソウ",
   "ハルシャギク",
-  "赤とんぼ"
+  
+  "赤とんぼ",
+  "カブトムシ"
 ];
 
 const labelInfo = {
@@ -361,14 +363,24 @@ const labelInfo = {
     show3DObject: false,
     model: '../assets/model/model.json'
   },
-  
+
+  // == 昆虫 == //
    '赤とんぼ': {
     name: '赤とんぼ',
     category: '昆虫',
     description: '秋に見れる赤いとんぼだよ！\n夕暮れになると赤くなるよ。',
     show3DObject: false,
     model: '../assets/model/model.json'
+  },
+
+    'カブトムシ': {
+    name: 'カブトムシ',
+    category: '昆虫',
+    description: '昆虫の王様カブトムシ！\n夏の夜にクヌギなどの樹液にあつまるよ。',
+    show3DObject: false,
+    model: '../assets/model/model.json'
   }
+  
 };
 
 // Sanity check: warn about any labels present in classLabels but missing in labelInfo
