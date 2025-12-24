@@ -1,4 +1,4 @@
-!pip install -q imagehash pillow
+!pip install -q icrawler imagehash pillow
 
 import os
 import shutil
@@ -42,16 +42,16 @@ def download_images_no_duplicates(keyword, max_images):
     downloaded = 0
     seen_hashes = set()
 
+    # 小豆を調べている例
     queries = [
-        keyword,
-        f"{keyword} 写真",
-        f"{keyword} 植物",
-        f"{keyword} close up",
-        f"{keyword} outdoor",
-        //== ここに任意の検索ワードを追加 ==//
-
-    
-        //================================//
+        #keyword,
+        #f"{keyword} 写真",
+        #f"{keyword} 植物",
+        #f"{keyword} close up",
+        #f"{keyword} outdoor",
+        "vicia unijuga",
+        "vicia unijuga photo",
+        "Two-Leaved Vetch"
     ]
 
     print(f"\n目標枚数: {target}\n")
@@ -132,4 +132,3 @@ kw = input("検索キーワード: ")
 num = input("画像枚数: ")
 
 download_images_no_duplicates(kw, num)
-
