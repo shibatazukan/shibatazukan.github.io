@@ -1,416 +1,414 @@
 <!DOCTYPE html>
-
-<html>
-	<head>
-	<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
-	<title>Insert title here</title>
+<html lang="ja">
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+        <title>canvasとイベント処理による描画</title>			
+        <link rel="stylesheet" href="./css3/main.css" media="all">
+		<!--新発田ずかん-->
+			<!--<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&display=swap">
+			<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
+			<link rel="stylesheet" href="https://shibatazukan.github.io/pages/assets/css/home.css">
+			<link rel="stylesheet" href="https://shibatazukan.github.io/pages/assets/css/hamburger_menu.css">
+		-->
+		<!--ハンバーガーメニューをセット -->
+		<script src="https://shibatazukan.github.io/pages/assets/js/home.js"></script>
+        <script src="https://shibatazukan.github.io/pages/assets/js/hamburger_menu.js"></script>
+		<!--leaflet-->
+		<link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.0/dist/leaflet.css" />
+		<script src="https://unpkg.com/leaflet@1.3.0/dist/leaflet.js"></script>
+		<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+		<script src ="https://data.earth.jaxa.jp/api/javascript/v1.2.2/jaxa.earth.umd.js"></script>	
+		<script src="https://unpkg.com/georaster"></script>
+		<script src="https://unpkg.com/georaster-layer-for-leaflet"></script>
+		<!--jaxaのDSM画像を単独で呼び出し-->
+		<!--<script src="example1.js" type="module"></script>-->
+		<!-- leaflet plugin -->
+			<link rel="stylesheet" href="./css3/leaflet-search.min.css">
+			<script src="https://unpkg.com/georaster-layer-for-leaflet/dist/georaster-layer-for-leaflet.min.js"></script>
+			<!--座標取得-->>
+			<script src="./Js/L.Control.Locate.min.js"></script> <!--/*位置表示用*/-->
+			<script src="./Js/L.Control.Locate.min.js.map"></script>  <!--/*位置表示用(目的不明)*/-->
+		<!-- leaflet プラグインCSS-->
+			<link rel="stylesheet" href="https://unpkg.com/leaflet-switch-basemap@1.0.6/src/L.switchBasemap.css" crossorigin=""/>
+			<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"/>
+			<link rel="stylesheet" href="./css3/L.Control.Locate.min.css" /> <!--/*位置表示用*/-->
+			<link rel="stylesheet" href="./Js/L.Control.Locate.min.js.map"/><!--/*位置表示用（目的不明）*/-->
+		<!-- Plugin Icon.Pulse -->
+			<link rel="stylesheet" href="./css3/L.Icon.Pulse.css" >
+			<script src="./Js/L.Icon.Pulse.js" ></script>
+		<!-- Plugin slider -->
+			<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.13/css/all.css" integrity="sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp" crossorigin="anonymous">
+			<link rel="stylesheet" href="css3/leaflet-slider.css" />
+			<script src="js/leaflet-slider.js"></script>
+			<!--coastline -->
+			<link rel="coastline" href="coastline.js">
+        <style>
+			*{
+				margin:0;
+				padding:0;
+			}						
+			/* マップを含む div 要素のサイズを設定します。 */
 	
-	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.0/dist/leaflet.css" />
-	<script src="https://unpkg.com/leaflet@1.3.0/dist/leaflet.js"></script>
-	<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script> 
-
-
-	
-					   <style>	     
-				           *{
-				                margin:0;
-				                padding:0;
-				            }
-				            
-				        main{
-				                background:rgb(240, 255, 255);
-				            }
-				            
-				            /* マップを含む div 要素のサイズを設定します。 */
-						      #map-container {
-						        height: 400px;
-						        width: 100%;
-						        background-color: #eee;
-						      }
-				            
-				            
-				            #canvas{
-								background:rgb(250,255,250);
-							}
-							
-							  #map {width:100%; height:600px;}
-							  
-				        </style>
-				        
-      <!--  <script> src="https://API"</script>
-       // <script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?key=AIzaSyCIizo70tgJ67AwMGUBAj3kEivOVfqiwcc"></script>-->
-       			
-        
-		
-		                   		
-	</head>
-	
+			#rain_fall {
+				height: 600px;
+				width: 600px;
+				display: flex;
+				justify-content: center;
+			}
+			#map_canvas1 {background-color:orange};
+			input {
+				margin: 10px;
+				padding: 5px;
+			}
+			#mapcontainer {border: solid 5px oreage;};
+            #mycanvas { border: 1px solid;  }
 			
-	
-	
-		<body>
-				<h1>JavaScript練習2</h1>
-				<h2>DownLoad</h2>
-				
-				
-		           <button type="button" onclick="ShowAlert()">ここをクリック</button>
-				   <button type="image" onclick="onSignInButtonClick()">ここをクリック</button>	
-		   
-					<body onload="init()">
-						
+				datalist {
+				display: flex;
+				flex-direction: column;
+				justify-content: space-between;
+				writing-mode: vertical-lr;
+				width: 200px;}				
+				option {padding: 0;}				
+				input[type="range"] {width: 200px;margin: 0;}
+        </style>
+                  
+    </head>
+    
+    <body>
+		 <div class="overlay" id="overlay">
+				<div class="title-block">
+					<h1>新発田ずかん</h1>
+					<div class="subtitle">しばたの自然を楽しむWebアプリ</div>
+				<br></div>			
+	       		<template>
+					<div id="rain_fall" ref="rainFall">
+						<canvas ref="map" />
+					</div>						
 					<div>
-  					<div id="mapcontainer" style="width:600px;height:600px"></div>
-		
-		
-					<div class="txt-margin">
-		            <p>緯度：<span id="latitude">???</span><span>度</span></p>
-		            <p>経度：<span id="longitude">???</span><span>度</span></p>
-		            <p>高度：<span id="altitude">???</span><span>度</span></p>		            
-		        	</div>
-		
-		            <div id="map"></div>				   				
-		   				
-		   						   						  
-				<!-- Googleでログイン」ボタン、最初は隠れている。                                    
-				<form action=
-				"https://apis.google.com/js/client.js?onload=init" method="post">
-			    <input			    
-			      type="image"
-			        id="g-sign-in"
-			       alt="Sign in with Google"
-			      src="https://developers.google.com/identity/images/btn_google_signin_light_normal_web.png"
-			       />
-			      onclick="onSignInButtonClick()"			     
-			      hidden />-->			      							
-				 <div id="map_canvas1" style="width:300px; height:300px"></div>
-				 </div>
-				 
-				 			<!-- JAXA Earth API for JavaScript を読み込み（API ドキュメントに従って取得） -->
-				 		
+						<input type="date" v-model="dateInput" />
+					</div>
+				</template>
+				<header
+        </div>
+       <nav class="side-menu" id="sideMenu"> <!-- ************************************************************************ -->
+            <div class="menu-title"><i class="fa-solid fa-user"></i> <span id="userNameDisplay">ユーザー名</span></div>
+            <a href="https://shibatazukan.github.io/pages/home/index.html"><i class="fa-solid fa-house"></i> ホーム</a>
+            <a href="https://shibatazukan.github.io/pages/zukan/list.html"><i class="fa-solid fa-scroll"></i> ずかん</a>
+            <a href="https://shibatazukan.github.io/pages/camera/index.html"><i class="fa-solid fa-camera"></i> カメラ</a>
+            <a href="https://shibatazukan.github.io/pages/map/folder/index.html"><i class="fa-solid fa-map"></i> マップ</a>
 
-				<main>
-		           <canvas id="canvas" width="200" height="200"> </canvas>
-		           <canvas  width=100height=100 style="border: solid 5pt orange"> SOMETHING GOES WRONG </canvas>
-		            <div id="map-container"></div> <!-- 地図が追加される要素. -->
-		            		         		          
-		            <p id="temperature"></p>
-		            <p>アカウントにログインしてください:<span id="map-container">???</span><span>確認用</span></p>
-                </main>
-        														 				
-				<script>
+            <div class="menu-divider"></div>
+            <button class="menu-item" id="shareData">
+                <i class="fa-solid fa-share"></i> データを共有/ファイルに保存
+            </button>
+            <button class="menu-item" id="loadData">
+                <i class="fa-solid fa-upload"></i> データをロード
+            </button>
+            <input type="file" id="fileInput" class="file-input" accept=".json">
+            <div class="menu-divider"></div>
+            <a href="settings.html"><i class="fa-solid fa-gear"></i> せってい</a>
+            <a href="../help/index.html"><i class="fa-solid fa-circle-question"></i> ヘルプ</a>
+        </nav><!-- *************************************************************************************************************** -->
+				</header>
+		</div>		        		        		
+	        <p>イベント処理で描画を実行するプログラム例</p>
+	
+		
+			        <div class="txt-margin">
+						 <p>緯度：<span id="latitude">???</span><span>度</span></p>
+						 <p>経度：<span id="longitude">???</span><span>度</span></p>
+						 <p>高度：<span id="altitude">???</span><span>度</span></p>		            
+					</div>			
+				<label for="ber">時系列を選択</label><br/>
+		</div>
+		
+		
+		<div id="a">
+			<input type="range" id="observe" min="2020" max="2025" step="1" list="years"/>好きな年度を選択
+			<datalist id="years">
+				<option value="2020" label="2020"></option>
+				<option value="2021" label="2021"></option>
+				<option value="2022" label="2022"></option>
+				<option value="2023" label="2023"></option>
+				<option value="2024" label="2024"></option>
+				<option value="2025" label="2025"></option>
+			</datalist>
+		</div>
+		
+        <p>kokoko</p>
+
+        <button id="chage_color" style="width: 100px; height: 100px border solid" onclick="Alert()">clickして描画
+			<!-- ここで選択肢を設定。-->
+        </button>  <!-- 「button id」定義だけでbuttonが設置される.-->
+
+		<button type="button" onclick="ShowAlert()">ここをクリック
+            <!--ここで選択肢を設定。-->
+        </button>
+
+		<button type="image" onclick="onSignInButtonClick()">ここをクリック
+            <!--ここで選択肢を設定。-->
+        </button>
+        	<div id="mapcontainer" style="width:600px;height:600px"></div>			 
+				<p>activemap直下</p>
+       </div> <!--div始まり --------------------------------------------------------- -->
+      
+        <div class="menu-toggle" id="menuToggle">
+            <i class="fa-solid fa-bars"></i>
+        </div>
+        <div id="background-clear"></div>
+        <div id="background-blur"></div>
+        <div class="overlay" id="overlay">
+		
+			<template>
+				<div id="rain_fall" ref="rainFall">
+					<canvas ref="map" />
+				</div>						
+				<div>
+					<input type="date" v-model="dateInput" />
+				</div>
+			</template>
+		</div>
+						
+       <main>										<!-- canvasその1 -->
+			<div id="mapid"></div>
+			<div id="map-container"></div> <!-- 地図が追加される要素. -->		            		         		          
+			<p id="temperature"></p>
+			<p>アカウントにログインしてください:<span id="map-container">???</span><span>確認用</span></p>
+			
+		</main>       
+			                              				 	        
+          <script>
+			'use strict';
+			{
+				//スライダ要素を取得				
+				let observe = document.getElementById('observe');
+				let selyear   = 2021;									
+				console.log('observe',observe);
+				
+				// スライダの選択が変更されたときのイベントリスナーを登録
+				observe.addEventListener('change',() => {
+				selyear= observe.value;
+				console.log('西暦年:',selyear);
+				});
+				
+				
+
+
+				//ポップアップ-----------------------------------------------------------------------------------------------------------------------
+			//{
+				function ShowAlert() {
+					alert("30秒後にシャットダウンします");
+				}	
+			// } 
+				ShowAlert();
+										
+				//動作確認--------------------------------------------------------------------------------------------
+			//{
 					console.log("start");
 					console.log("warn");
-				
-					
-					var canvas = document.getElementById('canvas'); //----------------------------------------------
-					 var c = canvas.getContext('2d'); 
-					 c.fillStyle = "red"; 
-					 c.fillRect(100,100,400,300); 
-					 
-					const image = document.getElementById("/js/station/om5ru80000003j6y-img/q2k4vk000001680b.png");
-					//---------------------------------------------------------------------------------------------
-					
-					
-					
-					//---------------------------------------------------------------------------------------------------------
-					        const apiUrl = 'https://api.open-meteo.com/v1/forecast?latitude=37.56&longitude=139.19&hourly=temperature_2m&timezone=Asia/Tokyo';
-							
-					        // 非同期でAPIリクエストを送信し、データを取得でき次第画面に表示
-					        fetch(apiUrl)
-					          .then(response => {
-					                  if (!response.ok) {
-					                      // HTTPステータスが200番台以外の場合にエラーをスロー
-					                      throw new Error(`HTTP error! status: ${response.status}`);
-					                  }
-					                  return response.json(); // JSON形式に変換
-					              })
-					              
-					              					              					              					             								 
-						    //【ここにAPIレスポンスからのデータ取得処理を実装】								   
-								    .then(data => { // データ取得成功時の処理
-                  // APIレスポンスの構造を確認し、データが存在するかチェック
-                  if (data && data.hourly && data.hourly.temperature_2m && data.hourly.temperature_2m.length > 0) {
-                      const latestTemperature = data.hourly.temperature_2m[0];
-
-                      // HTMLのp要素に気温を出力
-                      const temperatureElement = document.getElementById('temperature');
-                      temperatureElement.textContent = `現在の気温は${latestTemperature}℃です`; // バッククォートを使用
-                  } else {
-                      console.warn('APIレスポンスに予期せぬデータ形式、または気温データが見つかりませんでした。');
-                      const temperatureElement = document.getElementById('temperature');
-                      temperatureElement.textContent = '気温データを取得できませんでした。';
-                  }
-              })
-              .catch(error => { // エラー発生時の処理
-                  console.error('データ取得に失敗しました:', error); // エラー内容をコンソールに出力
-                  const temperatureElement = document.getElementById('temperature');
-                  temperatureElement.textContent = '気温データの取得中にエラーが発生しました。詳細はコンソールを確認してください。';
-              });
-              
-        //-----------------------------------------------------------------------------------------------------------------------
-    
-
-				 	    function ShowAlert() {
-				    	alert("30秒後にシャットダウンします");
-				     }
-				     
-				        function  onSignInButtonClick() {
-						  alert("Sign in with Google");
-					  }
-				    				    					 				 
-				    //------------------------------------------------------------------------------------------------------------
-				    
-				   
-				    
-				    
-				    // サインインボタンのクリックを処理する。^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-			          function onSignInButtonClick() {
-			        // Googleアカウントでログインするためのポップアップを表示する。
-			        // アプリに適切なパーミッションを与える。
-			         ee.data.authenticateViaPopup(setUpMap);
-			           }  //------------------------------------------------------------------------------------------
-			           
-			           
-			           
-				    
-				    //ユーザがサインインしている場合、以下のことを行うために必要なパーミッションを要求するポップアップを表示する。
-			        // アプリを実行し、そうでなければサインインボタンを表示する。
-			        //   ee.data.authenticateViaOauth(
-			        // 上記で定義した OAuth クライアント ID。
-			        // 370718729552-snb0afs3vf6hp91jjvgvvh9c7d0gjocl.apps.googleusercontent.com,
-			        // ユーザが既にサインインしている場合に直ちに呼び出されるコールバック。
-			        //   setUpMap,
-			           
-			        // 認証エラーをポップアップで表示する。
-                       alert,
-			        // アースエンジンのデータの読み取りと計算のみを代行する権限を要求する。
-			        //   user
-			        /* extraScopes = */ ['https://www.googleapis.com/auth/cloud-platform'],
-			        // 既存の認証情報の再利用に失敗した場合、サインインボタンを表示します。
-			        () => document.getElementById("g-sign-in").removeAttribute("hidden"),
-			        // クラウド・プラットフォームへの書き込みやアクセスを代行する能力は必要ない。
-			        //   user.
-			        /* opt_suppressDefaultScopes = */ 
-			         //    true);//-------------------------------------------------------------------------------------
-				    				    									     				     										 					 					 					 				     
-				    // Google Developers Console の OAuth クライアント ID。
-                     // const CLIENT_ID = "370718729552-snb0afs3vf6hp91jjvgvvh9c7d0gjocl.apps.googleusercontent.com";
-				     function setUpMap() {
-			        // サインインボタンを隠す。
-			        document.getElementById("g-sign-in").setAttribute("hidden", "true");
-			      
-			        // Earth Engine API を初期化します。 APIを使用する前に一度呼び出す必要があります。
-			        ee.initialize();
-			      
-			        // マップを含むプレースホルダ DOM 要素への参照を取得します。
-			       const mapContainerEl = document.getElementById("map-container");
-			      }
-			      
-				//	let map;
-					
-					//async function initMap() {
-					//  const { Map } = await google.maps.importLibrary("maps");
-					
-					//  map = new Map(document.getElementById("map"), {
-					//    center: { lat: -34.397, lng: 150.644 },
-					//    zoom: 8,
-					//  });
-					//  console.log("map")
-					//}
-					
-					//initMap();
-			        //console.log('<img src="' + canvas.toDataURL() + '" />');
-
-			    // 居城追加: マイずかんのピンを表示する機能
-				let markersLayer = null; // ピンを管理するレイヤーグループ
-				
-				function displayZukanPins(map) {
-					// 既存のピンをクリア
-					if (markersLayer) {
-						map.removeLayer(markersLayer);
+					console.log(je);
+			//}
+				//---------------------------------------------------------------------------------------------	
+				//現在の温度を表示---------------------------------------------------------------------------------------------------------
+					{
+								const apiUrl = 'https://api.open-meteo.com/v1/forecast?latitude=37.56&longitude=139.19&hourly=temperature_2m&timezone=Asia/Tokyo';							
+								// 非同期でAPIリクエストを送信し、データを取得でき次第画面に表示
+								fetch(apiUrl)
+								.then(response => {
+										if (!response.ok) {
+											// HTTPステータスが200番台以外の場合にエラーをスロー
+											throw new Error(`HTTP error! status: ${response.status}`);
+										}
+									return response.json(); // JSON形式に変換
+								})					              					              					              					              					             								 
+								//【ここにAPIレスポンスからのデータ取得処理を実装】								   
+								.then(data => { // データ取得成功時の処理
+								// APIレスポンスの構造を確認し、データが存在するかチェック
+									if (data && data.hourly && data.hourly.temperature_2m && data.hourly.temperature_2m.length > 0) {
+											const latestTemperature = data.hourly.temperature_2m[0];										  
+											// HTMLのp要素に気温を出力
+											const temperatureElement = document.getElementById('temperature');
+											temperatureElement.textContent = `現在の気温は${latestTemperature}℃です`; // バッククォートを使用										  
+										} else {
+													console.warn('APIレスポンスに予期せぬデータ形式、または気温データが見つかりませんでした。');
+													const temperatureElement = document.getElementById('temperature');
+													temperatureElement.textContent = '気温データを取得できませんでした。';
+									}
+								})								
+								.catch(error => { // エラー発生時の処理
+									console.error('データ取得に失敗しました:', error); // エラー内容をコンソールに出力
+									const temperatureElement = document.getElementById('temperature');
+									temperatureElement.textContent = '気温データの取得中にエラーが発生しました。詳細はコンソールを確認してください。';
+								});
 					}
-					markersLayer = L.layerGroup().addTo(map);
-					
-					// localStorageからマイずかんデータを取得
-					const zukan = JSON.parse(localStorage.getItem('myZukan') || '[]');
-					
-					zukan.forEach((entry, index) => {
-						if (entry.location && entry.location.latitude && entry.location.longitude) {
-							const { latitude, longitude, address } = entry.location;
-							const { name, category, date, confidence } = entry;
-							
-							// ピンを作成
-							const marker = L.marker([latitude, longitude]);
-							
-							// ポップアップの内容
-							const popupContent = `
-								<div style="min-width: 200px;">
-									<h3 style="margin: 0 0 8px 0;">${name}</h3>
-									<p style="margin: 4px 0;"><strong>種類:</strong> ${category}</p>
-									<p style="margin: 4px 0;"><strong>場所:</strong> ${address || '位置情報あり'}</p>
-									<p style="margin: 4px 0;"><strong>登録日:</strong> ${new Date(date).toLocaleString('ja-JP')}</p>
-									<p style="margin: 4px 0;"><strong>信頼度:</strong> ${(confidence * 100).toFixed(1)}%</p>
-								</div>
-							`;
-							
-							marker.bindPopup(popupContent);
-							marker.addTo(markersLayer);
-						}
-					});
-					
-					console.log(`${zukan.length}件中、位置情報付きのピンを表示しました`);
-				}
-			        
-			         function init() {
-					      //地図を表示するdiv要素のidを設定
-					      var map = L.map('mapcontainer',{      //->地図を作成
-							  
-							  renderer: L.canvas()              //マップ内のすべてのパスにデフォルトでCanvasを使用
-						  });
-					                           
-					      
-					      //--------------------------------------------------------------------------------------------
-					      //地図の中心とズームレベルを指定
-					      map.setView([37.9473, 139.32825], 14);     
-					             //->「setView」メソッドで経緯度とズームレベルを指定(緯度、経度、ズームレベル)
-					      
-					      
-					      
-					      //表示するタイルレイヤのURLとAttributionコントロールの記述を設定して、地図に追加する
-					      L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png', {
-					          attribution: "<a href='https://maps.gsi.go.jp/development/ichiran.html' target='_blank'>タイルレイヤ：地理院タイル</a>"
-					      }).addTo(map); //
-
-						  // 居城追加: 地図読み込み後にピンを表示 
-					displayZukanPins(map);
-					
-					// 居城追加: localStorageの変更を監視してピンを更新 
-					window.addEventListener('storage', function(e) {
-						if (e.key === 'myZukan') {
-							displayZukanPins(map);
-						}
-					});
-					// 追加終了
-					    }
-                         //------------------------------------------------------------------------------------------------
-			            
-			            //---------------------------------------------------------------------------------------------------
-			             function initAnimation(){
-						    var canvas = document.getElementById('canvas');
-						    var ctx = canvas.getContext('2d');
-						
-						    var imagePath = ('./sample.jpg');
-						    var image = new Image();
-						    image.src = imagePath;
-						
-						    canvas.width = Number(window.innerWidth);
-						    canvas.height = Number(canvas.width/2);
-						    image.onload = function(){
-						          ctx.drawImage(image,0,0,image.width,image.height,0,0,canvas.width,canvas.height);
-						    }
-								}
-			            //-----------------------------------------------------------------------------------------------------
-			            
-			            /*
-						  https://qiita.com/orangecarol/items/c84efeca519e2d97bb34
-						  
-						 「*メゾット」
-						  getCurrentPosition() -->デバイスの現在位置を取得する
-						  watchPosition()      -->デバイスの位置情報を監視する
-						 // clearWatch()         -->watchPosition()メソッドで取得中のデバイスの監視状況をクリアする
-						  
-						 //「コールバック関数」
-						 // PositionCallback　　 -->位置情報の取得が成功したときに呼び出される(引数:Positionオブジェクト)
-						 // PositionErrorCallback-->位置情報の取得が失敗したときに呼び出される(引数:PositionErrorオブジェクト)
-						  
-						  
-						// */
-						
-								navigator.geolocation.getCurrentPosition(successCallback, errorCallback); //現在位置を取得
-								
-									function successCallback(position){   //成功した場合
+																			
+							//現在地を取得（GPSによる位置情報を取得出来た場合は上書き交信）-----------------------------------------------------------------------------------------------------
+					{
+															//https://qiita.com/orangecarol/items/c84efeca519e2d97bb34	
+															/*                           										  
+														 「*メゾット」
+														  //getCurrentPosition() -->デバイスの現在位置を取得する
+														  //watchPosition()      -->デバイスの位置情報を監視する
+														 // clearWatch()         -->watchPosition()メソッドで取得中のデバイスの監視状況をクリアする						  
+														 //「コールバック関数」
+														 // PositionCallback　　 -->位置情報の取得が成功したときに呼び出される(引数:Positionオブジェクト)
+														 // PositionErrorCallback-->位置情報の取得が失敗したときに呼び出される(引数:PositionErrorオブジェクト) */						  									
+								navigator.geolocation.getCurrentPosition(successCallback, errorCallback); //現在位置を取得			
+								function successCallback(position){   //成功した場合									
+									var latitude = position.coords.latitude;  //現在位置情報(緯度)を持つCoordinatesオブジェクトを取得する
+									var longitude = position.coords.longitude;//現在位置情報(経度)を持つCoordinatesオブジェクトを取得する				
+									var altitude = position.coords.altitude; //現在位置情報(高度)を持つCoordinatesオブジェクトを取得する
+									alert("位置情報の取得に成功しました。");
+									document.getElementById("latitude").innerHTML = latitude;
+									document.getElementById("longitude").innerHTML = longitude;
+									document.getElementById("altitude").innerHTML = altitude;
 									
-										var latitude = position.coords.latitude;  //現在位置情報(緯度)を持つCoordinatesオブジェクトを取得する
-										var longitude = position.coords.longitude;//現在位置情報(経度)を持つCoordinatesオブジェクトを取得する				
-										var longitude = position.coords.altitude; //現在位置情報(高度)を持つCoordinatesオブジェクトを取得する
-										
-										document.getElementById("latitude").innerHTML = latitude;
-										document.getElementById("longitude").innerHTML = longitude;
-										document.getElementById("altitude").innerHTML = altitude;
-							};
-							
-							
-							
-							//--------------------------------------------------------------------------
-							
-							        function errorCallback(error){
-										alert("位置情報が取得できませんでした");
-						             };
-			            
-			            			
-			       </script>
-			      
-			      
-					<!--			  
-			        // プレースホルダDOM要素内にインタラクティブ・マップを作成する。
-			          //const embeddedMap = new google.maps.Map(mapContainerEl, {
-			          // グランドキャニオンへの初期マップビューポートをパンとズーム。
-			          // center: {lng: -112.8598, lat: 36.2841},
-			          // zoom: 9,
-			        //});
-				     // デジタル標高モデルのリファレンスを取得し、アルゴリズムを適用する。
-			         // 勾配を計算する。
-			      //    const srtm = ee.Image("CGIAR/SRTM90_V4");
-			      //    const slope = ee.Terrain.slope(srtm);
-			      
-			         // 表示可能なタイルをオンデマンドで取得し、表示するための新しいタイル・ソースを作成する。
-			         // 地図上で。
-			        //  const mapId = slope.getMap({min: 0, max: 60});
-			        //  console.log("mapID="+mapId);
-			         // const tileSource = new ee.layers.EarthEngineTileSource(mapId);
-			         // const overlay = new ee.layers.ImageOverlay(tileSource);
-			         // embeddedMap.overlayMapTypes.push(overlay);
-			         //  }-->
-			      
-			        
-			      
-			       
-			        
-			     
-			      
-			      
-			      <!--
-			       // const { createCanvas, loadImage } = require('canvas')
-					//const canvas = createCanvas(200, 200)
-					//const ctx = canvas.getContext('2d')
+									console.log('経度:${latitude}');
+									console.log('緯度:${longitude}');
+								};																					
+								//取得出来なかった場合--------------------------------------------------------------------------
+								function errorCallback(error){
+									alert("[GPS]位置情報が取得できませんでした");
+								};														
+				    }
+							//---------------------------------------------------------------------------------------------------																					
+
+				//Leaflet_Main-------------------------------------------------------------------------------------------------------			      					             					      					      					    
+				//表示するタイルレイヤのURLとAttributionコントロールの記述を設定して、地図に追加する
+				//L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png', {
+				//attribution: "<a href='https://maps.gsi.go.jp/development/ichiran.html' target='_blank'>タイルレイヤ：地理院タイル</a>"
+				//}).addTo(map); //
+						console.log('経度:${latitude}');
+						console.log('緯度:${longitude}');
+			//{														
+				
+				(async function(){
+					//地図を表示するdiv要素のidを設定    
+					var map = L.map('mapcontainer',{ renderer: L.canvas() });
+					//->地図を作成 //->マップ内のすべてのパスにデフォルトでCanvasを使用
 					
-					//const canvas = document.getElementById("canvas");								
-					//const image = document.getElementById("/js/station/om5ru80000003j6y-img/q2k4vk000001680b.png");
+					map.on('overlayadd' || 'overlayremove', function() {
+						alert('衛星画像をオーバラップします。');
+						//remove();
+					});
+
+					//地図の中心とズームレベルを指定                 
+					map.setView([37.9473, 139.32825], 15);
+					//->「setView」メソッドで経緯度とズームレベルを指定(緯度、経度、ズームレベル)	
 					
-					//image.addEventListener("load", (e) => {
-//					  ctx.drawImage(image, 33, 71, 104, 124, 21, 20, 87, 104);
-	//				});
+					var gsi = L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png', { attribution: gsiattr });
+					var gsipale = L.tileLayer('http://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png', { attribution: gsiattr });
+					var osm = L.tileLayer('http://tile.openstreetmap.jp/{z}/{x}/{y}.png', { attribution: "<a href='http://osm.org/copyright' target='_blank'>OpenStreetMap</a> contributors" });								
+
+					var gsiattr = "<a href='http://portal.cyberjapan.jp/help/termsofuse.html' target='_blank'>地理院タイル</a>"; //引用元表示用
+					//オーバーレイ用のタイルレイヤ
+					alert('年度が${selval}に変更されました。');								
+					var gsirelief = L.tileLayer('http://cyberjapandata.gsi.go.jp/xyz/relief/{z}/{x}/{y}.png', { opacity: 0.7, maxNativeZoom: 15, attribution: gsiattr });
+					var gsirehillshademap = L.tileLayer('http://cyberjapandata.gsi.go.jp/xyz/hillshademap/{z}/{x}/{y}.png', { opacity: 0.5, maxNativeZoom: 16, attribution: gsiattr });
+					var gsiaa = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { opacity: 1, maxNativeZoom: 15, attribution: gsiattr });
+
+ 					//人口衛星データ取得年月を設定。
+					let year = "2024";
+					let month = "1";
+
+
+					var gsibb = je.leaflet.createLayer({
+												opacity: "0.5", //ダブルクォーテーションで数値を囲むこと。
+												L,								
+												collection: "https://s3.ap-northeast-1.wasabisys.com/je-pds/cog/v1/JAXA.EORC_ALOS.PRISM_AW3D30.v3.2_global/collection.json",
+												band: "DSM",
+												date: new Date(Date.UTC(selyear,6 - 1)),
+												colorMap: {
+														min: 0,
+														max: 6000,
+														//colors: "ic",
+														colors: "jet",
+														} 												
+										});
+					var harotirekun = L.tileLayer('https://www.mhlw.go.jp/content/11600000/001447552.png', { opacity: 0.7, maxNativeZoom: 15, attribution: gsiattr });
 					
+					var nas =  je.leaflet.createLayer({	
+												opacity: "0.5", 
+												L,								
+												collection: "https://s3.ap-northeast-1.wasabisys.com/je-pds/cog/v1/JAXA.EORC_ALOS-2.PALSAR-2_FNF.v2.1.0_global_yearly/collection.json",
+												band: "FNF",
+												bbox:[ //効果ない模様
+													123, 24, 150, 50],														
+												colorMap: {														
+														min: 0.3,
+														max: 6000,
+														colors: "gray",														
+														}
+										});
+					var jax = je.leaflet.createLayer({
+												opacity: "0.5",
+												L,								
+												collection: "https://s3.ap-northeast-1.wasabisys.com/je-pds/cog/v1/JAXA.JASMES_GCOM-C.SGLI_standard.L2-NDVI.daytime.v3_japan_8-day/collection.json",
+												band: "NDVI_AVE",																	
+												colorMap: {														 		
+														min: 0, 
+														max: 1,
+														colors: "ndvi",																															
+												}
+										});
+			
+										//最小値 //最大値 max: 6000, //最小値～最大値をjet（青～緑～黄～赤の虹色）で塗りつぶします。
 					
-					// オーサム！」と書く
-					//ctx.font = '30px Impact'
-					//ctx.rotate(0.1)
-					//ctx.fillText('Awesome!', 50, 100)
+
+					var baseMaps = {
+						"地理院地図": gsi,
+						"淡色地図": gsipale,
+						"openst:Normal": osm,
+						"色別標高図": gsirelief,
+						"陰影起伏図": gsirehillshademap,
+						"openst:{s}入り": gsiaa,
+					};
+					//var overlayMaps  = {
+					//	"色別標高図": gsirelief,
+					//	"陰影起伏図": gsirehillshademap,
+					//	"openst": gsiaa,
+					//};		
+					var earthMaps    = {
+						//"openst": gsiaa,
+						"[衛星画像]:DSM" : gsibb,
+						"ハロトレ"    : harotirekun,
+						"[衛星画像];FNF"   : nas,
+						"[衛星画像]:NDVI"  : jax
+					};
+
+					console.log('経度:${latitude}');
+					console.log('緯度:${longitude}');
+													
+					L.marker([37.9473, 139.32825]).addTo(map)
+						.bindPopup('新発田市役所[ヨリネスしばた]')
+						.openPopup();
+					console.log('問題なし1');
+			
 					
-					// テキストの下に線を引く
-					//var text = ctx.measureText('Awesome!')
-					//ctx.strokeStyle = 'rgba(0,0,0,0.5)'
-					//ctx.beginPath()
-					//ctx.lineTo(50, 102)
-					//ctx.lineTo(50 + text.width, 102)
-					//ctx.stroke()					
-					// ライムのヘルメットをかぶった猫を描く
-					//loadImage('examples/images/lime-cat.jpg').then((image) => {
-					  //ctx.drawImage(image, 50, 0, 70, 70)					
-					 
-					//})
-					
-					-->		
-																        			             			      			     																							           
-		</body>
+																														
+					L.control.layers(baseMaps,earthMaps).addTo(map); //2つの引数までしか読み込めない？
+					L.control.scale({position: "topleft",title: "Reset view",latlng: L.latLng([37.9473, 139.32825]),zoom: 15,}).addTo(map);
+					L.control.slider(function(value) {map.setView(map.getCenter(), value);}, 
+								{
+									max: 16, min: 13, value: 15, step:1, size: '250px', orientation:'vertical', id: 'slider', logo: '<i class="fas fa-sliders-h"></i>'})
+					//L.control.resetView({position: "topleft",title: "Reset view",latlng: L.latLng([37.9473, 139.32825]),zoom: 15,}).addTo(map);
+					gsi.addTo(map);
+					//===================================================================================//
+				})();	
+													
+				//ダウンロード時に初期化する
+					window.addEventListener('renderer', L.canvas());
+			}														
+		
+	//--------------------------------------------------------------------------------------------------------------------													
+		</script>
+			<div class="notification" id="notification"></div> 				
+		<div class="buttons">
+                <a href="https://shibatazukan.github.io/pages/zukan/list.html" class="button-link"><i class="fa-solid fa-scroll"></i>ずかんを開く </a>
+                <a href="https://shibatazukan.github.io/pages/camera/index.html" class="button-link"><i class="fa-solid fa-camera"></i>カメラを開く</a>
+                <a href="https://shibatazukan.github.io/pages/camera/index.html" class="button-link"><i class="fa-solid fa-map"></i>マップを開く</a>
+                <a href="https://shibatazukan.github.io/pages/MobileNet/index.html" class="button-link"><i class="fa-solid fa-robot"></i>かんたん！AI体験</a>
+            </div>            
+	</body>
 </html>
