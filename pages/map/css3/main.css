@@ -1,0 +1,38 @@
+
+			*{
+				margin:0;
+				padding:0;
+			}						
+			/* マップを含む div 要素のサイズを設定します。 */
+			#map-container {
+				height: 400px;
+				width: 100%;
+				background-color: #eee;
+			}
+			#map {width:100%; height:600px; border: solid 5px green;}
+			#rain_fall {
+				height: 600px;
+				width: 600px;
+				display: flex;
+				justify-content: center;
+			}
+			#map_canvas1 {background-color:orange};
+			input {
+				margin: 10px;
+				padding: 5px;
+			}
+
+            @media screen and(max-width: 667px) {
+                img {
+                border: 0;
+                }
+                }
+            @media screen and(min-width: 933px) {
+                img {
+                border: 1px solid red;
+                }
+			.h-img{
+				max-height: 400px;
+				min-width: 1200px;
+				}
+            }
