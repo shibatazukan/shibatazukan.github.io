@@ -279,12 +279,12 @@
 						console.log('緯度:${longitude}');
 			//{														
 				
-				// 追加: マイずかんのピンを表示する機能
+				// 居城追加: マイずかんのピンを表示する機能 -------
 				let markersLayer = null; // ピンを管理するレイヤーグループ
 				
 				function displayZukanPins(map) {
 					console.log('displayZukanPins called');
-					// 既存のピンをクリア
+					// 既存ピンをクリア
 					if (markersLayer) {
 						map.removeLayer(markersLayer);
 					}
@@ -296,7 +296,7 @@
 					const zukan = JSON.parse(zukanData || '[]');
 					console.log('Parsed zukan:', zukan);
 					
-					// カテゴリごとに色分け（昆虫、鳥類、植物のみ）
+					// カテゴリごとに色分け
 					const categoryColors = {
 						'昆虫': '#f59e0b',
 						'鳥類': '#3b82f6',
@@ -311,7 +311,6 @@
 							const { latitude, longitude, address } = entry.location;
 							const { name, category, date, confidence } = entry;
 							
-							// 昆虫、鳥類、植物のみを表示
 							const color = categoryColors[category];
 							if (!color) {
 								console.log(`${name} はカテゴリ「${category}」のため表示されません`);
@@ -375,6 +374,8 @@
 					
 					console.log(`${zukan.length}件中、${displayCount}個のピンを表示しました`);
 				}
+				
+				// 居城追加: マイずかんのピンを表示する機能 終了-------
 				
 				(async function(){
 					//地図を表示するdiv要素のidを設定    
@@ -488,15 +489,17 @@
 					//L.control.resetView({position: "topleft",title: "Reset view",latlng: L.latLng([37.9473, 139.32825]),zoom: 15,}).addTo(map);
 					gsi.addTo(map);
 					
-					// 追加: 地図読み込み後にピンを表示 
+					// 居城追加: 地図読み込み後にピンを表示 ------
 					displayZukanPins(map);
-					
-					// 追加: localStorageの変更を監視してピンを更新 
+					// 居城追加: 地図読み込み後にピンを表示 終了------
+
+					// 居城追加: localStorageの変更を監視してピンを更新 ------
 					window.addEventListener('storage', function(e) {
 						if (e.key === 'myZukan') {
 							displayZukanPins(map);
 						}
 					});
+					// 居城追加: localStorageの変更を監視してピンを更新 終了------
 					
 					//===================================================================================//
 				})();	
