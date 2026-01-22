@@ -27,21 +27,17 @@
 			<script src="https://unpkg.com/georaster-layer-for-leaflet/dist/georaster-layer-for-leaflet.min.js"></script>
 			<!--座標取得-->>
 			<script src="./Js/L.Control.Locate.min.js"></script> <!--/*位置表示用*/-->
-			<script src="./Js/L.Control.Locate.min.js.map"></script>  <!--/*位置表示用(目的不明)*/-->
 		<!-- leaflet プラグインCSS-->
 			<link rel="stylesheet" href="https://unpkg.com/leaflet-switch-basemap@1.0.6/src/L.switchBasemap.css" crossorigin=""/>
 			<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"/>
 			<link rel="stylesheet" href="./css3/L.Control.Locate.min.css" /> <!--/*位置表示用*/-->
-			<link rel="stylesheet" href="./Js/L.Control.Locate.min.js.map"/><!--/*位置表示用（目的不明）*/-->
 		<!-- Plugin Icon.Pulse -->
 			<link rel="stylesheet" href="./css3/L.Icon.Pulse.css" >
 			<script src="./Js/L.Icon.Pulse.js" ></script>
 		<!-- Plugin slider -->
 			<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.13/css/all.css" integrity="sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp" crossorigin="anonymous">
 			<link rel="stylesheet" href="css3/leaflet-slider.css" />
-			<script src="js/leaflet-slider.js"></script>
-			<!--coastline -->
-			<link rel="coastline" href="coastline.js">
+			<script src="./Js/leaflet-slider.js"></script>
         <style>
 			*{
 				margin:0;
@@ -287,6 +283,7 @@
 				let markersLayer = null; // ピンを管理するレイヤーグループ
 				
 				function displayZukanPins(map) {
+					console.log('displayZukanPins called');
 					// 既存のピンをクリア
 					if (markersLayer) {
 						map.removeLayer(markersLayer);
@@ -294,7 +291,10 @@
 					markersLayer = L.layerGroup().addTo(map);
 					
 					// localStorageからマイずかんデータを取得
-					const zukan = JSON.parse(localStorage.getItem('myZukan') || '[]');
+					const zukanData = localStorage.getItem('myZukan');
+					console.log('zukanData from localStorage:', zukanData);
+					const zukan = JSON.parse(zukanData || '[]');
+					console.log('Parsed zukan:', zukan);
 					
 					// カテゴリごとに色分け（昆虫、鳥類、植物のみ）
 					const categoryColors = {
@@ -306,6 +306,7 @@
 					let displayCount = 0;
 					
 					zukan.forEach((entry, index) => {
+						console.log(`Processing entry ${index}:`, entry);
 						if (entry.location && entry.location.latitude && entry.location.longitude) {
 							const { latitude, longitude, address } = entry.location;
 							const { name, category, date, confidence } = entry;
@@ -366,6 +367,9 @@
 							marker.bindPopup(popupContent);
 							marker.addTo(markersLayer);
 							displayCount++;
+							console.log(`Added marker for ${name} at [${latitude}, ${longitude}]`);
+						} else {
+							console.log(`Entry ${index} has no valid location:`, entry.location);
 						}
 					});
 					
