@@ -7,6 +7,23 @@ const classLabels = [
   "あやめ",
   "さくら",
   "オナガガモ",
+  "カルガモ",
+  "カワセミ",
+  "ハクチョウ",
+  "スズメ",
+  "キジ",
+  "ススキ",
+  "タチツボスミレ",
+  "ヒメオドリコソウ",
+  "赤とんぼ",
+  "カブトムシ",
+  "セリ",
+  "ナナホシテントウ",
+  "ウスバカマキリ"
+  /*
+  "あやめ",
+  "さくら",
+  "オナガガモ",
   "カラス",
   "カルガモ",
   "カワセミ",
@@ -49,9 +66,143 @@ const classLabels = [
   "フンコロガシ",
   "ナナホシテントウ",
   "ウスバカマキリ",
+  */
   ];
 const labelInfo = {
-  // ===== 植物 =====
+    'あやめ': {
+    name: 'あやめ',
+    category: '植物',
+    description: 'むらさき色のきれいな花だよ！\n春から初夏にかけて咲くんだ。',
+    show3DObject: false,
+    model: '../assets/model/model.json'
+  },
+  
+  'さくら': {
+    name: 'さくら',
+    category: '植物',
+    description: '春になると日本中で咲く、とても有名な花だよ！\nピンク色の花びらがとってもきれいだね。',
+    show3DObject: false,
+    model: '../assets/model/model.json'
+  },
+
+  // ===== 鳥 =====
+  'オナガガモ': {
+    name: 'オナガガモ',
+    category: '鳥',
+    description: '長いしっぽが特徴のカモだよ！\n冬に池や湖で見られるんだ。',
+    show3DObject: false,
+    model: '../assets/model/model.json'
+  },
+
+ 
+  'カルガモ': {
+    name: 'カルガモ',
+    category: '鳥',
+    description: '公園や池でよく見かける、丸っこい体のカモだよ。\n水辺でのんびりしていることが多いね。',
+    show3DObject: false,
+    model: '../assets/model/model.json'
+  },
+
+  'カワセミ': {
+    name: 'カワセミ',
+    category: '鳥',
+    description: '青くてキラキラした羽がきれいな鳥だよ！\n川で魚をつかまえるのがとくいなんだ。',
+    show3DObject: false,
+    model: '../assets/model/model.json'
+  },
+
+  'ハクチョウ': {
+    name: 'ハクチョウ',
+    category: '鳥',
+    description: '白くて大きくて優雅な鳥だよ！\n冬に日本にやってくるんだ。',
+    show3DObject: false,
+    model: '../assets/model/model.json'
+  },
+
+  'スズメ': {
+    name: 'スズメ',
+    category: '鳥',
+    description: '茶色い小さな鳥で、町中どこでも見られるよ！\n「チュンチュン」と元気に鳴くんだ。',
+    show3DObject: false,
+    model: '../assets/model/model.json'
+  },
+
+  'キジ': {
+    name: 'キジ',
+    category: '鳥',
+    description: '日本の国鳥だよ！\nオスはとてもカラフルでかっこいいんだ。',
+    show3DObject: false,
+    model: '../assets/model/model.json'
+  },
+
+  'カモガヤ': {
+    name: 'カモガヤ',
+    category: '植物',
+    description: '説明未実装',
+    show3DObject: false,
+    model: '../assets/model/model.json'
+  },
+
+  'タチツボスミレ': {
+    name: 'タチツボスミレ',
+    category: '植物',
+    description: '春にさく、むらさき色のスミレだよ！\n林の中でよく見かけるよ。',
+    show3DObject: false,
+    model: '../assets/model/model.json'
+  },
+
+  'ヒメオドリコソウ': {
+    name: 'ヒメオドリコソウ',
+    category: '植物',
+    description: 'ピンク色の小さな花を咲かせるよ！\n春の道ばたでよく見られるね。',
+    show3DObject: false,
+    model: '../assets/model/model.json'
+  },
+
+  // == 昆虫 == //
+  '赤とんぼ': {
+    name: '赤とんぼ',
+    category: '昆虫',
+    description: '秋に見れる赤いとんぼだよ！\n夕暮れになると赤くなるよ。',
+    show3DObject: false,
+    model: '../assets/model/model.json'
+  },
+
+  'カブトムシ': {
+    name: 'カブトムシ',
+    category: '昆虫',
+    description: '昆虫の王様カブトムシ！\n夏の夜にクヌギなどの樹液にあつまるよ。',
+    show3DObject: false,
+    model: '../assets/model/model.json'
+  },
+
+  'セリ': {
+    name: 'セリ',
+    category: '植物',
+    description: '冬が旬のシャキシャキとした触感の植物だよ！\n独特なにおいがするんだ。',
+    show3DObject: false,
+    model: '../assets/model/model.json'
+  },
+ 
+  'ナナホシテントウ': {
+    name: 'ナナホシテントウ',
+    category: '昆虫',
+    description: '赤い体に7つの黒い星があるテントウムシだよ！\nアブラムシを食べてくれる、畑の味方なんだ。',
+    show3DObject: false,
+    model: '../assets/model/model.json'
+  },
+    
+  'ウスバカマキリ': {
+    name: 'ウスバカマキリ',
+    category: '昆虫',
+    description: '体が細くて葉っぱのように見えるカマキリだよ！\n周りに溶け込んで、獲物をじっと待つのが得意なんだ。',
+    show3DObject: false,
+    model: '../assets/model/model.json'
+  }
+
+
+  
+  /*
   'あやめ': {
     name: 'あやめ',
     category: '植物',
@@ -422,6 +573,7 @@ const labelInfo = {
     show3DObject: false,
     model: '../assets/model/model.json'
   }
+  */
     
 };
 
