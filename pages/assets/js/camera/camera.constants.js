@@ -45,10 +45,10 @@ const classLabels = [
   "ハルシャギク",
   "赤とんぼ",
   "カブトムシ",
- // "アズキナ",
+  "アズキナ",
   "フンコロガシ"
-//  "ナナホシテントウ",
-  //"ウスバカマキリ"
+  "ナナホシテントウ",
+  "ウスバカマキリ"
   ];
 const labelInfo = {
   // ===== 植物 =====
@@ -390,7 +390,7 @@ const labelInfo = {
     show3DObject: false,
     model: '../assets/model/model.json'
   },
-/*
+
   'アズキナ': {
     name: 'アズキナ',
     category: '植物',
@@ -398,16 +398,15 @@ const labelInfo = {
     show3DObject: false,
     model: '../assets/model/model.json'
   },
-  */
-    
+  
   'フンコロガシ': {
     name: 'フンコロガシ',
     category: '昆虫',
     description: '動物のフンを丸めて転がすことで有名な昆虫だよ！\n自然をきれいにする大切な役割を持っているんだ。',
     show3DObject: false,
     model: '../assets/model/model.json'
-  }
-    /*
+  },
+ 
   'ナナホシテントウ': {
     name: 'ナナホシテントウ',
     category: '昆虫',
@@ -423,7 +422,6 @@ const labelInfo = {
     show3DObject: false,
     model: '../assets/model/model.json'
   }
-  */
     
 };
 
