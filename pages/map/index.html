@@ -390,40 +390,41 @@
 					let markersLayer = null; // ピンを管理するレイヤーグループ
 					
 					function displayZukanPins(map) {
-						// 既存のピンをクリア
-						if (markersLayer) {
-							map.removeLayer(markersLayer);
+					  if (markersLayer) {
+						map.removeLayer(markersLayer);
+					  }
+					  markersLayer = L.layerGroup().addTo(map);
+					
+					  const saved = JSON.parse(localStorage.getItem('myZukan'));
+						
+					  if (!saved || !Array.isArray(saved.discoveries)) {
+						console.warn('図鑑データが見つかりません');
+						return;
+					  }
+					
+					  saved.discoveries.forEach(entry => {
+						if (
+						  entry.location &&
+						  typeof entry.location.latitude === 'number' &&
+						  typeof entry.location.longitude === 'number'
+						) {
+						  const marker = L.marker([
+							entry.location.latitude,
+							entry.location.longitude
+						  ]).addTo(markersLayer);
+					
+						  marker.bindPopup(`
+							<div style="min-width:200px">
+							  <strong>${entry.name}</strong><br>
+							  分類: ${entry.category}<br>
+							  登録日: ${new Date(entry.date).toLocaleString('ja-JP')}<br>
+							  精度: ${entry.accuracy}%
+							</div>
+						  `);
 						}
-						markersLayer = L.layerGroup().addTo(map);
-						
-						// localStorageからマイずかんデータを取得
-						const zukan = JSON.parse(localStorage.getItem('myZukan') || '[]');
-						
-						zukan.forEach((entry, index) => {
-							if (entry.location && entry.location.latitude && entry.location.longitude) {
-								const { latitude, longitude, address } = entry.location;
-								const { name, category, date, confidence } = entry;
-								
-								// ピンを作成
-								const marker = L.marker([latitude, longitude]);
-								
-								// ポップアップの内容
-								const popupContent = `
-									<div style="min-width: 200px;">
-										<h3 style="margin: 0 0 8px 0;">${name}</h3>
-										<p style="margin: 4px 0;"><strong>種類:</strong> ${category}</p>
-										<p style="margin: 4px 0;"><strong>場所:</strong> ${address || '位置情報あり'}</p>
-										<p style="margin: 4px 0;"><strong>登録日:</strong> ${new Date(date).toLocaleString('ja-JP')}</p>
-										<p style="margin: 4px 0;"><strong>信頼度:</strong> ${(confidence * 100).toFixed(1)}%</p>
-									</div>
-								`;
-								
-								marker.bindPopup(popupContent);
-								marker.addTo(markersLayer);
-							}
-						});
+					  });
 					}
-																														
+																									
 					L.control.layers(baseMaps,earthMaps).addTo(map); //2つの引数までしか読み込めない?
 					L.control.scale({position: "topleft",title: "Reset view",latlng: L.latLng([37.9473, 139.32825]),zoom: 15,}).addTo(map);
 					L.control.slider(function(value) {map.setView(map.getCenter(), value);}, 
