@@ -313,17 +313,6 @@
 					
 					console.log(`${zukan.length}件中、位置情報付きのピンを表示しました`);
 				}
-
-					
-				// 地図読み込み後にピンを表示 
-				displayZukanPins(map);
-				
-				// localStorageの変更を監視してピンを更新 
-				window.addEventListener('storage', function(e) {
-					if (e.key === 'myZukan') {
-						displayZukanPins(map);
-					}
-				});
 				// 追加終了
 				
 				//Leaflet_Main-------------------------------------------------------------------------------------------------------			      					             					      					      					    
@@ -447,10 +436,21 @@
 					//L.control.resetView({position: "topleft",title: "Reset view",latlng: L.latLng([37.9473, 139.32825]),zoom: 15,}).addTo(map);
 					gsi.addTo(map);
 					//===================================================================================//
+
+										
+					// 地図読み込み後にピンを表示 
+					displayZukanPins(map);
 				})();	
 													
 				//ダウンロード時に初期化する
 				window.addEventListener('renderer', L.canvas());
+
+				// localStorageの変更を監視してピンを更新 
+				window.addEventListener('storage', function(e) {
+					if (e.key === 'myZukan') {
+						displayZukanPins(map);
+					}
+				});
 			
 			}														
 		
