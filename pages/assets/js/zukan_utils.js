@@ -102,7 +102,7 @@ const IMAGE_MAP = {
 
   'セリ': '../assets/img/セリ.jpg',
 
-  'ノジスミレ': '../assets/img/アズキナ.jpg',
+  'アズキナ': '../assets/img/アズキナ.jpg',
   'フンコロガシ': '../assets/img/フンコロガシ.jpg',
   'ナナホシテントウ': '../assets/img/ナナホシテントウ.jpg',
   'ウスバカマキリ' : '../assets/img/ウスバカマキリ.jpg'
