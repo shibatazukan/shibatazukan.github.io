@@ -389,9 +389,10 @@
 																														
 					L.control.layers(baseMaps,earthMaps).addTo(map); //2つの引数までしか読み込めない？
 					L.control.scale({position: "topleft",title: "Reset view",latlng: L.latLng([37.9473, 139.32825]),zoom: 15,}).addTo(map);
+					/*
 					L.control.slider(function(value) {map.setView(map.getCenter(), value);}, 
 								{
-									max: 16, min: 13, value: 15, step:1, size: '250px', orientation:'vertical', id: 'slider', logo: '<i class="fas fa-sliders-h"></i>'})
+									max: 16, min: 13, value: 15, step:1, size: '250px', orientation:'vertical', id: 'slider', logo: '<i class="fas fa-sliders-h"></i>'})*/
 					//L.control.resetView({position: "topleft",title: "Reset view",latlng: L.latLng([37.9473, 139.32825]),zoom: 15,}).addTo(map);
 					gsi.addTo(map);
 
