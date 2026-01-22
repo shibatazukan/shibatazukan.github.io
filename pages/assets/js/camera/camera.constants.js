@@ -31,7 +31,6 @@ const classLabels = [
   "アリアケスミレ",
   "オオイヌノフグリ",
   "オオバキスミレ",
-  "カモガヤ",
   "シャガ",
   "ススキ",
   "セイタカアワダチソウ",
@@ -45,7 +44,6 @@ const classLabels = [
   "ハルシャギク",
   "赤とんぼ",
   "カブトムシ",
-  "アズキナ",
   "フンコロガシ",
   "ナナホシテントウ",
   "ウスバカマキリ"
@@ -270,14 +268,6 @@ const labelInfo = {
     model: '../assets/model/model.json'
   },
 
-  'カモガヤ': {
-    name: 'カモガヤ',
-    category: '植物',
-    description: '道ばたや草地に生える草だよ！\n細長い花をつけるんだ。',
-    show3DObject: false,
-    model: '../assets/model/model.json'
-  },
-
   'シャガ': {
     name: 'シャガ',
     category: '植物',
@@ -387,14 +377,6 @@ const labelInfo = {
     name: 'セリ',
     category: '植物',
     description: '冬が旬のシャキシャキとした触感の植物だよ！\n独特なにおいがするんだ。',
-    show3DObject: false,
-    model: '../assets/model/model.json'
-  },
-    
-  'アズキナ': {
-    name: 'アズキナ',
-    category: '植物',
-    description: '冬から春にかけて見られる野草だよ！\nシャキッとした食感が特徴で、昔から食用にもされてきたんだ。',
     show3DObject: false,
     model: '../assets/model/model.json'
   },
