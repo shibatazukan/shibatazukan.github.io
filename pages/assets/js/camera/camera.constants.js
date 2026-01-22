@@ -43,10 +43,8 @@ const classLabels = [
   "ハナニラ",
   "ヒメオドリコソウ",
   "ハルシャギク",
-  
   "赤とんぼ",
   "カブトムシ",
-
   "アズキナ",
   "フンコロガシ",
   "ナナホシテントウ",
@@ -399,7 +397,7 @@ const labelInfo = {
     description: '冬から春にかけて見られる野草だよ！\nシャキッとした食感が特徴で、昔から食用にもされてきたんだ。',
     show3DObject: false,
     model: '../assets/model/model.json'
-    },
+  },
     
   'フンコロガシ': {
     name: 'フンコロガシ',
