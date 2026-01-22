@@ -32,7 +32,7 @@
 			<link rel="stylesheet" href="https://unpkg.com/leaflet-switch-basemap@1.0.6/src/L.switchBasemap.css" crossorigin=""/>
 			<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"/>
 			<link rel="stylesheet" href="./css3/L.Control.Locate.min.css" /> <!--/*位置表示用*/-->
-			<link rel="stylesheet" href="./Js/L.Control.Locate.min.js.map"/><!--/*位置表示用（目的不明）*/-->
+			<link rel="stylesheet" href="./Js/L.Control.Locate.min.js.map"/><!--/*位置表示用(目的不明)*/-->
 		<!-- Plugin Icon.Pulse -->
 			<link rel="stylesheet" href="./css3/L.Icon.Pulse.css" >
 			<script src="./Js/L.Icon.Pulse.js" ></script>
@@ -116,9 +116,9 @@
 	
 		
 			        <div class="txt-margin">
-						 <p>緯度：<span id="latitude">???</span><span>度</span></p>
-						 <p>経度：<span id="longitude">???</span><span>度</span></p>
-						 <p>高度：<span id="altitude">???</span><span>度</span></p>		            
+						 <p>緯度:<span id="latitude">???</span><span>度</span></p>
+						 <p>経度:<span id="longitude">???</span><span>度</span></p>
+						 <p>高度:<span id="altitude">???</span><span>度</span></p>		            
 					</div>			
 				<label for="ber">時系列を選択</label><br/>
 		</div>
@@ -243,7 +243,7 @@
 								});
 					}
 																			
-							//現在地を取得（GPSによる位置情報を取得出来た場合は上書き交信）-----------------------------------------------------------------------------------------------------
+							//現在地を取得(GPSによる位置情報を取得出来た場合は上書き交信)-----------------------------------------------------------------------------------------------------
 					{
 															//https://qiita.com/orangecarol/items/c84efeca519e2d97bb34	
 															/*                           										  
@@ -277,7 +277,7 @@
 				//Leaflet_Main-------------------------------------------------------------------------------------------------------			      					             					      					      					    
 				//表示するタイルレイヤのURLとAttributionコントロールの記述を設定して、地図に追加する
 				//L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png', {
-				//attribution: "<a href='https://maps.gsi.go.jp/development/ichiran.html' target='_blank'>タイルレイヤ：地理院タイル</a>"
+				//attribution: "<a href='https://maps.gsi.go.jp/development/ichiran.html' target='_blank'>タイルレイヤ:地理院タイル</a>"
 				//}).addTo(map); //
 						console.log('経度:${latitude}');
 						console.log('緯度:${longitude}');
@@ -353,7 +353,7 @@
 												}
 										});
 			
-										//最小値 //最大値 max: 6000, //最小値～最大値をjet（青～緑～黄～赤の虹色）で塗りつぶします。
+										//最小値 //最大値 max: 6000, //最小値～最大値をjet(青～緑～黄～赤の虹色)で塗りつぶします。
 					
 
 					var baseMaps = {
@@ -386,14 +386,63 @@
 					console.log('問題なし1');
 			
 					
+					// 居城追加: マイずかんのピンを表示する機能
+					let markersLayer = null; // ピンを管理するレイヤーグループ
+					
+					function displayZukanPins(map) {
+						// 既存のピンをクリア
+						if (markersLayer) {
+							map.removeLayer(markersLayer);
+						}
+						markersLayer = L.layerGroup().addTo(map);
+						
+						// localStorageからマイずかんデータを取得
+						const zukan = JSON.parse(localStorage.getItem('myZukan') || '[]');
+						
+						zukan.forEach((entry, index) => {
+							if (entry.location && entry.location.latitude && entry.location.longitude) {
+								const { latitude, longitude, address } = entry.location;
+								const { name, category, date, confidence } = entry;
+								
+								// ピンを作成
+								const marker = L.marker([latitude, longitude]);
+								
+								// ポップアップの内容
+								const popupContent = `
+									<div style="min-width: 200px;">
+										<h3 style="margin: 0 0 8px 0;">${name}</h3>
+										<p style="margin: 4px 0;"><strong>種類:</strong> ${category}</p>
+										<p style="margin: 4px 0;"><strong>場所:</strong> ${address || '位置情報あり'}</p>
+										<p style="margin: 4px 0;"><strong>登録日:</strong> ${new Date(date).toLocaleString('ja-JP')}</p>
+										<p style="margin: 4px 0;"><strong>信頼度:</strong> ${(confidence * 100).toFixed(1)}%</p>
+									</div>
+								`;
+								
+								marker.bindPopup(popupContent);
+								marker.addTo(markersLayer);
+							}
+						});
+					}
 																														
-					L.control.layers(baseMaps,earthMaps).addTo(map); //2つの引数までしか読み込めない？
+					L.control.layers(baseMaps,earthMaps).addTo(map); //2つの引数までしか読み込めない?
 					L.control.scale({position: "topleft",title: "Reset view",latlng: L.latLng([37.9473, 139.32825]),zoom: 15,}).addTo(map);
 					L.control.slider(function(value) {map.setView(map.getCenter(), value);}, 
 								{
 									max: 16, min: 13, value: 15, step:1, size: '250px', orientation:'vertical', id: 'slider', logo: '<i class="fas fa-sliders-h"></i>'})
 					//L.control.resetView({position: "topleft",title: "Reset view",latlng: L.latLng([37.9473, 139.32825]),zoom: 15,}).addTo(map);
 					gsi.addTo(map);
+					
+					// 居城追加: 地図読み込み後にピンを表示 
+					displayZukanPins(map);
+					
+					// 居城追加: localStorageの変更を監視してピンを更新 
+					window.addEventListener('storage', function(e) {
+						if (e.key === 'myZukan') {
+							displayZukanPins(map);
+						}
+					});
+					// 追加終了
+					
 					//===================================================================================//
 				})();	
 													
@@ -408,7 +457,7 @@
                 <a href="https://shibatazukan.github.io/pages/zukan/list.html" class="button-link"><i class="fa-solid fa-scroll"></i>ずかんを開く </a>
                 <a href="https://shibatazukan.github.io/pages/camera/index.html" class="button-link"><i class="fa-solid fa-camera"></i>カメラを開く</a>
                 <a href="https://shibatazukan.github.io/pages/camera/index.html" class="button-link"><i class="fa-solid fa-map"></i>マップを開く</a>
-                <a href="https://shibatazukan.github.io/pages/MobileNet/index.html" class="button-link"><i class="fa-solid fa-robot"></i>かんたん！AI体験</a>
+                <a href="https://shibatazukan.github.io/pages/MobileNet/index.html" class="button-link"><i class="fa-solid fa-robot"></i>かんたん!AI体験</a>
             </div>            
 	</body>
 </html>
