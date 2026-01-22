@@ -389,39 +389,11 @@
 																														
 					L.control.layers(baseMaps,earthMaps).addTo(map); //2つの引数までしか読み込めない？
 					L.control.scale({position: "topleft",title: "Reset view",latlng: L.latLng([37.9473, 139.32825]),zoom: 15,}).addTo(map);
-					/*
 					L.control.slider(function(value) {map.setView(map.getCenter(), value);}, 
 								{
-									max: 16, min: 13, value: 15, step:1, size: '250px', orientation:'vertical', id: 'slider', logo: '<i class="fas fa-sliders-h"></i>'})*/
+									max: 16, min: 13, value: 15, step:1, size: '250px', orientation:'vertical', id: 'slider', logo: '<i class="fas fa-sliders-h"></i>'})
 					//L.control.resetView({position: "topleft",title: "Reset view",latlng: L.latLng([37.9473, 139.32825]),zoom: 15,}).addTo(map);
 					gsi.addTo(map);
-
-					// 居城追加:図鑑ピン表示
-					const rawData = localStorage.getItem('myZukan');
-					if (rawData) {
-						let zukanData = JSON.parse(rawData);
-						if (Array.isArray(zukanData.discoveries)) {
-							zukanData.discoveries.forEach(entry => {
-								if (entry.location?.latitude && entry.location?.longitude) {
-									const lat = Number(entry.location.latitude);
-									const lng = Number(entry.location.longitude);
-									if (!isNaN(lat) && !isNaN(lng)) {
-										const popupContent = `
-											<b>${entry.name}</b><br>
-											カテゴリ: ${entry.category}<br>
-											説明: ${entry.description}<br>
-											発見日: ${entry.date}<br>
-											精度: ${entry.accuracy || '不明'}%
-										`;
-										L.marker([lat, lng])
-											.addTo(map)
-											.bindPopup(popupContent);
-									}
-								}
-							});
-						}
-					}
-					// 居城追加:図鑑ピン表示　終了
 					//===================================================================================//
 				})();	
 													
