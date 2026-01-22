@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ja">
     <head>
@@ -116,9 +117,9 @@
 	
 		
 			        <div class="txt-margin">
-						 <p>緯度：<span id="latitude">???</span><span>度</span></p>
-						 <p>経度：<span id="longitude">???</span><span>度</span></p>
-						 <p>高度：<span id="altitude">???</span><span>度</span></p>		            
+						 <p>緯度：<span id="latitude">???</span><span>[度]</span></p>
+						 <p>経度：<span id="longitude">???</span><span>[度]</span></p>
+						 <p>高度：<span id="altitude">???</span><span>[m]</span></p>		            
 					</div>			
 				<label for="ber">時系列を選択</label><br/>
 		</div>
@@ -181,6 +182,8 @@
           <script>
 			'use strict';
 			{
+				
+				
 				//スライダ要素を取得				
 				let observe = document.getElementById('observe');
 				let selyear   = 2021;									
@@ -198,7 +201,7 @@
 				//ポップアップ-----------------------------------------------------------------------------------------------------------------------
 			//{
 				function ShowAlert() {
-					alert("30秒後にシャットダウンします");
+					alert("30秒後にシャットダウンします:嘘で～す。ピッピローピー");
 				}	
 			// } 
 				ShowAlert();
@@ -283,15 +286,33 @@
 						console.log('緯度:${longitude}');
 			//{														
 				
+				
 				(async function(){
+					
+					
+					
 					//地図を表示するdiv要素のidを設定    
 					var map = L.map('mapcontainer',{ renderer: L.canvas() });
 					//->地図を作成 //->マップ内のすべてのパスにデフォルトでCanvasを使用
 					
 					map.on('overlayadd' || 'overlayremove', function() {
-						alert('衛星画像をオーバラップします。');
+						alert('衛星画像をオーバラップします。しばらくお待ちください。');
 						//remove();
+							L.map('load', function() { //
+							alert('地図データの読み込みが完了しました。');																				
+						});
 					});
+					
+					map.on('layerremove' || 'layeradd', function() { //上下どちらかの地図が変更されて時,発火する。
+						alert('地図が変更されました。しばらくお待ちください。');
+						 ctx.clearRect(0, 0, canvas.width, canvas.height);
+						 //clearLayers();
+            			console.log("キャンバスをクリアしました！");
+														//地図2枚が反映-->OK
+					});
+					
+					
+					
 
 					//地図の中心とズームレベルを指定                 
 					map.setView([37.9473, 139.32825], 15);
@@ -303,7 +324,7 @@
 
 					var gsiattr = "<a href='http://portal.cyberjapan.jp/help/termsofuse.html' target='_blank'>地理院タイル</a>"; //引用元表示用
 					//オーバーレイ用のタイルレイヤ
-					alert('年度が${selval}に変更されました。');								
+					alert('通信ログ:[年度]が${selyear}に変更されました。');								
 					var gsirelief = L.tileLayer('http://cyberjapandata.gsi.go.jp/xyz/relief/{z}/{x}/{y}.png', { opacity: 0.7, maxNativeZoom: 15, attribution: gsiattr });
 					var gsirehillshademap = L.tileLayer('http://cyberjapandata.gsi.go.jp/xyz/hillshademap/{z}/{x}/{y}.png', { opacity: 0.5, maxNativeZoom: 16, attribution: gsiattr });
 					var gsiaa = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { opacity: 1, maxNativeZoom: 15, attribution: gsiattr });
@@ -311,7 +332,7 @@
  					//人口衛星データ取得年月を設定。
 					let year = "2024";
 					let month = "1";
-
+				    let bbox= [130, 35, 140, 40];
 
 					var gsibb = je.leaflet.createLayer({
 												opacity: "0.5", //ダブルクォーテーションで数値を囲むこと。
@@ -319,6 +340,7 @@
 												collection: "https://s3.ap-northeast-1.wasabisys.com/je-pds/cog/v1/JAXA.EORC_ALOS.PRISM_AW3D30.v3.2_global/collection.json",
 												band: "DSM",
 												date: new Date(Date.UTC(selyear,6 - 1)),
+												bbox: bbox,
 												colorMap: {
 														min: 0,
 														max: 6000,
@@ -371,10 +393,10 @@
 					//};		
 					var earthMaps    = {
 						//"openst": gsiaa,
-						"[衛星画像]:DSM" : gsibb,
+						"[衛星画像]:DSM(単一日時のみ)" : gsibb,
 						"ハロトレ"    : harotirekun,
-						"[衛星画像];FNF"   : nas,
-						"[衛星画像]:NDVI"  : jax
+						"[衛星画像];FNF(17年～20年:1年ずつ)" : nas,
+						"[衛星画像]:NDVI(数日ごと)"  : jax
 					};
 
 					console.log('経度:${latitude}');
@@ -386,7 +408,23 @@
 					console.log('問題なし1');
 			
 					
-																														
+					{
+								// Locate
+									        var option = {
+										          position: 'topright',
+										          strings: {
+										              title: "現在地を表示",
+										              popup: "いまここ"
+										          },
+										          locateOptions: {
+										            maxZoom: 16
+										          }
+									           }
+											 var lc = L.control.locate(option).addTo(map);
+											 // マップ表示時に現在地を取得
+									       		lc.start();
+								}
+																																								
 					L.control.layers(baseMaps,earthMaps).addTo(map); //2つの引数までしか読み込めない？
 					L.control.scale({position: "topleft",title: "Reset view",latlng: L.latLng([37.9473, 139.32825]),zoom: 15,}).addTo(map);
 					L.control.slider(function(value) {map.setView(map.getCenter(), value);}, 
@@ -399,6 +437,8 @@
 													
 				//ダウンロード時に初期化する
 					window.addEventListener('renderer', L.canvas());
+					
+					
 			}														
 		
 	//--------------------------------------------------------------------------------------------------------------------													
