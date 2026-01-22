@@ -135,6 +135,14 @@ const labelInfo = {
     model: '../assets/model/model.json'
   },
 
+  'ススキ': {
+    name: 'ススキ',
+    category: '植物',
+    description: '秋になるとふわふわした穂を出す草だよ！\nお月見でかざることもあるね。',
+    show3DObject: false,
+    model: '../assets/model/model.json'
+  },
+
   'カモガヤ': {
     name: 'カモガヤ',
     category: '植物',
