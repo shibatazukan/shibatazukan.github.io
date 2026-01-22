@@ -31,6 +31,7 @@ const classLabels = [
   "アリアケスミレ",
   "オオイヌノフグリ",
   "オオバキスミレ",
+  "カモガヤ",
   "シャガ",
   "ススキ",
   "セイタカアワダチソウ",
@@ -44,9 +45,10 @@ const classLabels = [
   "ハルシャギク",
   "赤とんぼ",
   "カブトムシ",
-  "フンコロガシ",
-  "ナナホシテントウ",
-  "ウスバカマキリ"
+ // "アズキナ",
+  "フンコロガシ"
+//  "ナナホシテントウ",
+  //"ウスバカマキリ"
   ];
 const labelInfo = {
   // ===== 植物 =====
@@ -268,6 +270,14 @@ const labelInfo = {
     model: '../assets/model/model.json'
   },
 
+  'カモガヤ': {
+    name: 'カモガヤ',
+    category: '植物',
+    description: '説明未実装',
+    show3DObject: false,
+    model: '../assets/model/model.json'
+  },
+
   'シャガ': {
     name: 'シャガ',
     category: '植物',
@@ -380,6 +390,15 @@ const labelInfo = {
     show3DObject: false,
     model: '../assets/model/model.json'
   },
+/*
+  'アズキナ': {
+    name: 'アズキナ',
+    category: '植物',
+    description: '説明未実装',
+    show3DObject: false,
+    model: '../assets/model/model.json'
+  },
+  */
     
   'フンコロガシ': {
     name: 'フンコロガシ',
@@ -387,8 +406,8 @@ const labelInfo = {
     description: '動物のフンを丸めて転がすことで有名な昆虫だよ！\n自然をきれいにする大切な役割を持っているんだ。',
     show3DObject: false,
     model: '../assets/model/model.json'
-  },
-    
+  }
+    /*
   'ナナホシテントウ': {
     name: 'ナナホシテントウ',
     category: '昆虫',
@@ -404,6 +423,7 @@ const labelInfo = {
     show3DObject: false,
     model: '../assets/model/model.json'
   }
+  */
     
 };
 
