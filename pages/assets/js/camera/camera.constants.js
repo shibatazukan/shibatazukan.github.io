@@ -47,10 +47,10 @@ const classLabels = [
   "赤とんぼ",
   "カブトムシ",
 
-  "セリ",
-
+  "アズキナ",
   "フンコロガシ",
-  "
+  "ナナホシテントウ",
+  "ウスバカマキリ"
   ];
 const labelInfo = {
   // ===== 植物 =====
@@ -391,8 +391,40 @@ const labelInfo = {
     description: '冬が旬のシャキシャキとした触感の植物だよ！\n独特なにおいがするんだ。',
     show3DObject: false,
     model: '../assets/model/model.json'
+  },
+    
+  'アズキナ': {
+    name: 'アズキナ',
+    category: '植物',
+    description: '冬から春にかけて見られる野草だよ！\nシャキッとした食感が特徴で、昔から食用にもされてきたんだ。',
+    show3DObject: false,
+    model: '../assets/model/model.json'
+    },
+    
+  'フンコロガシ': {
+    name: 'フンコロガシ',
+    category: '昆虫',
+    description: '動物のフンを丸めて転がすことで有名な昆虫だよ！\n自然をきれいにする大切な役割を持っているんだ。',
+    show3DObject: false,
+    model: '../assets/model/model.json'
+  },
+    
+  'ナナホシテントウ': {
+    name: 'ナナホシテントウ',
+    category: '昆虫',
+    description: '赤い体に7つの黒い星があるテントウムシだよ！\nアブラムシを食べてくれる、畑の味方なんだ。',
+    show3DObject: false,
+    model: '../assets/model/model.json'
+  },
+    
+  'ウスバカマキリ': {
+    name: 'ウスバカマキリ',
+    category: '昆虫',
+    description: '体が細くて葉っぱのように見えるカマキリだよ！\n周りに溶け込んで、獲物をじっと待つのが得意なんだ。',
+    show3DObject: false,
+    model: '../assets/model/model.json'
   }
-  
+    
 };
 
 // Sanity check: warn about any labels present in classLabels but missing in labelInfo
