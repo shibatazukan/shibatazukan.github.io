@@ -124,10 +124,10 @@ async function setupCamera() {
     if (initialMode === 'full') {
       drawingCanvas.style.pointerEvents = "none";
       predictButton.disabled = false;
-      showNotification("カメラ準備完了。分類するボタンを押してください。");
+      // showNotification("カメラ準備完了。分類するボタンを押してください。");
     } else {
       drawingCanvas.style.pointerEvents = "auto";
-      showNotification("カメラ準備完了。対象を選択してください。");
+      // showNotification("カメラ準備完了。対象を選択してください。");
     }
 
     // getLocation();
