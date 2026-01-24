@@ -1,5 +1,6 @@
 // camera.aframe.js
 // A-Frame コンポーネント定義
+/*
 AFRAME.registerComponent('face-camera-full', {
   tick: function () {
     const camera = document.querySelector('#mainCamera');
@@ -17,6 +18,33 @@ AFRAME.registerComponent('face-camera-full', {
       euler.z = 0;
       this.el.object3D.quaternion.setFromEuler(euler);
     }
+  }
+});
+
+*/
+
+AFRAME.registerComponent('face-camera-full', {
+  init: function () {
+    // DOM参照は一度だけ
+    this.cameraEl = document.querySelector('#mainCamera');
+
+    // Vector3は使い回す
+    this.cameraPosition = new THREE.Vector3();
+    this.thisPosition   = new THREE.Vector3();
+    this.euler          = new THREE.Euler();
+  },
+
+  tick: function () {
+    if (!this.cameraEl) return;
+
+    this.cameraEl.object3D.getWorldPosition(this.cameraPosition);
+    this.el.object3D.getWorldPosition(this.thisPosition);
+
+    this.el.object3D.lookAt(this.cameraPosition);
+
+    this.euler.setFromQuaternion(this.el.object3D.quaternion);
+    this.euler.z = 0; // Z回転を殺す
+    this.el.object3D.quaternion.setFromEuler(this.euler);
   }
 });
 
