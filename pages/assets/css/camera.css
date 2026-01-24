@@ -79,6 +79,14 @@ body {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
+.calib-text {
+  margin-top: 12px;
+  font-size: 14px;
+  opacity: 0.85;
+  text-align: center;
+  line-height: 1.4;
+}
+
 .mode-option {
   display: flex;
   align-items: center;
