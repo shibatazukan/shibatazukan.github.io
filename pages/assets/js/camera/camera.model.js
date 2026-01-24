@@ -8,6 +8,7 @@ tf.loadLayersModel(modelPath).then(m => model = m).catch(err => {
 });
 
 // 物体検出モデルを読み込み
+/*
 (async function loadDetectionModel() {
   try {
     if (window.cocoSsd && typeof window.cocoSsd.load === 'function') {
@@ -20,6 +21,7 @@ tf.loadLayersModel(modelPath).then(m => model = m).catch(err => {
     console.warn('Failed to load detection model', e);
   }
 })();
+*/
 
 // fullモードで自動的に対象領域を抽出
 async function getAutoBoundsForFullMode() {
