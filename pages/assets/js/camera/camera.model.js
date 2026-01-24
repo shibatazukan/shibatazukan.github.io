@@ -1,11 +1,24 @@
 // camera.model.js
 // モデル読み込み、カメラセットアップ、分類・保存処理
 
+/*
 // tfモデル読み込み
 tf.loadLayersModel(modelPath).then(m => model = m).catch(err => {
   showNotification("モデルの読み込みに失敗しました。", true);
   console.error("Model load error:", err);
 });
+*/
+
+async function ensureModelLoaded() {
+  if (model) return true;
+  try {
+    model = await tf.loadLayersModel(modelPath);
+    return true;
+  } catch (e) {
+    showNotification("モデルの読み込みに失敗しました。", true);
+    return false;
+  }
+}
 
 // 物体検出モデルを読み込み
 /*
@@ -131,10 +144,8 @@ function getLocation() {
 
 // 推論処理（predictボタン）
 predictButton.addEventListener('click', async () => {
-  if (!model) {
-    showNotification("モデルが読み込まれていません。", true);
-    return;
-  }
+  const ok = await ensureModelLoaded();
+  if (!ok) return;
   
   isArActive = true; 
 
