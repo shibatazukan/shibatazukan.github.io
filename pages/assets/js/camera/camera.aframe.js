@@ -24,27 +24,28 @@ AFRAME.registerComponent('face-camera-full', {
 */
 
 AFRAME.registerComponent('face-camera-full', {
-  init: function () {
-    // DOM参照は一度だけ
+  init() {
     this.cameraEl = document.querySelector('#mainCamera');
 
-    // Vector3は使い回す
-    this.cameraPosition = new THREE.Vector3();
-    this.thisPosition   = new THREE.Vector3();
-    this.euler          = new THREE.Euler();
+    this.cameraQuat = new THREE.Quaternion();
+    this.euler = new THREE.Euler(0, 0, 0, 'YXZ');
   },
 
-  tick: function () {
+  tick() {
     if (!isArActive) return;   // 追加
     if (!this.cameraEl) return;
 
-    this.cameraEl.object3D.getWorldPosition(this.cameraPosition);
-    this.el.object3D.getWorldPosition(this.thisPosition);
+    // カメラのワールド回転を取得
+    this.cameraEl.object3D.getWorldQuaternion(this.cameraQuat);
 
-    this.el.object3D.lookAt(this.cameraPosition);
+    // Quaternion → Euler（Y軸基準）
+    this.euler.setFromQuaternion(this.cameraQuat);
 
-    this.euler.setFromQuaternion(this.el.object3D.quaternion);
-    this.euler.z = 0; // Z回転を殺す
+    // pitch / roll を殺す
+    this.euler.x = 0;
+    this.euler.z = 0;
+
+    // 吹き出しに適用
     this.el.object3D.quaternion.setFromEuler(this.euler);
   }
 });
