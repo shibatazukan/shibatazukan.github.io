@@ -17,3 +17,5 @@ let isResizing = false;
 let resizeHandle = null;
 let initialSelection = null;
 let initialMousePos = { x: 0, y: 0 };
+
+let isArActive = true; // ← 追加
