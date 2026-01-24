@@ -84,6 +84,7 @@ AFRAME.registerComponent('tail-update', {
 });
 */
 
+/*
 AFRAME.registerComponent('tail-update', {
   init: function () {
     this.camera = document.querySelector('#mainCamera');
@@ -131,3 +132,4 @@ AFRAME.registerComponent('tail-update', {
     }
   }
 });
+*/
