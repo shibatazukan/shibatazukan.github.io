@@ -70,6 +70,36 @@ async function getAutoBoundsForFullMode() {
   }
 }
 
+function getLocation() {
+  if (!navigator.geolocation) {
+    console.log('位置情報がサポートされていません');
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      currentLocation = {
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude,
+        accuracy: position.coords.accuracy,
+        timestamp: new Date(position.timestamp).toISOString()
+      };
+      console.log('位置情報を取得しました:', currentLocation);
+      showNotification('位置情報を取得しました', false, false);
+    },
+    (error) => {
+      console.warn('位置情報の取得に失敗:', error.message);
+      showNotification('位置情報の取得に失敗しました', false, true);
+      currentLocation = null;
+    },
+    {
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 0
+    }
+  );
+}
+
 async function setupCamera() {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({
@@ -100,7 +130,7 @@ async function setupCamera() {
       showNotification("カメラ準備完了。対象を選択してください。");
     }
 
-    getLocation();
+    // getLocation();
 
   } catch (err) {
     showNotification("カメラへのアクセスを許可してください。", true);
@@ -111,36 +141,6 @@ async function setupCamera() {
 startButton.addEventListener('click', () => {
   setupCamera();
 });
-
-function getLocation() {
-  if (!navigator.geolocation) {
-    console.log('位置情報がサポートされていません');
-    return;
-  }
-
-  navigator.geolocation.getCurrentPosition(
-    (position) => {
-      currentLocation = {
-        latitude: position.coords.latitude,
-        longitude: position.coords.longitude,
-        accuracy: position.coords.accuracy,
-        timestamp: new Date(position.timestamp).toISOString()
-      };
-      console.log('位置情報を取得しました:', currentLocation);
-      showNotification('位置情報を取得しました', false, false);
-    },
-    (error) => {
-      console.warn('位置情報の取得に失敗:', error.message);
-      showNotification('位置情報の取得に失敗しました', false, true);
-      currentLocation = null;
-    },
-    {
-      enableHighAccuracy: true,
-      timeout: 10000,
-      maximumAge: 0
-    }
-  );
-}
 
 // 推論処理（predictボタン）
 predictButton.addEventListener('click', async () => {
@@ -396,6 +396,7 @@ predictButton.addEventListener('click', async () => {
 
 saveButton.addEventListener('click', async () => {
   if (!lastPrediction) return;
+  if (!currentLocation) await getLocation();
 
   saveButton.disabled = true;
   showNotification('登録中...', false, false);
