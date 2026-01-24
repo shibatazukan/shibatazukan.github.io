@@ -499,6 +499,7 @@ document.querySelectorAll('input[name="selectionMode"]').forEach(radio => {
 setupEventListeners();
 
 clearButton.addEventListener('click', () => {
+  isArActive = false;
   clearCanvas();
   points = [];
   currentSelection = null;
