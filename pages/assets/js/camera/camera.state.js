@@ -18,4 +18,6 @@ let resizeHandle = null;
 let initialSelection = null;
 let initialMousePos = { x: 0, y: 0 };
 
-let isArActive = true; // ← 追加
+let isArActive = true; // 追加
+// 地球基準ベクトル
+let earthUp = null; // 追加
