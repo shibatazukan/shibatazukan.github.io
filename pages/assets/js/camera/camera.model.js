@@ -342,6 +342,8 @@ predictButton.addEventListener('click', async () => {
 
     bubble.setAttribute('position', infoBubblePosition);
     bubble.setAttribute('visible', true);
+    
+    isArActive = true; 
 
     lastPrediction = {
       label: finalLabel,
