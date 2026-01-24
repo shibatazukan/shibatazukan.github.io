@@ -48,6 +48,7 @@ AFRAME.registerComponent('face-camera-full', {
   }
 });
 
+/*
 AFRAME.registerComponent('tail-update', {
   init: function () {
     this.tailBlack = this.el.querySelector('#tailBlack');
@@ -79,5 +80,53 @@ AFRAME.registerComponent('tail-update', {
     
     this.tailBlack.setAttribute('visible', true);
     this.tailWhite.setAttribute('visible', true);
+  }
+});
+*/
+
+AFRAME.registerComponent('tail-update', {
+  init: function () {
+    this.camera = document.querySelector('#mainCamera');
+
+    this.bubblePos = new THREE.Vector3();
+    this.cameraPos = new THREE.Vector3();
+
+    this.tailBlack = this.el.querySelector('#tailBlack');
+    this.tailWhite = this.el.querySelector('#tailWhite');
+
+    this.lastState = null; // 'up' | 'down' | 'hide'
+  },
+
+  tick: function () {
+    if (!this.camera || !this.tailBlack || !this.tailWhite) return;
+
+    this.el.object3D.getWorldPosition(this.bubblePos);
+    this.camera.object3D.getWorldPosition(this.cameraPos);
+
+    const dy = this.cameraPos.y - this.bubblePos.y;
+
+    let state;
+    if (dy > 0.5) state = 'up';
+    else if (dy < -0.5) state = 'down';
+    else state = 'hide';
+
+    // 状態変わったときだけDOM更新
+    if (state === this.lastState) return;
+    this.lastState = state;
+
+    if (state === 'up') {
+      this.tailBlack.setAttribute('visible', true);
+      this.tailWhite.setAttribute('visible', true);
+      this.tailBlack.setAttribute('position', '0 0.575 0');
+      this.tailWhite.setAttribute('position', '0 0.525 0');
+    } else if (state === 'down') {
+      this.tailBlack.setAttribute('visible', true);
+      this.tailWhite.setAttribute('visible', true);
+      this.tailBlack.setAttribute('position', '0 -0.575 0');
+      this.tailWhite.setAttribute('position', '0 -0.525 0');
+    } else {
+      this.tailBlack.setAttribute('visible', false);
+      this.tailWhite.setAttribute('visible', false);
+    }
   }
 });
