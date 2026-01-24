@@ -133,6 +133,8 @@ predictButton.addEventListener('click', async () => {
     showNotification("モデルが読み込まれていません。", true);
     return;
   }
+  
+  isArActive = true; 
 
   predictButton.disabled = true;
   saveButton.disabled = true;
@@ -342,8 +344,6 @@ predictButton.addEventListener('click', async () => {
 
     bubble.setAttribute('position', infoBubblePosition);
     bubble.setAttribute('visible', true);
-    
-    isArActive = true; 
 
     lastPrediction = {
       label: finalLabel,
