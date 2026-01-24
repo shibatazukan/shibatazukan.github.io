@@ -17,6 +17,18 @@ const progressFill        = document.querySelector('.progress-fill');
 const startScreen         = document.getElementById('startScreen');
 const startButton         = document.getElementById('startButton');
 
+// 追加 地球ベクトルに変換
+function latLngToEarthUp(lat, lng) {
+  const phi = (90 - lat) * Math.PI / 180;
+  const theta = (lng + 180) * Math.PI / 180;
+
+  return new THREE.Vector3(
+    Math.sin(phi) * Math.cos(theta),
+    Math.cos(phi),
+    Math.sin(phi) * Math.sin(theta)
+  ).normalize();
+}
+
 // 現在のモードを取得
 function getCurrentMode() {
   const selected = document.querySelector('input[name="selectionMode"]:checked');
