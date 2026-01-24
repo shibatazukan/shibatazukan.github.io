@@ -20,32 +20,30 @@ AFRAME.registerComponent('face-camera-full', {
     }
   }
 });
-
 */
 
 AFRAME.registerComponent('face-camera-full', {
-  init() {
+  init: function () {
+    // DOM参照は一度だけ
     this.cameraEl = document.querySelector('#mainCamera');
 
-    this.cameraQuat = new THREE.Quaternion();
-    this.euler = new THREE.Euler(0, 0, 0, 'YXZ');
+    // Vector3は使い回す
+    this.cameraPosition = new THREE.Vector3();
+    this.thisPosition   = new THREE.Vector3();
+    this.euler          = new THREE.Euler();
   },
 
-  tick() {
+  tick: function () {
     if (!isArActive) return;   // 追加
     if (!this.cameraEl) return;
 
-    // カメラのワールド回転を取得
-    this.cameraEl.object3D.getWorldQuaternion(this.cameraQuat);
+    this.cameraEl.object3D.getWorldPosition(this.cameraPosition);
+    this.el.object3D.getWorldPosition(this.thisPosition);
 
-    // Quaternion → Euler（Y軸基準）
-    this.euler.setFromQuaternion(this.cameraQuat);
+    this.el.object3D.lookAt(this.cameraPosition);
 
-    // pitch / roll を殺す
-    this.euler.x = 0;
-    this.euler.z = 0;
-
-    // 吹き出しに適用
+    this.euler.setFromQuaternion(this.el.object3D.quaternion);
+    this.euler.z = 0; // Z回転を殺す
     this.el.object3D.quaternion.setFromEuler(this.euler);
   }
 });
