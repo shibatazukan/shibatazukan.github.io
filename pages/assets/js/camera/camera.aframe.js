@@ -35,6 +35,7 @@ AFRAME.registerComponent('face-camera-full', {
   },
 
   tick: function () {
+    if (!isArActive) return;   // 追加
     if (!this.cameraEl) return;
 
     this.cameraEl.object3D.getWorldPosition(this.cameraPosition);
@@ -98,6 +99,7 @@ AFRAME.registerComponent('tail-update', {
   },
 
   tick: function () {
+    if (!isArActive) return;   // 追加
     if (!this.camera || !this.tailBlack || !this.tailWhite) return;
 
     this.el.object3D.getWorldPosition(this.bubblePos);
