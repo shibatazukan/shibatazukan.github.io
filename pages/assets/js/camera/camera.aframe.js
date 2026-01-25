@@ -22,6 +22,7 @@ AFRAME.registerComponent('face-camera-full', {
 });
 */
 
+/*
 AFRAME.registerComponent('face-camera-full', {
   init: function () {
     // DOM参照は一度だけ
@@ -45,6 +46,30 @@ AFRAME.registerComponent('face-camera-full', {
     this.euler.setFromQuaternion(this.el.object3D.quaternion);
     this.euler.z = 0; // Z回転を殺す
     this.el.object3D.quaternion.setFromEuler(this.euler);
+  }
+});
+*/
+
+AFRAME.registerComponent('soft-follow', {
+  init() {
+    this.cam = document.querySelector('#mainCamera');
+    this.targetPos = new THREE.Vector3();
+    this.tmp = new THREE.Vector3();
+    this.forward = new THREE.Vector3(0, 0, -1);
+  },
+
+  tick() {
+    const cam = this.cam.object3D;
+
+    // 目標位置カメラ前方2m
+    this.forward.set(0, 0, -1).applyQuaternion(cam.quaternion);
+    this.targetPos.copy(cam.position).add(this.forward.multiplyScalar(2));
+
+    // 位置を追従
+    this.el.object3D.position.lerp(this.targetPos, 0.1);
+
+    // 向きはカメラに追従
+    this.el.object3D.quaternion.slerp(cam.quaternion, 0.1);
   }
 });
 
