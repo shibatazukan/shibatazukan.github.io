@@ -23,23 +23,6 @@ async function requestGyroPermission() {
 }
 */
 
-isGyroModalOpen = true;
-
-document.querySelector('a-scene').addEventListener('deviceorientationpermissionrequested', () => {
-  isGyroModalOpen = true;
-  drawingCanvas.style.pointerEvents = "none";
-});
-
-document.querySelector('a-scene').addEventListener('deviceorientationpermissiongranted', () => {
-  isGyroModalOpen = false;
-  drawingCanvas.style.pointerEvents = "auto";
-});
-
-document.querySelector('a-scene').addEventListener('deviceorientationpermissiondenied', () => {
-  isGyroModalOpen = false;
-  drawingCanvas.style.pointerEvents = "auto";
-});
-
 async function ensureModelLoaded() {
   if (model) return true;
   try {
