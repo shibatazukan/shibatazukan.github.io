@@ -29,6 +29,11 @@
 
   <video id="webcam" autoplay playsinline muted></video>
   <canvas id="drawingCanvas"></canvas>
+  
+  <div id="gyroModal" class="gyro-modal">
+    <p>端末の傾きセンサー(ジャイロ)を使用します。許可しますか？</p>
+    <button id="gyroAllow">許可する</button>
+  </div>
 
   <!--
   <div id="modeSelector">
@@ -63,7 +68,7 @@
 
   <div id="notificationMessage"></div>
 
-  <a-scene embedded xr="enabled: false" xr-mode-ui="enabled:false" webxr="enabled:false" renderer="xr:false" device-orientation-permission-ui="enabled: true">
+  <a-scene embedded xr="enabled: false" xr-mode-ui="enabled:false" webxr="enabled:false" renderer="xr:false" device-orientation-permission-ui="enabled: false">
     
     <a-entity id="cameraRig" position="0 0 0">
       <a-entity id="mainCamera" camera look-controls position="0 1.6 0"></a-entity>
