@@ -22,7 +22,6 @@ AFRAME.registerComponent('face-camera-full', {
 });
 */
 
-/*
 AFRAME.registerComponent('face-camera-full', {
   init: function () {
     // DOM参照は一度だけ
@@ -44,12 +43,12 @@ AFRAME.registerComponent('face-camera-full', {
     this.el.object3D.lookAt(this.cameraPosition);
 
     this.euler.setFromQuaternion(this.el.object3D.quaternion);
-    // this.euler.z = 0; // Z回転を殺す
+    this.euler.z = 0; // Z回転を殺す
     this.el.object3D.quaternion.setFromEuler(this.euler);
   }
 });
-*/
 
+/*
 AFRAME.registerComponent('face-camera-full', {
   init: function () {
     this.cameraEl = document.querySelector('#mainCamera');
@@ -78,6 +77,7 @@ AFRAME.registerComponent('face-camera-full', {
     this.el.object3D.quaternion.copy(this.cameraEl.object3D.quaternion);
   }
 });
+*/
 
 /*
 AFRAME.registerComponent('tail-update', {
