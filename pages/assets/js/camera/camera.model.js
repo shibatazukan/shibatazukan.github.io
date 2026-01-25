@@ -153,6 +153,29 @@ async function setupCamera() {
 }
 
 startButton.addEventListener('click', async () => {
+   try {
+    // iOS 13+ 用
+    if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+      const res = await DeviceOrientationEvent.requestPermission()
+      if (res !== 'granted') {
+        alert('拒否されました')
+        return
+      }
+    }
+
+    alert('許可されました')
+
+    // 動いてるか確認用
+    window.addEventListener('deviceorientation', e => {
+      if (e.alpha == null) return
+      console.log(e.alpha, e.beta, e.gamma)
+    })
+
+  } catch (e) {
+    alert('エラー')
+    console.error(e)
+  }
+  
   setupCamera();
 });
 
