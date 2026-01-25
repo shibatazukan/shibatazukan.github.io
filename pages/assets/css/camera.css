@@ -58,7 +58,8 @@ body {
   /* 初期状態では無効 */
 }
 
-/* モード選択UI */
+
+/*
 #modeSelector {
   position: absolute;
   top: 10px;
@@ -70,7 +71,7 @@ body {
   z-index: 11;
   font-family: 'Mochiy Pop One', sans-serif;
   display: none;
-  /* 初期状態では非表示 */
+  
   flex-direction: row;
   gap: 5px;
   flex-wrap: wrap;
@@ -78,6 +79,7 @@ body {
   align-items: center;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
+
 
 .mode-option {
   display: flex;
@@ -107,6 +109,7 @@ body {
   color: #4caf50;
   font-weight: bold;
 }
+*/
 
 /* コントロールパネル */
 #controlPanel {
