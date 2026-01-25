@@ -118,7 +118,7 @@ async function setupCamera() {
     await new Promise(resolve => setTimeout(resolve, 1500));
 
     controlPanel.style.display = 'flex';
-    modeSelector.style.display = 'flex';
+    // modeSelector.style.display = 'flex';
     
     const initialMode = getCurrentMode();
     if (initialMode === 'full') {
