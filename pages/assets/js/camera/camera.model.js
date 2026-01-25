@@ -231,8 +231,8 @@ predictButton.addEventListener('click', async () => {
       height: sel_height,
       centerX: (currentSelection.minX + currentSelection.maxX) / 2,
       centerY: (currentSelection.minY + currentSelection.maxY) / 2,
-      area: width * height,
-      aspectRatio: width / height
+      area: sel_width * sel_height,
+      aspectRatio: sel_width / sel_height
   };
 
   const bounds = normalizeAndValidateBounds(rawBounds);
