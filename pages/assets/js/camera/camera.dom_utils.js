@@ -19,8 +19,11 @@ const startButton         = document.getElementById('startButton');
 
 // 現在のモードを取得
 function getCurrentMode() {
+  /*
   const selected = document.querySelector('input[name="selectionMode"]:checked');
   return selected ? selected.value : 'full';
+  */
+  return 'rectangle';
 }
 
 // 緯度経度から住所を取得（localStorageにキャッシュ）
