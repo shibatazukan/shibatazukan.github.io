@@ -22,6 +22,7 @@ AFRAME.registerComponent('face-camera-full', {
 });
 */
 
+/*
 AFRAME.registerComponent('face-camera-full', {
   init: function () {
     // DOM参照は一度だけ
@@ -47,37 +48,29 @@ AFRAME.registerComponent('face-camera-full', {
     this.el.object3D.quaternion.setFromEuler(this.euler);
   }
 });
+*/
 
-/*
 AFRAME.registerComponent('face-camera-full', {
   init: function () {
     this.cameraEl = document.querySelector('#mainCamera');
-    this.cameraPos = new THREE.Vector3();
-    this.forward   = new THREE.Vector3();
-    this.targetPos = new THREE.Vector3();
+    this.forward = new THREE.Vector3(0, 0, -1);
+    this.tmp = new THREE.Vector3();
   },
 
   tick: function () {
     if (!isArActive) return;
     if (!this.cameraEl) return;
 
-    // カメラ位置
-    this.cameraEl.object3D.getWorldPosition(this.cameraPos);
+    const camObj = this.cameraEl.object3D;
 
-    // カメラ前方ベクトルを計算
-    this.forward.set(0, 0, -1).applyQuaternion(this.cameraEl.object3D.quaternion);
+    // 位置：カメラの前方 2m に固定
+    this.forward.set(0, 0, -1).applyQuaternion(camObj.quaternion);
+    this.el.object3D.position.copy(camObj.position).add(this.tmp.copy(this.forward).multiplyScalar(2));
 
-    // 2m前に固定
-    this.targetPos.copy(this.cameraPos).add(this.forward.multiplyScalar(2));
-
-    // 位置をセット
-    this.el.object3D.position.copy(this.targetPos);
-
-    // 向きをカメラと同じにする
-    this.el.object3D.quaternion.copy(this.cameraEl.object3D.quaternion);
+    // 向き：カメラと同じ傾きにする
+    this.el.object3D.quaternion.copy(camObj.quaternion);
   }
 });
-*/
 
 /*
 AFRAME.registerComponent('tail-update', {
