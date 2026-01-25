@@ -9,6 +9,7 @@ tf.loadLayersModel(modelPath).then(m => model = m).catch(err => {
 });
 */
 
+/*
 async function requestGyroPermission() {
   if (typeof DeviceMotionEvent === "undefined") return true;
   if (typeof DeviceMotionEvent.requestPermission !== "function") return true;
@@ -20,6 +21,21 @@ async function requestGyroPermission() {
     return false;
   }
 }
+*/
+
+let gyroConfigDone = false;
+
+// A-Frame の scene を取得
+const sceneEl = document.querySelector('a-scene');
+
+sceneEl.addEventListener('deviceorientationpermissiongranted', () => {
+  gyroConfigDone = true;
+  showNotification("reject");
+});
+
+sceneEl.addEventListener('deviceorientationpermissionrejected', () => {
+  gyroConfigDone = true;
+});
 
 async function ensureModelLoaded() {
   if (model) return true;
@@ -151,11 +167,6 @@ async function setupCamera() {
 }
 
 startButton.addEventListener('click', async () => {
-  const ok = await requestGyroPermission();
-  if (!ok) {
-    alert("ジャイロ許可が必要です");
-    return;
-  }
   setupCamera();
 });
 
