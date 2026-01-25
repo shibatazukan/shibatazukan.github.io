@@ -157,6 +157,8 @@ predictButton.addEventListener('click', async () => {
   let rawBounds = null;
   const mode = getCurrentMode();
   
+  /*
+  
   if (mode === 'full') {
     const detected = await getAutoBoundsForFullMode();
     if (detected) {
@@ -209,6 +211,29 @@ predictButton.addEventListener('click', async () => {
     }
     rawBounds = calculateOptimalBounds(points);
   }
+  */
+  
+  if (!currentSelection) {
+      showProgressIndicator(false);
+      predictButton.disabled = false;
+      showNotification("領域を選択してください。", true);
+      return;
+  }
+   
+  const width = currentSelection.maxX - currentSelection.minX;
+  const height = currentSelection.maxY - currentSelection.minY;
+  rawBounds = {
+      minX: currentSelection.minX,
+      minY: currentSelection.minY,
+      maxX: currentSelection.maxX,
+      maxY: currentSelection.maxY,
+      width: width,
+      height: height,
+      centerX: (currentSelection.minX + currentSelection.maxX) / 2,
+      centerY: (currentSelection.minY + currentSelection.maxY) / 2,
+      area: width * height,
+      aspectRatio: width / height
+  };
 
   const bounds = normalizeAndValidateBounds(rawBounds);
   
