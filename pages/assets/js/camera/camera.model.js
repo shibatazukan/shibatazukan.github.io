@@ -220,15 +220,15 @@ predictButton.addEventListener('click', async () => {
       return;
   }
    
-  const width = currentSelection.maxX - currentSelection.minX;
-  const height = currentSelection.maxY - currentSelection.minY;
+  const sel_width = currentSelection.maxX - currentSelection.minX;
+  const sel_height = currentSelection.maxY - currentSelection.minY;
   rawBounds = {
       minX: currentSelection.minX,
       minY: currentSelection.minY,
       maxX: currentSelection.maxX,
       maxY: currentSelection.maxY,
-      width: width,
-      height: height,
+      width: sel_width,
+      height: sel_height,
       centerX: (currentSelection.minX + currentSelection.maxX) / 2,
       centerY: (currentSelection.minY + currentSelection.maxY) / 2,
       area: width * height,
