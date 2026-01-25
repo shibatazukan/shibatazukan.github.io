@@ -22,7 +22,6 @@ AFRAME.registerComponent('face-camera-full', {
 });
 */
 
-/*
 AFRAME.registerComponent('face-camera-full', {
   init: function () {
     // DOM参照は一度だけ
@@ -48,8 +47,8 @@ AFRAME.registerComponent('face-camera-full', {
     this.el.object3D.quaternion.setFromEuler(this.euler);
   }
 });
-*/
 
+/*
 AFRAME.registerComponent('soft-follow', {
   init() {
     this.cam = document.querySelector('#mainCamera');
@@ -72,6 +71,7 @@ AFRAME.registerComponent('soft-follow', {
     this.el.object3D.quaternion.slerp(cam.quaternion, 0.1);
   }
 });
+*/
 
 /*
 AFRAME.registerComponent('tail-update', {
