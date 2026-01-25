@@ -23,18 +23,21 @@ async function requestGyroPermission() {
 }
 */
 
-let gyroConfigDone = false;
+isGyroModalOpen = true;
 
-// A-Frame の scene を取得
-const sceneEl = document.querySelector('a-scene');
-
-sceneEl.addEventListener('deviceorientationpermissiongranted', () => {
-  gyroConfigDone = true;
-  showNotification("reject");
+document.querySelector('a-scene').addEventListener('deviceorientationpermissionrequested', () => {
+  isGyroModalOpen = true;
+  drawingCanvas.style.pointerEvents = "none";
 });
 
-sceneEl.addEventListener('deviceorientationpermissionrejected', () => {
-  gyroConfigDone = true;
+document.querySelector('a-scene').addEventListener('deviceorientationpermissiongranted', () => {
+  isGyroModalOpen = false;
+  drawingCanvas.style.pointerEvents = "auto";
+});
+
+document.querySelector('a-scene').addEventListener('deviceorientationpermissiondenied', () => {
+  isGyroModalOpen = false;
+  drawingCanvas.style.pointerEvents = "auto";
 });
 
 async function ensureModelLoaded() {
