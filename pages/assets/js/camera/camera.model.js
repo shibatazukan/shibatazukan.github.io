@@ -9,6 +9,18 @@ tf.loadLayersModel(modelPath).then(m => model = m).catch(err => {
 });
 */
 
+async function requestGyroPermission() {
+  if (typeof DeviceMotionEvent === "undefined") return true;
+  if (typeof DeviceMotionEvent.requestPermission !== "function") return true;
+
+  try {
+    const res = await DeviceMotionEvent.requestPermission();
+    return res === "granted";
+  } catch (e) {
+    return false;
+  }
+}
+
 async function ensureModelLoaded() {
   if (model) return true;
   try {
@@ -138,7 +150,12 @@ async function setupCamera() {
   }
 }
 
-startButton.addEventListener('click', () => {
+startButton.addEventListener('click', async () => {
+  const ok = await requestGyroPermission();
+  if (!ok) {
+    alert("ジャイロ許可が必要です");
+    return;
+  }
   setupCamera();
 });
 
