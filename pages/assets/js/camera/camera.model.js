@@ -247,12 +247,8 @@ predictButton.addEventListener('click', async () => {
     }
     return;
   }
-
   
-  // const { minX, minY, maxX, maxY, width, height } = bounds;
-  const { minX, minY, maxX, maxY } = bounds;
-  const width = maxX - minX;
-  const height = maxY - minY;
+  const { minX, minY, maxX, maxY, width, height } = bounds;
 
   //Teachable Machine互換推論処理
   const predictions = [];
