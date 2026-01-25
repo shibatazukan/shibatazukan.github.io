@@ -62,18 +62,6 @@
   <div id="notificationMessage"></div>
 
   <a-scene embedded xr="enabled: false" vr-mode-ui="enabled:false" webxr="enabled:false" renderer="xr:false" device-orientation-permission-ui="enabled: false">
-   
-   <a-entity id="infoBubble" visible="false" scale="0.8 0.8 0.8" face-camera-full tail-update position="0 1.6 -2>
-      <a-plane color="#8b5a2b" width="2.1" height="1.1" position="0 0 -0.005"
-        material="shader: flat; opacity: 1"></a-plane>
-      <a-plane color="#34495e" width="2.0" height="1.0" position="0 0 0" material="shader: flat; opacity: 1"></a-plane>
-      <a-troika-text id="bubbleText" font="#notojpFont" value="ここに結果が表示されます" font-size="0.07" color="#FFFFFF"
-        textAlign="center" position="0 0 0.01"></a-troika-text>
-      <a-box id="tailBlack" color="#000000" depth="0.05" height="0.05" width="0.15" position="0 -0.575 0"
-        visible="true"></a-box>
-      <a-box id="tailWhite" color="#FFFFFF" depth="0.05" height="0.05" width="0.45" position="0 -0.525 0"
-        visible="true"></a-box>
-    </a-entity>
     
     <a-entity id="cameraRig" position="0 0 0">
       <a-entity id="mainCamera" look-controls="magicWindowTrackingEnabled: false" position="0 1.6 0"></a-entity>
@@ -83,7 +71,6 @@
       <a-asset-item id="notojpFont" src="../assets/AR_fonts/MPLUSRounded1c-Black.ttf"></a-asset-item>
     </a-assets>
 
-    <!--
     <a-entity id="infoBubble" visible="false" scale="0.8 0.8 0.8" face-camera-full tail-update>
       <a-plane color="#8b5a2b" width="2.1" height="1.1" position="0 0 -0.005"
         material="shader: flat; opacity: 1"></a-plane>
@@ -95,7 +82,7 @@
       <a-box id="tailWhite" color="#FFFFFF" depth="0.05" height="0.05" width="0.45" position="0 -0.525 0"
         visible="true"></a-box>
     </a-entity>
-    -->
+    
   </a-scene>
 
   <script src="../assets/js/camera/camera.constants.js"></script>
