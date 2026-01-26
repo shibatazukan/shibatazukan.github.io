@@ -202,7 +202,6 @@ startButton.addEventListener('click', async () => {
 
       if (res !== 'granted') {
         showNotification('ジャイロを許可してください');
-        return;
       }
     }
 
