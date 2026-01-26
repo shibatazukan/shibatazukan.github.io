@@ -205,6 +205,9 @@ startButton.addEventListener('click', async () => {
       }
     }
 
+    // Android / iOS 共通
+    window.addEventListener('deviceorientation', onOrientation, true);
+
     // ジャイロ許可後にカメラ
     const stream = await navigator.mediaDevices.getUserMedia({
       video: { facingMode: { ideal: 'environment' } },
