@@ -50,6 +50,7 @@ AFRAME.registerComponent('face-camera-full', {
 });
 */
 
+/*
 AFRAME.registerComponent('face-camera-full', {
   init: function () {
     this.cameraEl = document.querySelector('#mainCamera');
@@ -87,6 +88,43 @@ AFRAME.registerComponent('face-camera-full', {
     // lookAt するが up を固定
     this.el.object3D.up.copy(this.up);
     this.el.object3D.lookAt(this.target);
+  }
+});
+*/
+
+AFRAME.registerComponent('face-camera-full', {
+  init: function () {
+    this.cameraEl = document.querySelector('#mainCamera');
+
+    this.cameraPos = new THREE.Vector3();
+    this.thisPos   = new THREE.Vector3();
+    this.dir       = new THREE.Vector3();
+
+    this.up = new THREE.Vector3(0, 1, 0);
+  },
+
+  tick: function () {
+    if (!isArActive) return;
+    if (!this.cameraEl) return;
+
+    // ワールド座標取得
+    this.cameraEl.object3D.getWorldPosition(this.cameraPos);
+    this.el.object3D.getWorldPosition(this.thisPos);
+
+    // オブジェクト → カメラ方向
+    this.dir.subVectors(this.cameraPos, this.thisPos);
+
+    // 上下の傾きを禁止（AR感維持）
+    this.dir.y = 0;
+
+    if (this.dir.lengthSq() < 0.0001) return;
+    this.dir.normalize();
+
+    // lookAt するが up を固定
+    this.el.object3D.up.copy(this.up);
+    this.el.object3D.lookAt(
+      this.thisPos.clone().add(this.dir)
+    );
   }
 });
 
