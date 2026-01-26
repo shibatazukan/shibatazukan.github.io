@@ -205,7 +205,7 @@ startButton.addEventListener('click', async () => {
       }
     }
 
-    window.addEventListener("deviceorientation", handleOrientation, true);
+    // window.addEventListener("deviceorientation", handleOrientation, true);
 
     // ジャイロ許可後にカメラ
     const stream = await navigator.mediaDevices.getUserMedia({
