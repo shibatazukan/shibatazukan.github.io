@@ -157,8 +157,9 @@ async function setupCamera() {
   }
 }
 
+/*
 startButton.addEventListener('click', async () => {
-  /* ジャイロセンサーモーション モーダル*/
+  // ジャイロセンサーモーション モーダル
    try {
     // iOS 13+ 用
     if (typeof DeviceOrientationEvent.requestPermission === 'function') {
@@ -172,21 +173,58 @@ startButton.addEventListener('click', async () => {
     }
      
     // 動いてるか確認用
-    /*
+    
     window.addEventListener('deviceorientation', e => {
       if (e.alpha == null) return
       console.log(e.alpha, e.beta, e.gamma)
     })
-    */
+    
 
   } catch (e) {
     alert('エラー')
     console.error(e)
   }
-  /* ジャイロセンサーモーション モーダル*/
+  // ジャイロセンサーモーション モーダル
   
   setupCamera();
+
 });
+*/
+
+startButton.addEventListener('click', async () => {
+
+  // 先にカメラ
+  let stream;
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: 'environment' } },
+      audio: false
+    });
+  } catch (e) {
+    showNotification("カメラへのアクセスを許可してください。", true);
+    return;
+  }
+
+  // UI切り替え
+  startScreen.style.display = 'none';
+  controlPanel.style.display = 'flex';
+
+  video.srcObject = stream;
+  video.addEventListener('loadedmetadata', () => {
+    video.play();
+  }, { once: true });
+
+  // ジャイロ
+  try {
+    if (typeof DeviceOrientationEvent?.requestPermission === 'function') {
+      await DeviceOrientationEvent.requestPermission();
+    }
+  } catch {
+    
+  }
+
+});
+
 
 // 推論処理（predictボタン）
 predictButton.addEventListener('click', async () => {
