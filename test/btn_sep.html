@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Camera / Gyro Permission Test</title>
+
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      margin: 16px;
+      text-align: center;
+    }
+
+    button {
+      display: block;
+      width: 100%;
+      font-size: 18px;
+      padding: 14px;
+      margin: 10px 0;
+    }
+
+    video {
+      width: 100%;
+      max-height: 60vh;
+      background: #000;
+      margin-top: 12px;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Permission Test</h2>
+
+  <button id="cameraBtn">① カメラ許可</button>
+  <button id="gyroBtn" disabled>② ジャイロ許可</button>
+  <button id="startBtn" disabled>③ 開始</button>
+
+  <video id="video" autoplay playsinline muted></video>
+
+  <script>
+    const cameraBtn = document.getElementById('cameraBtn');
+    const gyroBtn   = document.getElementById('gyroBtn');
+    const startBtn  = document.getElementById('startBtn');
+    const video     = document.getElementById('video');
+
+    let cameraOK = false;
+    let gyroOK   = false;
+
+    /* ① カメラ許可 */
+    cameraBtn.addEventListener('click', async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'environment' },
+          audio: false
+        });
+
+        video.srcObject = stream;
+        await video.play();
+
+        cameraOK = true;
+        cameraBtn.disabled = true;
+        gyroBtn.disabled = false;
+
+        console.log('camera granted');
+      } catch (e) {
+        console.error('camera error', e);
+        alert('カメラ許可失敗');
+      }
+    });
+
+    /* ② ジャイロ許可 */
+    gyroBtn.addEventListener('click', async () => {
+      try {
+        if (
+          typeof DeviceOrientationEvent !== 'undefined' &&
+          typeof DeviceOrientationEvent.requestPermission === 'function'
+        ) {
+          const res = await DeviceOrientationEvent.requestPermission();
+          if (res !== 'granted') {
+            alert('ジャイロ拒否');
+            return;
+          }
+        }
+
+        gyroOK = true;
+        gyroBtn.disabled = true;
+        startBtn.disabled = false;
+
+        console.log('gyro granted');
+      } catch (e) {
+        console.error('gyro error', e);
+        alert('ジャイロ許可失敗');
+      }
+    });
+
+    /* ③ 開始 */
+    startBtn.addEventListener('click', () => {
+      if (!cameraOK || !gyroOK) {
+        alert('権限が揃っていません');
+        return;
+      }
+
+      console.log('START!');
+      alert('開始 OK');
+    });
+  </script>
+
+</body>
+</html>
