@@ -92,6 +92,7 @@ AFRAME.registerComponent('face-camera-full', {
 });
 */
 
+/*
 AFRAME.registerComponent('face-camera-full', {
   init: function () {
     this.cameraEl = document.querySelector('#mainCamera');
@@ -125,6 +126,58 @@ AFRAME.registerComponent('face-camera-full', {
     this.el.object3D.lookAt(
       this.thisPos.clone().add(this.dir)
     );
+  }
+});
+*/
+
+AFRAME.registerComponent('face-camera-full', {
+  init: function () {
+    this.cameraEl = document.querySelector('#mainCamera');
+
+    this.cameraPos = new THREE.Vector3();
+    this.thisPos   = new THREE.Vector3();
+    this.dir       = new THREE.Vector3();
+    this.right     = new THREE.Vector3();
+    this.up        = new THREE.Vector3();
+
+    this.targetQuat = new THREE.Quaternion();
+    this.tmpQuat    = new THREE.Quaternion();
+    this.mat        = new THREE.Matrix4();
+  },
+
+  tick: function () {
+    if (!isArActive) return;
+    if (!this.cameraEl) return;
+
+    // 1) カメラ/自分の位置取得
+    this.cameraEl.object3D.getWorldPosition(this.cameraPos);
+    this.el.object3D.getWorldPosition(this.thisPos);
+
+    // 2) 方向ベクトル
+    this.dir.subVectors(this.cameraPos, this.thisPos);
+
+    if (this.dir.lengthSq() < 0.0001) return;
+    this.dir.normalize();
+
+    // 3) カメラの姿勢から up を取得
+    this.cameraEl.object3D.getWorldQuaternion(this.tmpQuat);
+    this.up.set(0, 1, 0).applyQuaternion(this.tmpQuat).normalize();
+
+    // 4) 右方向
+    this.right.crossVectors(this.up, this.dir).normalize();
+
+    // 5) 正規直交化された上方向
+    const fixedUp = new THREE.Vector3().crossVectors(this.dir, this.right).normalize();
+
+    // 6) 回転行列作成
+    this.mat.makeBasis(this.right, fixedUp, this.dir);
+
+    // 7) 目標クォータニオン作成
+    this.targetQuat.setFromRotationMatrix(this.mat);
+
+    // 8) ここが滑らか補間（slerp）
+    //    0.1 が補間率（小さいほど遅く追従）
+    this.el.object3D.quaternion.slerp(this.targetQuat, 0.1);
   }
 });
 
