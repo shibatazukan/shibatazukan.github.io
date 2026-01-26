@@ -1,9 +1,9 @@
+/*
 body {
   margin: 0;
   overflow: hidden;
 }
 
-/* 起動画面 */
 #startScreen {
   position: fixed;
   top: 0;
@@ -36,7 +36,6 @@ body {
   background-color: #45a049;
 }
 
-/* カメラとキャンバス */
 #webcam {
   position: absolute;
   top: 0;
@@ -55,63 +54,8 @@ body {
   height: 100vh;
   z-index: 5;
   pointer-events: none;
-  /* 初期状態では無効 */
 }
 
-
-/*
-#modeSelector {
-  position: absolute;
-  top: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(255, 255, 255, 0.95);
-  padding: 8px;
-  border-radius: 8px;
-  z-index: 11;
-  font-family: 'Mochiy Pop One', sans-serif;
-  display: none;
-  
-  flex-direction: row;
-  gap: 5px;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-
-
-.mode-option {
-  display: flex;
-  align-items: center;
-  padding: 8px 12px;
-  cursor: pointer;
-  border-radius: 6px;
-  transition: background-color 0.2s;
-  user-select: none;
-}
-
-.mode-option:hover {
-  background-color: rgba(76, 175, 80, 0.1);
-}
-
-.mode-option input[type="radio"] {
-  margin-right: 6px;
-  cursor: pointer;
-}
-
-.mode-option span {
-  font-size: 14px;
-  color: #333;
-}
-
-.mode-option input[type="radio"]:checked + span {
-  color: #4caf50;
-  font-weight: bold;
-}
-*/
-
-/* コントロールパネル */
 #controlPanel {
   position: absolute;
   bottom: 10px;
@@ -126,7 +70,6 @@ body {
   max-width: 500px;
   text-align: center;
   display: none;
-  /* 初期状態では非表示 */
   justify-content: space-around;
   gap: 10px;
 }
@@ -143,7 +86,6 @@ body {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   transition: background-color 0.3s;
   flex-grow: 1;
-  /* ボタンが等幅になるように調整 */
 }
 
 #predictButton {
@@ -180,7 +122,6 @@ body {
   background-color: #d32f2f;
 }
 
-/* 通知メッセージ */
 #notificationMessage {
   position: absolute;
   top: 20px;
@@ -222,7 +163,6 @@ body {
   }
 }
 
-/* プログレスインジケーター */
 #progressIndicator {
   position: absolute;
   top: 50%;
@@ -255,7 +195,7 @@ body {
   transition: width 0.2s ease;
 }
 
-/* A-Frameシーン */
+
 a-scene {
   position: absolute;
   top: 0;
@@ -263,4 +203,221 @@ a-scene {
   width: 100vw;
   height: 100vh;
   z-index: 1;
+}
+
+*/
+
+/* =========================
+   iOS安定版CSS
+   ========================= */
+
+html, body {
+  margin: 0;
+  overflow: hidden;
+  touch-action: manipulation; /* iOSでタッチが消えるのを防ぐ */
+}
+
+/* 起動画面 */
+#startScreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999 !important; /* 最前面 */
+  color: white;
+  font-family: 'Mochiy Pop One', sans-serif;
+}
+
+#startButton {
+  padding: 20px 40px;
+  font-size: 20px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  margin-top: 20px;
+}
+
+#startButton:hover {
+  background-color: #45a049;
+}
+
+/* カメラとキャンバス */
+#webcam {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
+  z-index: 0;
+}
+
+#drawingCanvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 5;
+  pointer-events: none; /* 初期状態では無効 */
+}
+
+/* コントロールパネル */
+#controlPanel {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 255, 255, 0.9);
+  padding: 10px;
+  border-radius: 8px;
+  z-index: 9999 !important; /* 最前面 */
+  font-family: 'Mochiy Pop One', sans-serif;
+  width: 90%;
+  max-width: 500px;
+  text-align: center;
+  display: none;
+  justify-content: space-around;
+  gap: 10px;
+}
+
+#predictButton,
+#saveButton,
+#clearButton {
+  padding: 10px 20px;
+  font-size: 18px;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s;
+  flex-grow: 1;
+}
+
+#predictButton {
+  background-color: #4caf50;
+}
+#predictButton:hover {
+  background-color: #45a049;
+}
+#predictButton:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+#saveButton {
+  background-color: #007bff;
+}
+#saveButton:hover {
+  background-color: #0056b3;
+}
+#saveButton:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+#clearButton {
+  background-color: #f44336;
+}
+#clearButton:hover {
+  background-color: #d32f2f;
+}
+
+/* 通知メッセージ */
+#notificationMessage {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(76, 175, 80, 0.95);
+  color: white;
+  padding: 15px 25px;
+  border-radius: 8px;
+  font-family: 'Mochiy Pop One', sans-serif;
+  font-size: 16px;
+  font-weight: bold;
+  z-index: 9999 !important; /* 最前面 */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  display: none;
+  max-width: 80%;
+  text-align: center;
+  animation: slideDown 0.3s ease-out;
+}
+
+#notificationMessage.error {
+  background: rgba(244, 67, 54, 0.95);
+}
+
+#notificationMessage.warning {
+  background: rgba(255, 193, 7, 0.95);
+  color: black;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateX(-50%) translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+}
+
+/* プログレスインジケーター */
+#progressIndicator {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 30px;
+  border-radius: 12px;
+  z-index: 9999 !important; /* 最前面 */
+  display: none;
+  text-align: center;
+  font-family: 'Mochiy Pop One', sans-serif;
+  font-size: 18px;
+}
+
+.progress-bar {
+  width: 200px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+  margin-top: 15px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #4caf50;
+  width: 0%;
+  transition: width 0.2s ease;
+}
+
+/* A-Frameシーン */
+a-scene {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0 !important; /* UIの下 */
+}
+
+a-scene canvas {
+  pointer-events: none !important; /* タッチ無効化 */
+  z-index: 0 !important; /* UIの下 */
 }
