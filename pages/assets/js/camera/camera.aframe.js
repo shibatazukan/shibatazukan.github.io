@@ -22,6 +22,7 @@ AFRAME.registerComponent('face-camera-full', {
 });
 */
 
+/*
 AFRAME.registerComponent('face-camera-full', {
   init: function () {
     // DOM参照は一度だけ
@@ -45,6 +46,47 @@ AFRAME.registerComponent('face-camera-full', {
     this.euler.setFromQuaternion(this.el.object3D.quaternion);
     this.euler.z = 0; // Z回転を殺す
     this.el.object3D.quaternion.setFromEuler(this.euler);
+  }
+});
+*/
+
+AFRAME.registerComponent('face-camera-full', {
+  init: function () {
+    this.cameraEl = document.querySelector('#mainCamera');
+
+    this.cameraPos = new THREE.Vector3();
+    this.thisPos   = new THREE.Vector3();
+
+    this.dir       = new THREE.Vector3();
+    this.target    = new THREE.Vector3();
+
+    // 世界の上方向を固定
+    this.up = new THREE.Vector3(0, 1, 0);
+  },
+
+  tick: function () {
+    if (!isArActive) return;
+    if (!this.cameraEl) return;
+
+    // カメラ位置
+    this.cameraEl.object3D.getWorldPosition(this.cameraPos);
+    this.el.object3D.getWorldPosition(this.thisPos);
+
+    // カメラ → オブジェクト方向
+    this.dir.subVectors(this.cameraPos, this.thisPos);
+
+    // Y成分を無視（上下の傾き禁止）
+    this.dir.y = 0;
+
+    if (this.dir.lengthSq() < 0.0001) return;
+    this.dir.normalize();
+
+    // ターゲット位置を作る
+    this.target.copy(this.thisPos).add(this.dir);
+
+    // lookAt するが up を固定
+    this.el.object3D.up.copy(this.up);
+    this.el.object3D.lookAt(this.target);
   }
 });
 
