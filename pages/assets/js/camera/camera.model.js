@@ -135,14 +135,19 @@ async function setupCamera() {
     // modeSelector.style.display = 'flex';
     
     const initialMode = getCurrentMode();
+
+    /*
     if (initialMode === 'full') {
       drawingCanvas.style.pointerEvents = "none";
       predictButton.disabled = false;
-      // showNotification("カメラ準備完了。分類するボタンを押してください。");
+      showNotification("カメラ準備完了。分類するボタンを押してください。");
     } else {
       drawingCanvas.style.pointerEvents = "auto";
-      // showNotification("カメラ準備完了。対象を選択してください。");
+      showNotification("カメラ準備完了。対象を選択してください。");
     }
+    */
+
+    drawingCanvas.style.pointerEvents = "auto";
 
     // getLocation();
 
@@ -153,28 +158,32 @@ async function setupCamera() {
 }
 
 startButton.addEventListener('click', async () => {
+  /* ジャイロセンサーモーション モーダル*/
    try {
     // iOS 13+ 用
     if (typeof DeviceOrientationEvent.requestPermission === 'function') {
       const res = await DeviceOrientationEvent.requestPermission()
       if (res !== 'granted') {
-        alert('拒否されました')
-        return
+        // alert('拒否されました')
+      }
+      else {
+       // alert('ジャイロセンサが許可されました')
       }
     }
-
-    alert('許可されました')
-
+     
     // 動いてるか確認用
+    /*
     window.addEventListener('deviceorientation', e => {
       if (e.alpha == null) return
       console.log(e.alpha, e.beta, e.gamma)
     })
+    */
 
   } catch (e) {
     alert('エラー')
     console.error(e)
   }
+  /* ジャイロセンサーモーション モーダル*/
   
   setupCamera();
 });
