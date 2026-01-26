@@ -192,39 +192,37 @@ startButton.addEventListener('click', async () => {
 */
 
 startButton.addEventListener('click', async () => {
-
-  // 先にカメラ
-  let stream;
   try {
-    stream = await navigator.mediaDevices.getUserMedia({
+    // ジャイロ
+    if (
+      typeof DeviceOrientationEvent !== 'undefined' &&
+      typeof DeviceOrientationEvent.requestPermission === 'function'
+    ) {
+      const res = await DeviceOrientationEvent.requestPermission();
+
+      if (res !== 'granted') {
+        showNotification('ジャイロを許可してください');
+        return;
+      }
+    }
+
+    // ジャイロ許可後にカメラ
+    const stream = await navigator.mediaDevices.getUserMedia({
       video: { facingMode: { ideal: 'environment' } },
       audio: false
     });
+
+    video.srcObject = stream;
+    video.addEventListener('loadedmetadata', () => video.play(), { once: true });
+
+    startScreen.style.display = 'none';
+    controlPanel.style.display = 'flex';
+
   } catch (e) {
-    showNotification("カメラへのアクセスを許可してください。", true);
-    return;
+    showNotification('初期化に失敗しました');
+    console.error(e);
   }
-
-  // UI切り替え
-  startScreen.style.display = 'none';
-  controlPanel.style.display = 'flex';
-
-  video.srcObject = stream;
-  video.addEventListener('loadedmetadata', () => {
-    video.play();
-  }, { once: true });
-
-  // ジャイロ
-  try {
-    if (typeof DeviceOrientationEvent?.requestPermission === 'function') {
-      await DeviceOrientationEvent.requestPermission();
-    }
-  } catch {
-    
-  }
-
 });
-
 
 // 推論処理（predictボタン）
 predictButton.addEventListener('click', async () => {
