@@ -191,7 +191,6 @@ startButton.addEventListener('click', async () => {
 
 startButton.addEventListener('click', async () => {
   try {
-    /*
     // ジャイロ
     if (
       typeof DeviceOrientationEvent !== 'undefined' &&
@@ -203,7 +202,7 @@ startButton.addEventListener('click', async () => {
         showNotification('ジャイロを許可してください');
       }
     }
-    */
+    
     // window.addEventListener("deviceorientation", handleOrientation, true);
 
     // ジャイロ許可後にカメラ
