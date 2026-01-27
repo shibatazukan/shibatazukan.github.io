@@ -114,47 +114,6 @@ function getLocation() {
   );
 }
 
-async function setupCamera() {
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: {
-        facingMode: 'environment'
-      },
-      audio: false
-    });
-    video.srcObject = stream;
-
-    await new Promise((resolve) => {
-      video.addEventListener('loadedmetadata', resolve, { once: true });
-    });
-
-    startScreen.style.display = 'none';
-    // await new Promise(resolve => setTimeout(resolve, 1500));
-
-    controlPanel.style.display = 'flex';
-    // modeSelector.style.display = 'flex';
-    
-    const initialMode = getCurrentMode();
-
-    if (initialMode === 'full') {
-      drawingCanvas.style.pointerEvents = "none";
-      predictButton.disabled = false;
-      showNotification("カメラ準備完了。分類するボタンを押してください。");
-    } else {
-      drawingCanvas.style.pointerEvents = "auto";
-      showNotification("カメラ準備完了。対象を選択してください。");
-    }
-
-    drawingCanvas.style.pointerEvents = "auto";
-
-    // getLocation();
-
-  } catch (err) {
-    showNotification("カメラへのアクセスを許可してください。", true);
-    startScreen.style.display = 'flex';
-  }
-}
-
 /*
 startButton.addEventListener('click', async () => {
   // ジャイロセンサーモーション モーダル
@@ -189,6 +148,7 @@ startButton.addEventListener('click', async () => {
 });
 */
 
+/*
 startButton.addEventListener('click', async () => {
   try {
     // ジャイロ
@@ -222,6 +182,59 @@ startButton.addEventListener('click', async () => {
     console.error(e);
   }
 });
+*/
+
+// ===== ジャイロ =====
+async function requestGyroPermission() {
+  try {
+    if (
+      typeof DeviceOrientationEvent !== 'undefined' &&
+      typeof DeviceOrientationEvent.requestPermission === 'function'
+    ) {
+      const res = await DeviceOrientationEvent.requestPermission();
+      if (res !== 'granted') {
+        showNotification('ジャイロを許可してください');
+      }
+    }
+  } catch (e) {
+    console.error('gyro error', e);
+  }
+}
+
+
+// ===== カメラ =====
+async function startCamera() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: 'environment' } },
+      audio: false
+    });
+
+    video.srcObject = stream;
+
+    video.addEventListener('loadedmetadata', () => {
+      video.play();
+    }, { once: true });
+
+  } catch (e) {
+    console.error('camera error', e);
+    showNotification('カメラを起動できません');
+  }
+}
+
+startButton.addEventListener('click', () => {
+
+  startScreen.style.display = 'none';
+  controlPanel.style.display = 'flex';
+
+  // ジャイロ
+  requestGyroPermission();
+
+  // カメラ
+  startCamera();
+
+});
+
 
 // 推論処理（predictボタン）
 predictButton.addEventListener('click', async () => {
