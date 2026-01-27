@@ -23,6 +23,7 @@ async function requestGyroPermission() {
 }
 */
 
+/*
 async function ensureModelLoaded() {
   if (model) return true;
   try {
@@ -31,6 +32,30 @@ async function ensureModelLoaded() {
   } catch (e) {
     showNotification("モデルの読み込みに失敗しました。", true);
     return false;
+  }
+}
+*/
+
+let modelLoding = false;
+
+async function ensureModelLoaded() {
+
+  if (model) return true;
+  if (modelLoading) return false;
+
+  modelLoading = true;
+
+  try {
+    model = await tf.loadLayersModel(modelPath);
+    return true;
+
+  } catch (e) {
+    console.error('model load error', e);
+    showNotification('モデルの読み込みに失敗しました', true);
+    return false;
+
+  } finally {
+    modelLoading = false;
   }
 }
 
@@ -233,13 +258,22 @@ startButton.addEventListener('click', () => {
   // カメラ
   startCamera();
 
+  // モデルロード
+  ensureModelLoaded();
 });
 
 
 // 推論処理（predictボタン）
 predictButton.addEventListener('click', async () => {
+  /*
   const ok = await ensureModelLoaded();
   if (!ok) return;
+  */
+
+  if(!model) {
+    showNotification('モデル準備中です');
+    return;
+  }
   
   isArActive = true; 
 
