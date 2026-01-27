@@ -523,8 +523,8 @@ predictButton.addEventListener('click', async () => {
 
   const bubbleText = document.getElementById('bubbleText');
 
-  // 信頼度チェック（閾値: 0.7）
-  if (confidence >= 0.70) {
+  // 信頼度チェック（閾値: 0.75）
+  if (confidence >= 0.75) {
     const confidencePercent = (confidence * 100).toFixed(1);
     const template = `なまえ：${labelData.name}\n種類　：${labelData.category}\n説明　：${labelData.description}\n\n信頼度：${confidencePercent}%`;
 
