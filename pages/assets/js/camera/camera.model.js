@@ -523,12 +523,8 @@ predictButton.addEventListener('click', async () => {
 
   const bubbleText = document.getElementById('bubbleText');
 
-  const sorted = [...avgScores].sort((a,b)=>b-a);
-  const confidence = sorted[0];
-  const margin = sorted[0] - sorted[1];
-
   // 信頼度チェック（閾値: 0.75）
-  if (confidence >= 0.75 && margin >= 0.15) {
+  if (confidence >= 0.75) {
     const confidencePercent = (confidence * 100).toFixed(1);
     const template = `なまえ：${labelData.name}\n種類　：${labelData.category}\n説明　：${labelData.description}\n\n信頼度：${confidencePercent}%`;
 
