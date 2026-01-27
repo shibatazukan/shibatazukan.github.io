@@ -420,7 +420,7 @@ predictButton.addEventListener('click', async () => {
 
   //Teachable Machine互換推論処理
   const predictions = [];
-  const totalSamples = 30;
+  const totalSamples = 10;
 
   // 一時キャンバスを事前作成
   const tempCanvas = document.createElement('canvas');
