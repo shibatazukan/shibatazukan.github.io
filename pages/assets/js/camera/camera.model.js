@@ -110,6 +110,45 @@ async function getAutoBoundsForFullMode() {
 }
 
 function getLocation() {
+  return new Promise((resolve) => {
+    if (!navigator.geolocation) {
+      console.log('位置情報がサポートされていません');
+      currentLocation = null;
+      resolve(null);
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        currentLocation = {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          accuracy: position.coords.accuracy,
+          timestamp: new Date(position.timestamp).toISOString()
+        };
+        console.log('位置情報を取得しました:', currentLocation);
+        showNotification('位置情報を取得しました', false, false);
+        resolve(currentLocation);
+      },
+      (error) => {
+        console.warn('位置情報の取得に失敗:', error.message);
+        showNotification('位置情報の取得に失敗しました', false, true);
+        currentLocation = null;
+        resolve(null);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      }
+    );
+  });
+}
+
+
+
+/*
+function getLocation() {
   if (!navigator.geolocation) {
     console.log('位置情報がサポートされていません');
     return;
@@ -138,6 +177,7 @@ function getLocation() {
     }
   );
 }
+*/
 
 /*
 startButton.addEventListener('click', async () => {
@@ -549,7 +589,9 @@ predictButton.addEventListener('click', async () => {
 
 saveButton.addEventListener('click', async () => {
   if (!lastPrediction) return;
-  if (!currentLocation) await getLocation();
+  if (!currentLocation) {
+    await getLocation();
+  }
 
   saveButton.disabled = true;
   showNotification('登録中...', false, false);
