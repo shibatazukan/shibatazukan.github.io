@@ -136,7 +136,6 @@ async function setupCamera() {
     
     const initialMode = getCurrentMode();
 
-    /*
     if (initialMode === 'full') {
       drawingCanvas.style.pointerEvents = "none";
       predictButton.disabled = false;
@@ -145,7 +144,6 @@ async function setupCamera() {
       drawingCanvas.style.pointerEvents = "auto";
       showNotification("カメラ準備完了。対象を選択してください。");
     }
-    */
 
     drawingCanvas.style.pointerEvents = "auto";
 
@@ -210,7 +208,7 @@ startButton.addEventListener('click', async () => {
 
     // ジャイロ許可後にカメラ
     const stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: { ideal: 'environment' } },
+      video: { facingMode:'environment' },
       audio: false
     });
 
