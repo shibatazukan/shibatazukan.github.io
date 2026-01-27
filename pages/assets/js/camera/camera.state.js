@@ -1,6 +1,6 @@
 // camera.state.js
 // 共有されるグローバル状態変数
-let model;
+let model = null;
 let isDrawing        = false;
 let points           = [];
 let identifiedObject = null;
