@@ -300,14 +300,159 @@ startButton.addEventListener('click', () => {
   ensureModelLoaded();
 });
 
+// 推論処理（predictボタン）
+predictButton.addEventListener('click', async () => {
+  if (!model) {
+    showNotification('モデル準備中です');
+    return;
+  }
+  
+  isArActive = true; 
+  predictButton.disabled = true;
+  saveButton.disabled = true;
+  showProgressIndicator(true);
 
+  // 領域の決定（currentSelectionを利用）
+  if (!currentSelection) {
+    showProgressIndicator(false);
+    predictButton.disabled = false;
+    showNotification("領域を選択してください。", true);
+    return;
+  }
+   
+  const sel_width = currentSelection.maxX - currentSelection.minX;
+  const sel_height = currentSelection.maxY - currentSelection.minY;
+  const rawBounds = {
+    minX: currentSelection.minX,
+    minY: currentSelection.minY,
+    maxX: currentSelection.maxX,
+    maxY: currentSelection.maxY,
+    width: sel_width,
+    height: sel_height,
+    centerX: (currentSelection.minX + currentSelection.maxX) / 2,
+    centerY: (currentSelection.minY + currentSelection.maxY) / 2,
+    area: sel_width * sel_height,
+    aspectRatio: sel_width / sel_height
+  };
+
+  const bounds = normalizeAndValidateBounds(rawBounds);
+  if (!bounds) {
+    showProgressIndicator(false);
+    predictButton.disabled = false;
+    showNotification("有効な領域を選択してください。", true);
+    return;
+  }
+  
+  const { minX, minY, width, height } = bounds;
+
+  // --- 推論処理（サンプリング） ---
+  const predictions = [];
+  const totalSamples = 10;
+  const tempCanvas = document.createElement('canvas');
+  tempCanvas.width = 224;
+  tempCanvas.height = 224;
+  const tempCtx = tempCanvas.getContext('2d', { willReadFrequently: true });
+
+  for (let i = 0; i < totalSamples; i++) {
+    updateProgress(i + 1, totalSamples);
+    tempCtx.imageSmoothingQuality = 'high';
+    tempCtx.drawImage(video, minX, minY, width, height, 0, 0, 224, 224);
+
+    const tensor = tf.tidy(() => {
+      return tf.browser.fromPixels(tempCanvas, 3)
+        .toFloat()
+        .div(127.5)
+        .sub(1.0)
+        .expandDims(0);
+    });
+
+    const predictionArray = await model.predict(tensor).array();
+    tensor.dispose();
+    predictions.push([...predictionArray[0]]);
+
+    await new Promise(resolve => setTimeout(resolve, 80));
+  }
+
+  showProgressIndicator(false);
+
+  // --- 平均スコアの計算 ---
+  const numClasses = classLabels.length;
+  const avgScores = new Array(numClasses).fill(0);
+  for (let i = 0; i < numClasses; i++) {
+    let sum = 0;
+    for (let j = 0; j < predictions.length; j++) {
+      sum += predictions[j][i];
+    }
+    avgScores[i] = sum / predictions.length;
+  }
+
+  // --- 判定ロジック（マージン計算） ---
+  const sorted = [...avgScores].sort((a, b) => b - a);
+  const confidence = sorted[0]; // 1位のスコア
+  const margin = numClasses > 1 ? sorted[0] - sorted[1] : sorted[0]; // 2位との差
+  const finalIndex = avgScores.indexOf(confidence);
+
+  // 安全チェック
+  if (finalIndex === -1 || !classLabels[finalIndex]) {
+    showNotification("分類に失敗しました。", true);
+    predictButton.disabled = false;
+    return;
+  }
+
+  const finalLabel = classLabels[finalIndex];
+  const labelData = labelInfo[finalLabel];
+
+  // --- 結果の表示判定（閾値チェック） ---
+  const MIN_CONFIDENCE = 0.75;
+  const MIN_MARGIN = 0.15;
+
+  const camera = document.querySelector('#mainCamera');
+  const bubble = document.getElementById('infoBubble');
+  const bubbleTextEl = document.getElementById('bubbleText');
+
+  if (confidence >= MIN_CONFIDENCE && margin >= MIN_MARGIN && labelData) {
+    // 成功：詳細情報を表示
+    const confidencePercent = (confidence * 100).toFixed(1);
+    const template = `なまえ：${labelData.name}\n種類　：${labelData.category}\n説明　：${labelData.description}\n\n信頼度：${confidencePercent}%`;
+    
+    bubbleTextEl.setAttribute('value', template);
+    saveButton.disabled = false;
+    lastPrediction = { label: finalLabel, confidence, avgScores };
+  } else {
+    // 失敗（または確信が低い）：警告を表示
+    bubbleTextEl.setAttribute('value', `分類できませんでした。\n別の角度から試してください。\n\n最高信頼度: ${(confidence * 100).toFixed(1)}%`);
+    saveButton.disabled = true;
+  }
+
+  // ARバブルの位置調整
+  if (camera && camera.object3D) {
+    const cameraWorldPosition = new THREE.Vector3();
+    camera.object3D.getWorldPosition(cameraWorldPosition);
+    const infoBubblePosition = new THREE.Vector3(0, 0, -2);
+    infoBubblePosition.applyQuaternion(camera.object3D.quaternion);
+    infoBubblePosition.add(cameraWorldPosition);
+    
+    bubble.setAttribute('position', infoBubblePosition);
+    bubble.setAttribute('visible', true);
+  }
+
+  // 後片付け
+  const currentMode = getCurrentMode();
+  if (currentMode === 'freehand') points = [];
+  if (currentMode === 'rectangle') currentSelection = null;
+  clearCanvas();
+  predictButton.disabled = false;
+});
+
+/*
 // 推論処理（predictボタン）
 predictButton.addEventListener('click', async () => {
   /*
   const ok = await ensureModelLoaded();
   if (!ok) return;
   */
-
+  
+  /*
   if(!model) {
     showNotification('モデル準備中です');
     return;
@@ -379,6 +524,7 @@ predictButton.addEventListener('click', async () => {
   }
   */
   
+  /*
   if (!currentSelection) {
       showProgressIndicator(false);
       predictButton.disabled = false;
@@ -584,6 +730,8 @@ predictButton.addEventListener('click', async () => {
   clearCanvas();
   predictButton.disabled = false;
 });
+
+*/
 
 saveButton.addEventListener('click', async () => {
   if (!lastPrediction) return;
