@@ -36,7 +36,7 @@ async function ensureModelLoaded() {
 }
 */
 
-let modelLoding = false;
+let modelLoading = false;
 
 async function ensureModelLoaded() {
 
