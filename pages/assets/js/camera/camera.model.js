@@ -145,8 +145,6 @@ function getLocation() {
   });
 }
 
-
-
 /*
 function getLocation() {
   if (!navigator.geolocation) {
