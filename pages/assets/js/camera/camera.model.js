@@ -2,7 +2,7 @@
 // モデル読み込み、カメラセットアップ、分類・保存処理
 
 let modelLoading = false;
-let model = null;
+model = null;
 
 // Teachable Machineライブラリを使ってモデルを読み込む
 async function ensureModelLoaded() {
