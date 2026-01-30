@@ -26,16 +26,16 @@ const classLabels = [
 
 const labelInfo = {
   // ===== 植物 =====
-  'あやめ': {
-    name: 'あやめ',
+  'アヤメ': {
+    name: 'アヤメ',
     category: '植物',
     description: 'むらさき色のきれいな花だよ！\n春から初夏にかけて咲くんだ。',
     show3DObject: false,
     model: '../assets/model/model.json'
   },
   
-  'さくら': {
-    name: 'さくら',
+  'サクラ': {
+    name: 'サクラ',
     category: '植物',
     description: '春になると日本中で咲く、とても有名な花だよ！\nピンク色の花びらがとってもきれいだね。',
     show3DObject: false,
