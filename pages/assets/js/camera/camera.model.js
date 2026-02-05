@@ -289,6 +289,7 @@ startButton.addEventListener('click', () => {
 
   startScreen.style.display = 'none';
   controlPanel.style.display = 'flex';
+  modeSelector.style.display = 'flex';
 
   // ジャイロ
   requestGyroPermission();
