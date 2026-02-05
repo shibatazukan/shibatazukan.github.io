@@ -312,6 +312,63 @@ predictButton.addEventListener('click', async () => {
   saveButton.disabled = true;
   showProgressIndicator(true);
 
+  // モードに応じて領域を決定
+  let rawBounds = null;
+  const mode = getCurrentMode();
+
+  if (mode === 'full') {
+    const detected = await getAutoBoundsForFullMode();
+    if (detected) {
+      rawBounds = detected;
+    } else {
+      const w = Math.floor(drawingCanvas.width * 0.8);
+      const h = Math.floor(drawingCanvas.height * 0.8);
+      const minX = Math.floor((drawingCanvas.width - w) / 2);
+      const minY = Math.floor((drawingCanvas.height - h) / 2);
+      rawBounds = {
+        minX,
+        minY,
+        maxX: minX + w,
+        maxY: minY + h,
+        width: w,
+        height: h,
+        centerX: minX + w / 2,
+        centerY: minY + h / 2,
+        area: w * h,
+        aspectRatio: w / h
+      };
+    }
+  } else if (mode === 'rectangle') {
+    if (!currentSelection) {
+      showProgressIndicator(false);
+      predictButton.disabled = false;
+      showNotification("領域を選択してください。", true);
+      return;
+    }
+    const width = currentSelection.maxX - currentSelection.minX;
+    const height = currentSelection.maxY - currentSelection.minY;
+    rawBounds = {
+      minX: currentSelection.minX,
+      minY: currentSelection.minY,
+      maxX: currentSelection.maxX,
+      maxY: currentSelection.maxY,
+      width: width,
+      height: height,
+      centerX: (currentSelection.minX + currentSelection.maxX) / 2,
+      centerY: (currentSelection.minY + currentSelection.maxY) / 2,
+      area: width * height,
+      aspectRatio: width / height
+    };
+  } else if (mode === 'freehand') {
+    if (points.length < 2) {
+      showProgressIndicator(false);
+      predictButton.disabled = false;
+      showNotification("囲いがありません。", true);
+      return;
+    }
+    rawBounds = calculateOptimalBounds(points);
+  }
+
   // 領域の決定（currentSelectionを利用）
   if (!currentSelection) {
     showProgressIndicator(false);
@@ -319,7 +376,8 @@ predictButton.addEventListener('click', async () => {
     showNotification("領域を選択してください。", true);
     return;
   }
-   
+
+  /*
   const sel_width = currentSelection.maxX - currentSelection.minX;
   const sel_height = currentSelection.maxY - currentSelection.minY;
   const rawBounds = {
@@ -334,7 +392,8 @@ predictButton.addEventListener('click', async () => {
     area: sel_width * sel_height,
     aspectRatio: sel_width / sel_height
   };
-
+  */
+  
   const bounds = normalizeAndValidateBounds(rawBounds);
   if (!bounds) {
     showProgressIndicator(false);
