@@ -370,14 +370,15 @@ predictButton.addEventListener('click', async () => {
     rawBounds = calculateOptimalBounds(points);
   }
 
-  // 領域の決定（currentSelectionを利用）
+  // 領域の決定
+  /*
   if (!currentSelection) {
     showProgressIndicator(false);
     predictButton.disabled = false;
     showNotification("領域を選択してください。", true);
     return;
   }
-
+*/
   /*
   const sel_width = currentSelection.maxX - currentSelection.minX;
   const sel_height = currentSelection.maxY - currentSelection.minY;
