@@ -318,10 +318,6 @@ predictButton.addEventListener('click', async () => {
   const mode = getCurrentMode();
 
   if (mode === 'full') {
-    const detected = await getAutoBoundsForFullMode();
-    if (detected) {
-      rawBounds = detected;
-    } else {
       const w = Math.floor(drawingCanvas.width * 0.8);
       const h = Math.floor(drawingCanvas.height * 0.8);
       const minX = Math.floor((drawingCanvas.width - w) / 2);
@@ -338,7 +334,6 @@ predictButton.addEventListener('click', async () => {
         area: w * h,
         aspectRatio: w / h
       };
-    }
   } else if (mode === 'rectangle') {
     if (!currentSelection) {
       showProgressIndicator(false);
