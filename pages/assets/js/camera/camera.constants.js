@@ -692,6 +692,30 @@ const labelInfo = {
     description: '小さな青いチョウだよ！\n春から秋まで、道ばたや公園でよく見られるんだ。',
     show3DObject: false,
     model: '../assets/model/model.json'
+  },
+
+  'ライチョウ': {
+    name: 'ライチョウ',
+    category: '鳥',
+    description: '小さな青いチョウだよ！\n春から秋まで、道ばたや公園でよく見られるんだ。',
+    show3DObject: false,
+    model: '../assets/model/model.json'
+  },
+
+  'タテヤマリンドウ': {
+    name: 'タテヤマリンドウ',
+    category: '植物',
+    description: 'サンプル',
+    show3DObject: false,
+    model: '../assets/model/model.json'
+  },
+
+  'ヤマトシジミ': {
+    name: 'ヤマトシジミ',
+    category: '植物',
+    description: 'サンプル',
+    show3DObject: false,
+    model: '../assets/model/model.json'
   }
 };
 
