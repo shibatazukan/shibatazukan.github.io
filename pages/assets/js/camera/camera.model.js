@@ -459,7 +459,7 @@ predictButton.addEventListener('click', async () => {
   const labelData = labelInfo[finalLabel];
 
   // --- 結果の表示判定（閾値チェック） ---
-  const MIN_CONFIDENCE = 0.75;
+  const MIN_CONFIDENCE = 0.50;
   const MIN_MARGIN = 0.15;
 
   const camera = document.querySelector('#mainCamera');
