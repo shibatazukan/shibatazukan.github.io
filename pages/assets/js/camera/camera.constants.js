@@ -449,7 +449,7 @@ const labelInfo = {
   'ウスバカマキリ': {
     name: 'ウスバカマキリ',
     category: '昆虫',
-    description: '体が細くて葉っぱのように見えるカマキリだよ！\n周りに溶け込んで、獲物をじっと待つのが得意なんだ。',
+    description: '体が細くて葉っぱのように見えるカマキリだよ！\n獲物をじっと待つのが得意なんだ。',
     show3DObject: false,
     model: '../assets/model/model.json'
   },
@@ -697,7 +697,7 @@ const labelInfo = {
   'ライチョウ': {
     name: 'ライチョウ',
     category: '鳥',
-    description: 'キジの仲間だよ！氷河期の生き残りで神の鳥と呼ばれているよ。',
+    description: 'キジの仲間だよ！\n氷河期の生き残りで神の鳥と呼ばれているよ。',
     show3DObject: false,
     model: '../assets/model/model.json'
   },
@@ -705,7 +705,7 @@ const labelInfo = {
   'タテヤマリンドウ': {
     name: 'タテヤマリンドウ',
     category: '植物',
-    description: '晴れて気温が上がると花が開くお天気花だよ！虫と仲良しなんだ。',
+    description: '晴れて気温が上がると花が開くお天気花だよ！\n虫と仲良しなんだ。',
     show3DObject: false,
     model: '../assets/model/model.json'
   },
@@ -713,7 +713,7 @@ const labelInfo = {
   'カノユユリ': {
     name: 'カノユユリ',
     category: '植物',
-    description: '「ユリの女王」と呼ばれているんだ！鹿の子模様の花が特徴だよ',
+    description: '「ユリの女王」と呼ばれているんだ！\n鹿の子模様の花が特徴だよ',
     show3DObject: false,
     model: '../assets/model/model.json'
   }
