@@ -55,7 +55,7 @@ const labelInfo = {
   'カモガヤ': {
     name: 'カモガヤ',
     category: '植物',
-    description: '道ばたや草原でよく見かける、細長い穂を持つ草だよ！\n初夏になると緑色の穂をたくさん出すんだ。',
+    description: '道ばたでよく見かける、細長い穂を持つ草だよ！\n初夏になると緑色の穂をたくさん出すんだ。',
     show3DObject: false,
     model: '../assets/model/model.json'
   },
@@ -127,7 +127,7 @@ const labelInfo = {
   'キンモクセイ': {
     name: 'キンモクセイ',
     category: '植物',
-    description: '秋になるととってもいい香りがする、オレンジ色の小さな花を咲かせる木だよ！\n香りで秋を感じられるね。',
+    description: '秋になるととってもいい香りがする\nオレンジ色の小さな花を咲かせる木だよ！',
     show3DObject: false,
     model: '../assets/model/model.json'
   },
@@ -657,7 +657,7 @@ const labelInfo = {
   'マイコアカネ': {
     name: 'マイコアカネ',
     category: '昆虫',
-    description: '顔が白くておしろいを塗ったように見えるトンボだよ！\n秋に田んぼや池で見られるんだ。',
+    description: '赤トンボだけど実は顔は白っぽいんだ！\n秋に田んぼや池で見られるよ。',
     show3DObject: false,
     model: '../assets/model/model.json'
   },
@@ -697,7 +697,7 @@ const labelInfo = {
   'ライチョウ': {
     name: 'ライチョウ',
     category: '鳥',
-    description: '小さな青いチョウだよ！\n春から秋まで、道ばたや公園でよく見られるんだ。',
+    description: 'キジの仲間だよ！氷河期の生き残りで神の鳥と呼ばれているよ。',
     show3DObject: false,
     model: '../assets/model/model.json'
   },
@@ -705,15 +705,15 @@ const labelInfo = {
   'タテヤマリンドウ': {
     name: 'タテヤマリンドウ',
     category: '植物',
-    description: 'サンプル',
+    description: '晴れて気温が上がると花が開くお天気花だよ！虫と仲良しなんだ。',
     show3DObject: false,
     model: '../assets/model/model.json'
   },
 
-  'ヤマトシジミ': {
-    name: 'ヤマトシジミ',
+  'カノユユリ': {
+    name: 'カノユユリ',
     category: '植物',
-    description: 'サンプル',
+    description: '「ユリの女王」と呼ばれているんだ！鹿の子模様の花が特徴だよ',
     show3DObject: false,
     model: '../assets/model/model.json'
   }
