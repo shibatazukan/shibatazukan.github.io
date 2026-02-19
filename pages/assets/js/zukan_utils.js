@@ -219,7 +219,7 @@ async function getAddressFromCoords(latitude, longitude) {
     const data = await response.json();
     if (data && data.address) {
       const addr = data.address;
-      const parts = [];
+      parts = [];
       const prefecture = addr.state || addr.prefecture || '';
       if (prefecture) parts.push(prefecture);
       const city = addr.city || addr.town || addr.village || '';
