@@ -33,7 +33,8 @@
 				option {padding: 0;}				
 				input[type="range"] {width: 200px;margin: 0;}
 
-			.information {
+			.information 
+				{
 					position: absolute;
 					bottom: 10px;
 					left: 10px;
@@ -42,7 +43,14 @@
 					padding: 0.5rem;
 					border-radius: 4px;
 					font-size: 0.9rem;
-			} /*--------------------------------------------------------------------------------------- */
+				}
+
+			.iframe {
+  					border: 1px solid black;
+  					width: 100%; /* HTML の width 属性で設定された幅よりも優先する */
+					}
+				
+/*--------------------------------------------------------------------------------------- */
 
 body {
   font-family: 'Mochiy Pop One', 'Hiragino Sans', 'Yu Gothic', sans-serif;
