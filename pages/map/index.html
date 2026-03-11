@@ -611,18 +611,24 @@
 							"陰影起伏図": gsirehillshademap,
 							"openst:{s}入り": gsiaa,
 						};
-						//var overlayMaps  = {
-						//	"色別標高図": gsirelief,
-						//	"陰影起伏図": gsirehillshademap,
-						//	"openst": gsiaa,
-						//};		
+						var overlayMaps  = {
+							"色別標高図": gsirelief,
+							"陰影起伏図": gsirehillshademap,
+							//"openst": gsiaa,
+							"[衛星画像]:地形起伏map(DSM)" : gsibb,
+							"[実験用]  :ハロトレ"    : harotirekun,
+							"[衛星画像]:森林分布map(FNF)" : nas,
+							"[衛星画像]:植生map(NDVI)"  : jax							
+						};
+							
+						/*
 						var earthMaps    = {
 							//"openst": gsiaa,
 							"[衛星画像]:DSM" : gsibb,
 							"ハロトレ"    : harotirekun,
 							"[衛星画像];FNF"   : nas,
 							"[衛星画像]:NDVI"  : jax
-						};
+						}; */
 	
 						console.log('経度:${latitude}');
 						console.log('緯度:${longitude}');
@@ -649,7 +655,7 @@
 										       		lc.start();
 						}
 																															
-						L.control.layers(baseMaps,earthMaps).addTo(map); //2つの引数までしか読み込めない？
+						L.control.layers(baseMaps,overlayMaps).addTo(map); //2つの引数までしか読み込めない？
 						L.control.scale({position: "topleft",title: "Reset view",latlng: L.latLng([37.9473, 139.32825]),zoom: 15,}).addTo(map);
 							/*  実装に向けて現在、試行錯誤中 --------------------------------------------------------------------*/
 							/*L.control.slider(function(value) {map.setView(map.getCenter(), value);}, 
