@@ -665,7 +665,8 @@
 													
 					//ダウンロード時に初期化する
 	
-						// ページをreloadする方法					//[leafletを初期化]		
+						// ページをreloadする方法					//[leafletを初期化]	
+						   /*
 						function doReload() {
 											// reloadメソッドによりページをリロード
 										window.location.reload();
@@ -674,7 +675,7 @@
 										setTimeout(doReload, 5000);							
 										});							
 							//window.addEventListener('renderer', L.canvas());										
-						}														
+						}	*/													
 					
 					// 居城追加: 地図読み込み後にピンを表示 ------
 					displayZukanPins(map);
@@ -692,7 +693,7 @@
 				})();	
 													
 				//ダウンロード時に初期化する | 現在、この処理が無くても全体動作に影響なし?
-					window.addEventListener('renderer', L.canvas());
+					//window.addEventListener('renderer', L.canvas());
 			}														
 		
 	//--------------------------------------------------------------------------------------------------------------------													
