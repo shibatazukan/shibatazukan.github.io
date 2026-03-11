@@ -3,20 +3,22 @@
     <head>		
         <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
         <title>canvasとイベント処理による描画</title>			
+		
         <link rel="stylesheet" href="./css3/main.css" media="all">
 		
 		<!--新発田ずかん-->
-			<!--<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&display=swap">
+			<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&display=swap">
 			<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
-			<link rel="stylesheet" href="https://shibatazukan.github.io/pages/assets/css/home.css">
+			<!--<link rel="stylesheet" href="https://shibatazukan.github.io/pages/assets/css/home.css">-->
 			<link rel="stylesheet" href="https://shibatazukan.github.io/pages/assets/css/hamburger_menu.css">
 		-->
 			<!-- 「マイずかん」から引用-->
 			<link rel="stylesheet" href="https://shibatazukan.github.io/pages/assets/css/map.css">
 
 		<!--ハンバーガーメニューをセット -->
-		<script src="https://shibatazukan.github.io/pages/assets/js/home.js"></script>
+		<!--<script src="https://shibatazukan.github.io/pages/assets/js/home.js"></script>-->
         <script src="https://shibatazukan.github.io/pages/assets/js/hamburger_menu.js"></script>
+		
 		<!--leaflet-->
 		<link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.0/dist/leaflet.css" />
 		<script src="https://unpkg.com/leaflet@1.3.0/dist/leaflet.js"></script>
@@ -26,23 +28,28 @@
 		<script src="https://unpkg.com/georaster-layer-for-leaflet"></script>
 		<!--jaxaのDSM画像を単独で呼び出し-->
 		<!--<script src="example1.js" type="module"></script>-->
+		
 		<!-- leaflet plugin -->
-			<link rel="stylesheet" href="./css3/leaflet-search.min.css">
-			
+			<link rel="stylesheet" href="./css3/leaflet-search.min.css">	
 			<script src="https://unpkg.com/georaster-layer-for-leaflet/dist/georaster-layer-for-leaflet.min.js"></script>
+		
 			<!--座標取得-->>
-			<script src="./Js/L.Control.Locate.min.js"></script> <!--/*位置表示用*/-->
-		<!-- leaflet プラグインCSS-->
-			<link rel="stylesheet" href="https://unpkg.com/leaflet-switch-basemap@1.0.6/src/L.switchBasemap.css" crossorigin=""/>
-			<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"/>
-			<link rel="stylesheet" href="./css3/L.Control.Locate.min.css" /> <!--/*位置表示用*/-->
-		<!-- Plugin Icon.Pulse -->
-			<link rel="stylesheet" href="./css3/L.Icon.Pulse.css" >
-			<script src="./Js/L.Icon.Pulse.js" ></script>
-		<!-- Plugin slider -->
-			<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.13/css/all.css" integrity="sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp" crossorigin="anonymous">
-			<link rel="stylesheet" href="css3/leaflet-slider.css" />
-			<script src="./Js/leaflet-slider.js"></script>
+				<script src="./Js/L.Control.Locate.min.js"></script> <!--/*位置表示用*/-->
+				<script src="https://shibatazukan.github.io/pages/map/Js/L.Control.Locate.min.js.map"></script>
+		
+			<!-- leaflet プラグインCSS-->
+				<link rel="stylesheet" href="https://unpkg.com/leaflet-switch-basemap@1.0.6/src/L.switchBasemap.css" crossorigin=""/>
+				<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"/>
+				<link rel="stylesheet" href="./css3/L.Control.Locate.min.css" /> <!--/*位置表示用*/-->
+		
+			<!-- Plugin Icon.Pulse -->
+				<link rel="stylesheet" href="./css3/L.Icon.Pulse.css" >
+				<script src="./Js/L.Icon.Pulse.js" ></script>
+		
+			<!-- Plugin slider -->
+				<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.13/css/all.css" integrity="sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp" crossorigin="anonymous">
+				<link rel="stylesheet" href="css3/leaflet-slider.css" />
+				<script src="./Js/leaflet-slider.js"></script>
         <style>
 			/*
 			*{
