@@ -78,31 +78,31 @@
 					</div>
 				</template>
 				<header
+					<nav class="side-menu" id="sideMenu"> <!-- ************************************************************************ -->
+			            <div class="menu-title"><i class="fa-solid fa-user"></i> <span id="userNameDisplay">ユーザー名</span></div>
+			            <a href="https://shibatazukan.github.io/pages/home/index.html"><i class="fa-solid fa-house"></i> ホーム</a>
+			            <a href="https://shibatazukan.github.io/pages/zukan/list.html"><i class="fa-solid fa-scroll"></i> ずかん</a>
+			            <a href="https://shibatazukan.github.io/pages/camera/index.html"><i class="fa-solid fa-camera"></i> カメラ</a>
+			            <a href="https://shibatazukan.github.io/pages/map/folder/index.html"><i class="fa-solid fa-map"></i> マップ</a>
+			
+			            <div class="menu-divider"></div>
+			            <button class="menu-item" id="shareData">
+			                <i class="fa-solid fa-share"></i> データを共有/ファイルに保存
+			            </button>
+			            <button class="menu-item" id="loadData">
+			                <i class="fa-solid fa-upload"></i> データをロード
+			            </button>
+			            <input type="file" id="fileInput" class="file-input" accept=".json">
+			            <div class="menu-divider"></div>
+			            <a href="settings.html"><i class="fa-solid fa-gear"></i> せってい</a>
+			            <a href="../help/index.html"><i class="fa-solid fa-circle-question"></i> ヘルプ</a>
+        			</nav><!-- *************************************************************************************************************** -->
+			 	</header>
         </div>
-       <nav class="side-menu" id="sideMenu"> <!-- ************************************************************************ -->
-            <div class="menu-title"><i class="fa-solid fa-user"></i> <span id="userNameDisplay">ユーザー名</span></div>
-            <a href="https://shibatazukan.github.io/pages/home/index.html"><i class="fa-solid fa-house"></i> ホーム</a>
-            <a href="https://shibatazukan.github.io/pages/zukan/list.html"><i class="fa-solid fa-scroll"></i> ずかん</a>
-            <a href="https://shibatazukan.github.io/pages/camera/index.html"><i class="fa-solid fa-camera"></i> カメラ</a>
-            <a href="https://shibatazukan.github.io/pages/map/folder/index.html"><i class="fa-solid fa-map"></i> マップ</a>
-
-            <div class="menu-divider"></div>
-            <button class="menu-item" id="shareData">
-                <i class="fa-solid fa-share"></i> データを共有/ファイルに保存
-            </button>
-            <button class="menu-item" id="loadData">
-                <i class="fa-solid fa-upload"></i> データをロード
-            </button>
-            <input type="file" id="fileInput" class="file-input" accept=".json">
-            <div class="menu-divider"></div>
-            <a href="settings.html"><i class="fa-solid fa-gear"></i> せってい</a>
-            <a href="../help/index.html"><i class="fa-solid fa-circle-question"></i> ヘルプ</a>
-        </nav><!-- *************************************************************************************************************** -->
-				</header>
+       
+				
 		</div>		        		        		
 	        <p>イベント処理で描画を実行するプログラム例</p>
-	
-		
 			        <div class="txt-margin">
 						 <p>緯度：<span id="latitude">???</span><span>度</span></p>
 						 <p>経度：<span id="longitude">???</span><span>度</span></p>
@@ -110,7 +110,6 @@
 					</div>			
 				<label for="ber">時系列を選択</label><br/>
 		</div>
-		
 		
 		<div id="a">
 			<input type="range" id="observe" min="2020" max="2025" step="1" list="years"/>好きな年度を選択
@@ -122,10 +121,26 @@
 				<option value="2024" label="2024"></option>
 				<option value="2025" label="2025"></option>
 			</datalist>
+		</div>		
+        <!--<p>kokoko</p>-->
+		<div id="b">
+			<input type="range" id="observe2" min="1" max="12" step="1" list="months"/>好きな年度を選択
+			<datalist id="months">
+				<option value="01" label="01"></option>
+				<option value="02" label="02"></option>
+				<option value="03" label="03"></option>
+				<option value="04" label="04"></option>
+				<option value="05" label="05"></option>
+				<option value="06" label="06"></option>
+				<option value="07" label="07"></option>
+				<option value="08" label="08"></option>
+				<option value="09" label="09"></option>
+				<option value="10" label="10"></option>
+				<option value="11" label="11"></option>
+				<option value="12" label="12"></option>
+			</datalist>
 		</div>
 		
-        <p>kokoko</p>
-
         <button id="chage_color" style="width: 100px; height: 100px border solid" onclick="Alert()">clickして描画
 			<!-- ここで選択肢を設定。-->
         </button>  <!-- 「button id」定義だけでbuttonが設置される.-->
@@ -139,8 +154,52 @@
         </button>
         	<div id="mapcontainer" style="width:600px;height:600px"></div>			 
 				<p>activemap直下</p>
+				<div id="information" class="leaflet-infromation">map切り替え操作のデバッグ用</div><br>										
+						<div class="yeardomain">			
+							<label for="yearSlider">
+								年:
+								<span id="yearValue" class="slider-value">2020</span>年
+							</label><br>
+					    </div>
+		
+						<div class="yeardomain">			
+							<label for="monthSlider">
+								年:
+								<span id="monthValue" class="slider-value">01</span>月
+							</label><br>
+					    </div>
        </div> <!--div始まり --------------------------------------------------------- -->
-      
+
+		<div class="Explanation">
+			<article>				
+				<iframe 
+					alt="説明コンテンツを追加予定"				
+					title="衛星データの種類と特徴について説明"
+					width="300"
+					height="200"
+					src="https://data.earth.jaxa.jp/app/viewer/v1/?collection=https://s3.ap-northeast-1.wasabisys.com/je-pds/cog/v1/JAXA.G-Portal_GCOM-C.SGLI_standard.L3-NDVI.daytime.v3_global_daily/collection.json&band=NDVI&date=2026-02-23T00:00:00.000Z">
+					srcdoc="<p>説明コンテンツを追加予定</p>
+					<p>[baselayerchange]:レイヤーズコントロールでベースレイヤーが変更されたときに発火する。</p>
+					<p>[overlayadd]:レイヤーズコントロールでオーバーレイが選択されたときに発火する。 </p>
+					<p>[overlayremove]:レイヤーズコントロールでオーバーレイの選択が解除されたときに発火する。</p>
+					<p>[layeradd]:マップに新しいレイヤーが追加されたときに発火します。</p>
+					<p>[layerremove]:マップから何らかのレイヤーが削除されたときに発火する</p>"				
+				</iframe><p>図. Jaxa Earth API公式のデモページ</p>
+				
+				<frameset>
+					<frame><br>
+						<code>DSM,</code>
+						<code>"date": "2021-02-01(T00:00:00.000Z)"</code><br>
+						<code>FNF,</code>
+						<code>Temporal: 2017 - 2020</code><br>
+						<code>NDVI,</code>
+						<code>Spatial Bbox: [123, 24, 150, 50],</code>
+						<code>Temporal: 2020/01/01 - 2022/07/20</code>
+					<frame>
+				</frameset>	
+			<article>
+	   </div>
+								
         <div class="menu-toggle" id="menuToggle">
             <i class="fa-solid fa-bars"></i>
         </div>
@@ -170,9 +229,22 @@
 			'use strict';
 			{
 				//スライダ要素を取得				
-				let observe = document.getElementById('observe');
-				let selyear   = 2021;									
-				console.log('observe',observe);
+				let observe = document.getElementById('observe'); //'let'か'const'かについてはいまだに検討中。
+				let selyear   = 2021;
+				
+				observe.addEventListener('change',function()  { 	
+					console.log('observe',observe);
+				});
+
+					//月次要素を取得
+					let observe2 = document.getElementById('observe2');
+
+					//年次または月次が変更されなかった場合の初期値を出力。
+					let selmonth   = 1 % 10;									
+					console.log('observe2',observe2);
+					
+					console.log(`西暦年:${selyear}`);
+					console.log(`月次:${selmonth}`);
 				
 				// スライダの選択が変更されたときのイベントリスナーを登録
 				observe.addEventListener('change',() => {
