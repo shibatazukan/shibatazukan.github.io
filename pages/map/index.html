@@ -62,8 +62,7 @@
 		</frameset>
     
     <body>
-		
-		
+	<!-- 「新発田ずかん」全ページ共通 ============================================================================================================ -->		
 		 <div class="overlay" id="overlay">
 				<div class="title-block">
 					<h1>新発田ずかん</h1>
@@ -98,7 +97,8 @@
 			            <a href="../help/index.html"><i class="fa-solid fa-circle-question"></i> ヘルプ</a>
         			</nav><!-- *************************************************************************************************************** -->
 			 	</header>
-        </div>
+         </div> 
+		<!-- ======================================================================================================================================= -->
        
 				
 		</div>		        		        		
@@ -228,48 +228,78 @@
           <script>
 			'use strict';
 			{
-				//スライダ要素を取得				
-				let observe = document.getElementById('observe'); //'let'か'const'かについてはいまだに検討中。
-				let selyear   = 2021;
-				
-				observe.addEventListener('change',function()  { 	
-					console.log('observe',observe);
-				});
-
-					//月次要素を取得
-					let observe2 = document.getElementById('observe2');
-
-					//年次または月次が変更されなかった場合の初期値を出力。
-					let selmonth   = 1 % 10;									
-					console.log('observe2',observe2);
+					//スライダ要素を取得				
+					let observe = document.getElementById('observe'); //'let'か'const'かについてはいまだに検討中。
+					let selyear   = 2021;
 					
-					console.log(`西暦年:${selyear}`);
-					console.log(`月次:${selmonth}`);
+					observe.addEventListener('change',function()  { 	
+						console.log('observe',observe);
+					});
+	
+						//月次要素を取得
+						let observe2 = document.getElementById('observe2');
+	
+						//年次または月次が変更されなかった場合の初期値を出力。
+						let selmonth   = 1 % 10;									
+						console.log('observe2',observe2);
+						
+						console.log(`西暦年:${selyear}`);
+						console.log(`月次:${selmonth}`);
+					
+					// スライダの選択が変更されたときのイベントリスナーを登録 ========================================================================================================
+					observe.addEventListener('change',() => {
+					selyear= observe.value;
+					console.log('西暦年:',selyear);
+						alert('年度が変更されました。');
+								//information.textContent= '西暦年:',selyear;
+						information.textContent= `西暦年:${selyear}`; //バッククォートを使用
+						observe.addEventListener('change',() => {
+							console.log('西暦年:',selyear);
+							alert('年度が2回以上変更されました。');
+							location.reload();
+							information.textContent= `西暦年:${selyear}`; //バッククォートを使用
+						});						
+					});
+					
+					//月次スライダーのイベントリスナーを登録
+						observe2.addEventListener('change',() => {
+							selmonth= observe2.value;
+							
+							console.log('月次:',selmonth); //何故か年次値と月次値が合計される。
+							alert('月次が変更されました。');
+									//information.textContent= '月次:',selmonth;
+							information.textContent= `月次:${selmonth}`; //バッククォートを使用
+	
+							observe2.addEventListener('change',() => {
+								console.log('月次:',selmonth);
+								alert('月次が2回以上変更されました。');
+								location.reload();
+								information.textContent= `月次:${selmonth}`; //バッククォートを使用
+							});						
+						});				
+					/* =============================================================================================================================================================== */
+						
+					//デバッガー *********************************
+					const information=document.getElementById('information');
+					let Ope ="";
+					let ope = information.value;
+					console.log('デバッガーをターゲットに設定',)
+	
+					
+					//ポップアップ-----------------------------------------------------------------------------------------------------------------------
 				
-				// スライダの選択が変更されたときのイベントリスナーを登録
-				observe.addEventListener('change',() => {
-				selyear= observe.value;
-				console.log('西暦年:',selyear);
-				});
+					function ShowAlert() {
+						alert("30秒後にシャットダウンします");
+					}	
 				
+						ShowAlert();
+											
+					//動作確認--------------------------------------------------------------------------------------------			
+						console.log("start");
+						console.log("warn");
+						console.log(je);				
+					//----------------------------------------------------------------------------------------------------	
 				
-
-
-				//ポップアップ-----------------------------------------------------------------------------------------------------------------------
-			//{
-				function ShowAlert() {
-					alert("30秒後にシャットダウンします");
-				}	
-			// } 
-				ShowAlert();
-										
-				//動作確認--------------------------------------------------------------------------------------------
-			//{
-					console.log("start");
-					console.log("warn");
-					console.log(je);
-			//}
-				//---------------------------------------------------------------------------------------------	
 				//現在の温度を表示---------------------------------------------------------------------------------------------------------
 					{
 								const apiUrl = 'https://api.open-meteo.com/v1/forecast?latitude=37.56&longitude=139.19&hourly=temperature_2m&timezone=Asia/Tokyo';							
