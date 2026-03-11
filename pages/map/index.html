@@ -548,7 +548,12 @@
 							var gsirelief = L.tileLayer('http://cyberjapandata.gsi.go.jp/xyz/relief/{z}/{x}/{y}.png', { opacity: 0.7, maxNativeZoom: 15, attribution: gsiattr });
 							var gsirehillshademap = L.tileLayer('http://cyberjapandata.gsi.go.jp/xyz/hillshademap/{z}/{x}/{y}.png', { opacity: 0.5, maxNativeZoom: 16, attribution: gsiattr });
 							var gsiaa = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { opacity: 1, maxNativeZoom: 15, attribution: gsiattr });
-		
+
+
+								// 居城追加: 地図読み込み後にピンを表示 ------
+									displayZukanPins(map);
+								// 居城追加: 地図読み込み後にピンを表示 終了------
+							
 		 					//人口衛星データ取得年月を設定。
 							let year = "2024";
 							let month = "1";
@@ -687,9 +692,7 @@
 								//window.addEventListener('renderer', L.canvas());										
 							}	*/													
 						
-						// 居城追加: 地図読み込み後にピンを表示 ------
-						displayZukanPins(map);
-						// 居城追加: 地図読み込み後にピンを表示 終了------
+					
 	
 						// 居城追加: localStorageの変更を監視してピンを更新 ------
 						window.addEventListener('storage', function(e) {
