@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width,
+               initial-scale=1,
+               maximum-scale=1,
+               user-scalable=no,
+               viewport-fit=cover">
+<meta name="theme-color" content="#07121c">
+<title>Liquid Wallet</title>
+<style>
+* {
+    box-sizing: border-box;
+}
+html,
+body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+body {
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Helvetica Neue",
+        sans-serif;
+    background: #07121c;
+    color: white;
+    display: grid;
+    place-items: center;
+    touch-action: none;
+}
+/* =========================
+   スマホ画面
+   ========================= */
+.phone {
+    position: relative;
+    width: min(92vw, 430px);
+    height: min(90vh, 860px);
+    overflow: hidden;
+    border-radius: 42px;
+    background:
+        linear-gradient(
+            #142536,
+            #071019
+        );
+    box-shadow:
+        0 30px 90px #000b,
+        inset 0 0 50px #ffffff08;
+}
+/* =========================
+   時計・残高
+   ========================= */
+.info {
+    position: absolute;
+    z-index: 10;
+    top: 38px;
+    left: 28px;
+}
+.time {
+    font-size: 48px;
+    font-weight: 300;
+    letter-spacing: -2px;
+}
+.date {
+    font-size: 13px;
+    opacity: 0.55;
+    margin-top: 3px;
+}
+.balance {
+    margin-top: 30px;
+}
+.label {
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    opacity: 0.5;
+}
+.money {
+    font-size: 34px;
+    font-weight: 500;
+    margin-top: 4px;
+}
+/* =========================
+   センサー状態
+   ========================= */
+.status {
+    position: absolute;
+    z-index: 20;
+    right: 18px;
+    top: 20px;
+    font-size: 11px;
+    color: #9eeaff;
+}
+/* =========================
+   水
+   ========================= */
+#water {
+    position: absolute;
+    z-index: 2;
+    left: -25%;
+    width: 150%;
+    height: 74%;
+    bottom: -13%;
+    transform-origin: 50% 100%;
+    background:
+        linear-gradient(
+            #31c9f0b5,
+            #087ebce8 45%,
+            #034b82f5
+        );
+    box-shadow:
+        0 -10px 35px #48dfff35;
+    transition:
+        transform 0.06s linear;
+}
+/* =========================
+   水面
+   ========================= */
+.wave {
+    position: absolute;
+    left: -5%;
+    top: -40px;
+    width: 110%;
+    height: 90px;
+    border-radius: 50%;
+    background: #7cecff55;
+    filter: blur(1px);
+}
+.wave::before,
+.wave::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    border-top:
+        3px solid
+        #c5f7ff88;
+}
+.wave::before {
+    width: 55%;
+    height: 30px;
+    left: 8%;
+    top: 30px;
+}
+.wave::after {
+    width: 42%;
+    height: 25px;
+    right: 5%;
+    top: 10px;
+}
+/* =========================
+   波紋
+   ========================= */
+.ripple {
+    position: absolute;
+    left: 50%;
+    top: 12px;
+    width: 90px;
+    height: 22px;
+    transform:
+        translateX(-50%);
+    border-radius: 50%;
+    border:
+        2px solid
+        #bff7ff55;
+    animation:
+        ripple 2.4s
+        infinite
+        ease-out;
+}
+@keyframes ripple {
+    0% {
+        opacity: 0.7;
+        transform:
+            translateX(-50%)
+            scale(0.3);
+    }
+    100% {
+        opacity: 0;
+        transform:
+            translateX(-50%)
+            scale(2.2);
+    }
+}
+/* =========================
+   コイン
+   ========================= */
+.coin {
+    position: absolute;
+    z-index: 5;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-weight: bold;
+    color: #704a00;
+    background:
+        radial-gradient(
+            circle at 32% 28%,
+            #fff5a7,
+            #f6ca45 48%,
+            #a66b08
+        );
+    border:
+        2px solid
+        #ffe993aa;
+    box-shadow:
+        0 6px 12px
+        #00263f88;
+}
+.c1 {
+    width: 44px;
+    height: 44px;
+    left: 24%;
+    bottom: 26%;
+}
+.c2 {
+    width: 34px;
+    height: 34px;
+    left: 57%;
+    bottom: 20%;
+}
+.c3 {
+    width: 28px;
+    height: 28px;
+    left: 73%;
+    bottom: 37%;
+}
+/* =========================
+   ガラス感
+   ========================= */
+.glass {
+    position: absolute;
+    z-index: 15;
+    inset: 0;
+    border-radius: 42px;
+    box-shadow:
+        inset 0 0 55px
+        #9befff0a;
+    pointer-events: none;
+}
+/* =========================
+   センサーボタン
+   ========================= */
+button {
+    position: absolute;
+    z-index: 30;
+    bottom: 26px;
+    left: 50%;
+    transform:
+        translateX(-50%);
+    border: 0;
+    border-radius: 99px;
+    padding:
+        11px
+        17px;
+    color: white;
+    background: #0008;
+    backdrop-filter:
+        blur(10px);
+    font-size: 13px;
+}
+/* =========================
+   PC用説明
+   ========================= */
+.small {
+    position: fixed;
+    bottom: 8px;
+    font-size: 11px;
+    opacity: 0.45;
+}
+</style>
+</head>
+<body>
+<div class="phone" id="phone">
+    <!-- 時計・残高 -->
+    <div class="info">
+        <div
+            class="time"
+            id="time">
+        </div>
+        <div class="date">
+            9月25日 · Liquid Wallet
+        </div>
+        <div class="balance">
+            <div class="label">
+                BALANCE
+            </div>
+            <div class="money">
+                ¥12,480
+            </div>
+        </div>
+    </div>
+    <!-- 水 -->
+    <div id="water">
+        <div class="wave"></div>
+        <div class="ripple"></div>
+    </div>
+    <!-- コイン -->
+    <div class="coin c1">
+        ¥
+    </div>
+    <div class="coin c2">
+        ¥
+    </div>
+    <div class="coin c3">
+        ¥
+    </div>
+    <!-- ガラス -->
+    <div class="glass"></div>
+    <!-- センサー状態 -->
+    <div
+        class="status"
+        id="status">
+        傾き 0°
+    </div>
+    <!-- センサー有効化 -->
+    <button id="motion">
+        📱 傾きを有効にする
+    </button>
+</div>
+<div class="small">
+    iPhone:
+    ボタンを押して
+    モーションセンサーを許可
+</div>
+<script>
+/* =========================================
+   変数
+   ========================================= */
+const water =
+    document.querySelector("#water");
+const wave =
+    document.querySelector(".wave");
+const status =
+    document.querySelector("#status");
+const motion =
+    document.querySelector("#motion");
+const phone =
+    document.querySelector("#phone");
+/*
+ * target
+ *
+ * 現在のスマホの傾き
+ */
+let target = 0;
+/*
+ * angle
+ *
+ * 実際の水の傾き
+ *
+ * targetにすぐ追従させず、
+ * 慣性を持たせる
+ */
+let angle = 0;
+/*
+ * velocity
+ *
+ * 水の速度
+ */
+let velocity = 0;
+/* =========================================
+   時計
+   ========================================= */
+function clock() {
+    const now =
+        new Date();
+    document.querySelector("#time")
+        .textContent =
+        now.toLocaleTimeString(
+            "ja-JP",
+            {
+                hour: "2-digit",
+                minute: "2-digit"
+            }
+        );
+}
+clock();
+setInterval(
+    clock,
+    1000
+);
+/* =========================================
+   水の物理演算
+   ========================================= */
+function animate() {
+    /*
+     * targetと現在角度の差から
+     * 水に力を加える
+     */
+    const force =
+        (target - angle) * 0.075;
+    /*
+     * 加速度
+     */
+    velocity += force;
+    /*
+     * 摩擦
+     *
+     * これによって
+     * いつまでも揺れ続けない
+     */
+    velocity *= 0.82;
+    /*
+     * 移動
+     */
+    angle += velocity;
+    /*
+     * 最大傾き
+     */
+    const visual =
+        Math.max(
+            -18,
+            Math.min(
+                18,
+                angle
+            )
+        );
+    /*
+     * 水面を傾ける
+     */
+    water.style.transform =
+        `rotate(${visual * 0.62}deg)`;
+    /*
+     * 水が動いているとき
+     * 波を大きくする
+     */
+    const waveScale =
+        1 +
+        Math.min(
+            0.5,
+            Math.abs(velocity) * 0.35
+        );
+    wave.style.transform =
+        `scaleY(${waveScale})`;
+    /*
+     * 現在の傾きを表示
+     */
+    status.textContent =
+        `傾き ${Math.round(target)}°`;
+    requestAnimationFrame(
+        animate
+    );
+}
+animate();
+/* =========================================
+   iPhone ジャイロ
+   ========================================= */
+function onOrientation(event) {
+    /*
+     * gamma
+     *
+     * iPhoneを左右に傾けた角度
+     */
+    if (
+        event.gamma === null ||
+        event.gamma === undefined
+    ) {
+        return;
+    }
+    target =
+        Math.max(
+            -30,
+            Math.min(
+                30,
+                event.gamma
+            )
+        );
+}
+/* =========================================
+   モーションセンサー有効化
+   ========================================= */
+async function enableMotion() {
+    try {
+        /*
+         * DeviceOrientation API
+         * が存在するか確認
+         */
+        if (
+            typeof DeviceOrientationEvent
+            === "undefined"
+        ) {
+            motion.textContent =
+                "この端末ではセンサー非対応";
+            return;
+        }
+        /*
+         * iOSでは
+         * ユーザー操作から
+         * requestPermission()
+         * を呼ぶ必要がある
+         */
+        if (
+            typeof DeviceOrientationEvent
+                .requestPermission
+            === "function"
+        ) {
+            const permission =
+                await
+                DeviceOrientationEvent
+                    .requestPermission();
+            if (
+                permission !== "granted"
+            ) {
+                motion.textContent =
+                    "センサー許可が必要です";
+                return;
+            }
+        }
+        /*
+         * センサーイベント開始
+         */
+        window.addEventListener(
+            "deviceorientation",
+            onOrientation,
+            true
+        );
+        motion.textContent =
+            "✓ モーション有効";
+    }
+    catch (error) {
+        console.error(
+            error
+        );
+        motion.textContent =
+            "センサーを利用できません";
+    }
+}
+motion.addEventListener(
+    "click",
+    enableMotion
+);
+/* =========================================
+   PC確認用
+   ========================================= */
+window.addEventListener(
+    "keydown",
+    event => {
+        if (
+            event.key === "ArrowLeft"
+        ) {
+            target =
+                Math.max(
+                    -30,
+                    target - 4
+                );
+        }
+        if (
+            event.key === "ArrowRight"
+        ) {
+            target =
+                Math.min(
+                    30,
+                    target + 4
+                );
+        }
+        if (
+            event.key === "ArrowUp" ||
+            event.key === "ArrowDown"
+        ) {
+            target *= 0.9;
+        }
+    }
+);
+/* =========================================
+   タッチ操作
+   ========================================= */
+let dragging = false;
+let startX = 0;
+phone.addEventListener(
+    "pointerdown",
+    event => {
+        /*
+         * ボタンを押したときは
+         * 水操作にしない
+         */
+        if (
+            event.target === motion
+        ) {
+            return;
+        }
+        dragging = true;
+        startX =
+            event.clientX;
+    }
+);
+window.addEventListener(
+    "pointermove",
+    event => {
+        if (!dragging) {
+            return;
+        }
+        target =
+            Math.max(
+                -30,
+                Math.min(
+                    30,
+                    (event.clientX - startX)
+                    * 0.22
+                )
+            );
+    }
+);
+window.addEventListener(
+    "pointerup",
+    () => {
+        dragging = false;
+    }
+);
+</script>
+</body>
+</html>
