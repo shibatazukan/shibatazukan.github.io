@@ -2,12 +2,6 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport"
-      content="width=device-width,
-               initial-scale=1,
-               maximum-scale=1,
-               user-scalable=no,
-               viewport-fit=cover">
 <meta name="theme-color" content="#07121c">
 <title>Liquid Wallet</title>
 <style>
@@ -33,9 +27,6 @@ body {
     place-items: center;
     touch-action: none;
 }
-/* =========================
-   スマホ画面
-   ========================= */
 .phone {
     position: relative;
     width: min(92vw, 430px);
@@ -43,22 +34,21 @@ body {
     overflow: hidden;
     border-radius: 42px;
     background:
-        linear-gradient(
-            #142536,
-            #071019
+        radial-gradient(
+            ellipse at 50% 100%,
+            #0b3854 0%,
+            #071019 58%
         );
     box-shadow:
         0 30px 90px #000b,
         inset 0 0 50px #ffffff08;
 }
-/* =========================
-   時計・残高
-   ========================= */
 .info {
     position: absolute;
-    z-index: 10;
+    z-index: 20;
     top: 38px;
     left: 28px;
+    pointer-events: none;
 }
 .time {
     font-size: 48px;
@@ -83,113 +73,172 @@ body {
     font-weight: 500;
     margin-top: 4px;
 }
-/* =========================
-   センサー状態
-   ========================= */
 .status {
     position: absolute;
-    z-index: 20;
+    z-index: 30;
     right: 18px;
     top: 20px;
     font-size: 11px;
     color: #9eeaff;
+    pointer-events: none;
 }
-/* =========================
-   水
-   ========================= */
 #water {
     position: absolute;
     z-index: 2;
-    left: -25%;
-    width: 150%;
-    height: 74%;
-    bottom: -13%;
+    left: -18%;
+    bottom: -8%;
+    width: 136%;
+    height: 72%;
+    overflow: hidden;
     transform-origin: 50% 100%;
     background:
         linear-gradient(
-            #31c9f0b5,
-            #087ebce8 45%,
-            #034b82f5
+            180deg,
+            #42d9f0cc 0%,
+            #159bc9e8 22%,
+            #0874afeF 55%,
+            #03436ff7 100%
         );
     box-shadow:
-        0 -10px 35px #48dfff35;
-    transition:
-        transform 0.06s linear;
+        0 -12px 35px #48dfff45,
+        inset 0 18px 35px #b9f8ff18;
+    will-change: transform;
 }
-/* =========================
-   水面
-   ========================= */
-.wave {
+#water::before {
+    content: "";
     position: absolute;
-    left: -5%;
-    top: -40px;
-    width: 110%;
-    height: 90px;
-    border-radius: 50%;
-    background: #7cecff55;
-    filter: blur(1px);
+    inset: 0;
+    background:
+        radial-gradient(
+            ellipse at 50% 0%,
+            #d9fbff2e 0%,
+            transparent 42%
+        ),
+        linear-gradient(
+            105deg,
+            transparent 0%,
+            #ffffff0b 35%,
+            transparent 52%,
+            #ffffff0a 72%,
+            transparent 100%
+        );
+    mix-blend-mode: screen;
+    pointer-events: none;
 }
-.wave::before,
-.wave::after {
+.surface {
+    position: absolute;
+    left: -8%;
+    top: -34px;
+    width: 116%;
+    height: 82px;
+    border-radius: 50%;
+    background:
+        radial-gradient(
+            ellipse at 50% 100%,
+            #d9fbff55 0%,
+            #7cecff38 42%,
+            transparent 72%
+        );
+    filter: blur(0.5px);
+    will-change: transform;
+}
+.surface::before,
+.surface::after {
     content: "";
     position: absolute;
     border-radius: 50%;
-    border-top:
-        3px solid
-        #c5f7ff88;
+    pointer-events: none;
 }
-.wave::before {
-    width: 55%;
-    height: 30px;
+.surface::before {
+    left: 2%;
+    top: 31px;
+    width: 96%;
+    height: 34px;
+    border-top: 2px solid #d9fbff9c;
+    border-bottom: 1px solid #b9f7ff45;
+    transform:
+        rotate(-1deg)
+        scaleX(1.02);
+    filter: blur(0.35px);
+}
+.surface::after {
     left: 8%;
-    top: 30px;
+    top: 42px;
+    width: 84%;
+    height: 22px;
+    border-top: 1px solid #ffffff55;
+    transform:
+        rotate(1.2deg)
+        scaleX(0.98);
+    filter: blur(0.7px);
 }
-.wave::after {
-    width: 42%;
-    height: 25px;
-    right: 5%;
-    top: 10px;
+.surface-highlight {
+    position: absolute;
+    left: 12%;
+    top: 18px;
+    width: 76%;
+    height: 24px;
+    border-radius: 50%;
+    border-top: 2px solid #e8fdff66;
+    filter: blur(1px);
 }
-/* =========================
-   波紋
-   ========================= */
+.wave-layer {
+    position: absolute;
+    left: -10%;
+    top: -18px;
+    width: 120%;
+    height: 100px;
+    opacity: 0.55;
+    background:
+        repeating-radial-gradient(
+            ellipse at 50% 100%,
+            transparent 0 12px,
+            #d5fbff18 13px 15px,
+            transparent 16px 27px
+        );
+    mix-blend-mode: screen;
+    filter: blur(1.2px);
+    will-change: transform;
+}
 .ripple {
     position: absolute;
     left: 50%;
-    top: 12px;
-    width: 90px;
-    height: 22px;
+    top: 18px;
+    width: 100px;
+    height: 28px;
     transform:
-        translateX(-50%);
+        translateX(-50%)
+        scale(0.25);
     border-radius: 50%;
     border:
-        2px solid
-        #bff7ff55;
+        1px solid
+        #d9fbff88;
+    opacity: 0;
+    pointer-events: none;
+}
+.ripple.active {
     animation:
-        ripple 2.4s
-        infinite
-        ease-out;
+        ripple 1.8s
+        cubic-bezier(.15,.65,.35,1)
+        forwards;
 }
 @keyframes ripple {
     0% {
-        opacity: 0.7;
+        opacity: 0.75;
         transform:
             translateX(-50%)
-            scale(0.3);
+            scale(0.25);
     }
     100% {
         opacity: 0;
         transform:
             translateX(-50%)
-            scale(2.2);
+            scale(2.8);
     }
 }
-/* =========================
-   コイン
-   ========================= */
 .coin {
     position: absolute;
-    z-index: 5;
+    z-index: 8;
     border-radius: 50%;
     display: grid;
     place-items: center;
@@ -197,17 +246,31 @@ body {
     color: #704a00;
     background:
         radial-gradient(
-            circle at 32% 28%,
-            #fff5a7,
+            circle at 32% 25%,
+            #fffbd0 0%,
+            #fff0a0 12%,
             #f6ca45 48%,
-            #a66b08
+            #b4770d 82%,
+            #704300 100%
         );
     border:
         2px solid
         #ffe993aa;
     box-shadow:
-        0 6px 12px
-        #00263f88;
+        0 7px 13px #00263f99,
+        inset 2px 2px 4px #fff8b866,
+        inset -3px -4px 5px #70430088;
+    transition:
+        transform 0.18s ease-out;
+}
+.coin::after {
+    content: "";
+    position: absolute;
+    inset: 5px;
+    border-radius: 50%;
+    border:
+        1px solid
+        #fff2a866;
 }
 .c1 {
     width: 44px;
@@ -227,22 +290,24 @@ body {
     left: 73%;
     bottom: 37%;
 }
-/* =========================
-   ガラス感
-   ========================= */
 .glass {
     position: absolute;
     z-index: 15;
     inset: 0;
     border-radius: 42px;
+    background:
+        linear-gradient(
+            115deg,
+            #ffffff0b 0%,
+            transparent 24%,
+            transparent 72%,
+            #ffffff05 100%
+        );
     box-shadow:
-        inset 0 0 55px
-        #9befff0a;
+        inset 0 0 55px #9befff0a,
+        inset 0 1px 0 #ffffff12;
     pointer-events: none;
 }
-/* =========================
-   センサーボタン
-   ========================= */
 button {
     position: absolute;
     z-index: 30;
@@ -261,9 +326,6 @@ button {
         blur(10px);
     font-size: 13px;
 }
-/* =========================
-   PC用説明
-   ========================= */
 .small {
     position: fixed;
     bottom: 8px;
@@ -274,51 +336,51 @@ button {
 </head>
 <body>
 <div class="phone" id="phone">
-    <!-- 時計・残高 -->
-    <div class="info">
-        <div
-            class="time"
-            id="time">
-        </div>
-        <div class="date">
-            9月25日 · Liquid Wallet
-        </div>
-        <div class="balance">
-            <div class="label">
-                BALANCE
-            </div>
-            <div class="money">
-                ¥12,480
-            </div>
-        </div>
-    </div>
-    <!-- 水 -->
-    <div id="water">
-        <div class="wave"></div>
-        <div class="ripple"></div>
-    </div>
-    <!-- コイン -->
-    <div class="coin c1">
-        ¥
-    </div>
-    <div class="coin c2">
-        ¥
-    </div>
-    <div class="coin c3">
-        ¥
-    </div>
-    <!-- ガラス -->
-    <div class="glass"></div>
-    <!-- センサー状態 -->
+<div class="info">
     <div
-        class="status"
-        id="status">
-        傾き 0°
+        class="time"
+        id="time">
     </div>
-    <!-- センサー有効化 -->
-    <button id="motion">
-        📱 傾きを有効にする
-    </button>
+    <div class="date">
+        9月25日 · Liquid Wallet
+    </div>
+    <div class="balance">
+        <div class="label">
+            BALANCE
+        </div>
+        <div class="money">
+            ¥12,480
+        </div>
+    </div>
+</div>
+<div id="water">
+    <div class="wave-layer"></div>
+    <div class="surface">
+        <div class="surface-highlight"></div>
+    </div>
+    <div
+        class="ripple"
+        id="ripple">
+    </div>
+</div>
+<div class="coin c1">
+    ¥
+</div>
+<div class="coin c2">
+    ¥
+</div>
+<div class="coin c3">
+    ¥
+</div>
+<div class="glass"></div>
+<div
+    class="status"
+    id="status">
+    傾き 0°
+</div>
+<button id="motion">
+    📱 傾きを有効にする
+</button>
 </div>
 <div class="small">
     iPhone:
@@ -326,46 +388,32 @@ button {
     モーションセンサーを許可
 </div>
 <script>
-/* =========================================
-   変数
-   ========================================= */
 const water =
     document.querySelector("#water");
-const wave =
-    document.querySelector(".wave");
+const surface =
+    document.querySelector(".surface");
+const waveLayer =
+    document.querySelector(".wave-layer");
+const ripple =
+    document.querySelector("#ripple");
 const status =
     document.querySelector("#status");
 const motion =
     document.querySelector("#motion");
 const phone =
     document.querySelector("#phone");
-/*
- * target
- *
- * 現在のスマホの傾き
- */
+const coins =
+    [...document.querySelectorAll(".coin")];
 let target = 0;
-/*
- * angle
- *
- * 実際の水の傾き
- *
- * targetにすぐ追従させず、
- * 慣性を持たせる
- */
 let angle = 0;
-/*
- * velocity
- *
- * 水の速度
- */
 let velocity = 0;
-/* =========================================
-   時計
-   ========================================= */
+let lastTime = performance.now();
+let lastRippleTime = 0;
+let dragging = false;
+let startX = 0;
+let lastPointerX = 0;
 function clock() {
-    const now =
-        new Date();
+    const now = new Date();
     document.querySelector("#time")
         .textContent =
         now.toLocaleTimeString(
@@ -377,106 +425,97 @@ function clock() {
         );
 }
 clock();
-setInterval(
-    clock,
-    1000
-);
-/* =========================================
-   水の物理演算
-   ========================================= */
-function animate() {
-    /*
-     * targetと現在角度の差から
-     * 水に力を加える
-     */
+setInterval(clock, 1000);
+function triggerRipple() {
+    const now = performance.now();
+    if (now - lastRippleTime < 420) {
+        return;
+    }
+    lastRippleTime = now;
+    ripple.classList.remove("active");
+    void ripple.offsetWidth;
+    ripple.classList.add("active");
+}
+function animate(now) {
+    const delta =
+        Math.min(
+            32,
+            now - lastTime
+        );
+    lastTime = now;
+    const dt =
+        delta / 16.6667;
+    const targetAngle =
+        target * 0.72;
     const force =
-        (target - angle) * 0.075;
-    /*
-     * 加速度
-     */
-    velocity += force;
-    /*
-     * 摩擦
-     *
-     * これによって
-     * いつまでも揺れ続けない
-     */
-    velocity *= 0.82;
-    /*
-     * 移動
-     */
-    angle += velocity;
-    /*
-     * 最大傾き
-     */
+        (targetAngle - angle) * 0.045;
+    velocity += force * dt;
+    const damping =
+        Math.pow(0.86, dt);
+    velocity *= damping;
+    angle += velocity * dt;
     const visual =
         Math.max(
-            -18,
+            -22,
             Math.min(
-                18,
+                22,
                 angle
             )
         );
-    /*
-     * 水面を傾ける
-     */
-    water.style.transform =
-        `rotate(${visual * 0.62}deg)`;
-    /*
-     * 水が動いているとき
-     * 波を大きくする
-     */
-    const waveScale =
-        1 +
+    const speed =
+        Math.abs(velocity);
+    const acceleration =
         Math.min(
-            0.5,
-            Math.abs(velocity) * 0.35
+            1,
+            speed * 0.12
         );
-    wave.style.transform =
-        `scaleY(${waveScale})`;
-    /*
-     * 現在の傾きを表示
-     */
+    water.style.transform =
+        `rotate(${visual}deg)`;
+    surface.style.transform =
+        `translate3d(${velocity * -1.8}px, ${Math.abs(velocity) * 0.35}px, 0)
+         rotate(${velocity * -0.18}deg)
+         scaleY(${1 + acceleration * 0.18})`;
+    waveLayer.style.transform =
+        `translate3d(${velocity * -3.5}px, 0, 0)
+         rotate(${velocity * -0.12}deg)
+         scaleY(${1 + acceleration * 0.35})`;
+    coins.forEach((coin, index) => {
+        const factor =
+            0.35 +
+            index * 0.12;
+        coin.style.transform =
+            `translate3d(${velocity * factor}px, ${Math.abs(velocity) * factor * 0.35}px, 0)
+             rotate(${velocity * factor * 1.8}deg)`;
+    });
+    if (speed > 0.75) {
+        triggerRipple();
+    }
     status.textContent =
         `傾き ${Math.round(target)}°`;
-    requestAnimationFrame(
-        animate
-    );
+    requestAnimationFrame(animate);
 }
-animate();
-/* =========================================
-   iPhone ジャイロ
-   ========================================= */
+requestAnimationFrame(animate);
 function onOrientation(event) {
-    /*
-     * gamma
-     *
-     * iPhoneを左右に傾けた角度
-     */
     if (
         event.gamma === null ||
         event.gamma === undefined
     ) {
         return;
     }
-    target =
+    const raw =
         Math.max(
-            -30,
+            -45,
             Math.min(
-                30,
+                45,
                 event.gamma
             )
         );
+    target =
+        target * 0.82 +
+        raw * 0.18;
 }
-/* =========================================
-   モーションセンサー有効化
-   ========================================= */
 async function enableMotion() {
     try {
-        /*
-         * DeviceOrientation API
-         * が存在するか確認
-         */
         if (
             typeof DeviceOrientationEvent
             === "undefined"
@@ -485,12 +524,6 @@ async function enableMotion() {
                 "この端末ではセンサー非対応";
             return;
         }
-        /*
-         * iOSでは
-         * ユーザー操作から
-         * requestPermission()
-         * を呼ぶ必要がある
-         */
         if (
             typeof DeviceOrientationEvent
                 .requestPermission
@@ -508,9 +541,6 @@ async function enableMotion() {
                 return;
             }
         }
-        /*
-         * センサーイベント開始
-         */
         window.addEventListener(
             "deviceorientation",
             onOrientation,
@@ -520,9 +550,7 @@ async function enableMotion() {
             "✓ モーション有効";
     }
     catch (error) {
-        console.error(
-            error
-        );
+        console.error(error);
         motion.textContent =
             "センサーを利用できません";
     }
@@ -531,9 +559,6 @@ motion.addEventListener(
     "click",
     enableMotion
 );
-/* =========================================
-   PC確認用
-   ========================================= */
 window.addEventListener(
     "keydown",
     event => {
@@ -542,8 +567,8 @@ window.addEventListener(
         ) {
             target =
                 Math.max(
-                    -30,
-                    target - 4
+                    -45,
+                    target - 5
                 );
         }
         if (
@@ -551,30 +576,21 @@ window.addEventListener(
         ) {
             target =
                 Math.min(
-                    30,
-                    target + 4
+                    45,
+                    target + 5
                 );
         }
         if (
             event.key === "ArrowUp" ||
             event.key === "ArrowDown"
         ) {
-            target *= 0.9;
+            target *= 0.88;
         }
     }
 );
-/* =========================================
-   タッチ操作
-   ========================================= */
-let dragging = false;
-let startX = 0;
 phone.addEventListener(
     "pointerdown",
     event => {
-        /*
-         * ボタンを押したときは
-         * 水操作にしない
-         */
         if (
             event.target === motion
         ) {
@@ -583,27 +599,46 @@ phone.addEventListener(
         dragging = true;
         startX =
             event.clientX;
+        lastPointerX =
+            event.clientX;
+        phone.setPointerCapture?.(
+            event.pointerId
+        );
     }
 );
-window.addEventListener(
+phone.addEventListener(
     "pointermove",
     event => {
         if (!dragging) {
             return;
         }
+        const movement =
+            event.clientX -
+            lastPointerX;
+        lastPointerX =
+            event.clientX;
         target =
             Math.max(
-                -30,
+                -45,
                 Math.min(
-                    30,
-                    (event.clientX - startX)
-                    * 0.22
+                    45,
+                    target +
+                    movement * 0.42
                 )
             );
     }
 );
-window.addEventListener(
+phone.addEventListener(
     "pointerup",
+    event => {
+        dragging = false;
+        phone.releasePointerCapture?.(
+            event.pointerId
+        );
+    }
+);
+phone.addEventListener(
+    "pointercancel",
     () => {
         dragging = false;
     }
