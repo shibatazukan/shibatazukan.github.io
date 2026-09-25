@@ -2,647 +2,537 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="theme-color" content="#07121c">
-<title>Liquid Wallet</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Tilt Water — 傾き水面シミュレーション</title>
 <style>
-* {
-    box-sizing: border-box;
-}
-html,
-body {
-    margin: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-}
-body {
-    font-family:
-        -apple-system,
-        BlinkMacSystemFont,
-        "Helvetica Neue",
-        sans-serif;
-    background: #07121c;
-    color: white;
-    display: grid;
-    place-items: center;
-    touch-action: none;
-}
-.phone {
-    position: relative;
-    width: min(92vw, 430px);
-    height: min(90vh, 860px);
-    overflow: hidden;
-    border-radius: 42px;
+  :root{
+    --bg-top:#060b14;
+    --bg-bottom:#0c1c24;
+    --glass-rim:rgba(180,220,230,0.35);
+    --ink:#dfeef2;
+    --ink-dim:#7fa3ad;
+    --accent:#63e6d4;
+    --accent-dim:rgba(99,230,212,0.15);
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0;
+    padding:0;
+    width:100%;
+    height:100%;
+    overflow:hidden;
     background:
-        radial-gradient(
-            ellipse at 50% 100%,
-            #0b3854 0%,
-            #071019 58%
-        );
+      radial-gradient(120% 90% at 50% -10%, #10222c 0%, var(--bg-top) 45%, var(--bg-bottom) 100%);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;
+    color:var(--ink);
+    -webkit-tap-highlight-color:transparent;
+    touch-action:none;
+  }
+  .stage{
+    position:fixed;
+    inset:0;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding:calc(18px + env(safe-area-inset-top,0px)) 18px calc(18px + env(safe-area-inset-bottom,0px));
+  }
+  header{
+    text-align:center;
+    margin-bottom:14px;
+    flex:0 0 auto;
+  }
+  h1{
+    margin:0;
+    font-size:15px;
+    font-weight:600;
+    letter-spacing:0.06em;
+    color:var(--ink);
+  }
+  p.sub{
+    margin:4px 0 0;
+    font-size:12px;
+    color:var(--ink-dim);
+    letter-spacing:0.03em;
+  }
+  .glass-wrap{
+    position:relative;
+    width:min(92vw, 92vh, 460px);
+    height:min(70vh, 92vw, 640px);
+    flex:1 1 auto;
+    max-height:640px;
+  }
+  .glass{
+    position:relative;
+    width:100%;
+    height:100%;
+    border-radius:34px;
+    overflow:hidden;
+    background:#04141a;
     box-shadow:
-        0 30px 90px #000b,
-        inset 0 0 50px #ffffff08;
-}
-.info {
-    position: absolute;
-    z-index: 20;
-    top: 38px;
-    left: 28px;
-    pointer-events: none;
-}
-.time {
-    font-size: 48px;
-    font-weight: 300;
-    letter-spacing: -2px;
-}
-.date {
-    font-size: 13px;
-    opacity: 0.55;
-    margin-top: 3px;
-}
-.balance {
-    margin-top: 30px;
-}
-.label {
-    font-size: 11px;
-    letter-spacing: 0.18em;
-    opacity: 0.5;
-}
-.money {
-    font-size: 34px;
-    font-weight: 500;
-    margin-top: 4px;
-}
-.status {
-    position: absolute;
-    z-index: 30;
-    right: 18px;
-    top: 20px;
-    font-size: 11px;
-    color: #9eeaff;
-    pointer-events: none;
-}
-#water {
-    position: absolute;
-    z-index: 2;
-    left: -18%;
-    bottom: -8%;
-    width: 136%;
-    height: 72%;
-    overflow: hidden;
-    transform-origin: 50% 100%;
+      0 30px 60px -20px rgba(0,0,0,0.65),
+      inset 0 0 0 1.5px var(--glass-rim),
+      inset 0 2px 18px rgba(0,0,0,0.55);
+  }
+  canvas#water{
+    display:block;
+    width:100%;
+    height:100%;
+  }
+  .glass::before{
+    /* 表面の反射ハイライト（ガラスの質感） */
+    content:"";
+    position:absolute;
+    top:0; left:0; right:0; bottom:0;
+    pointer-events:none;
     background:
-        linear-gradient(
-            180deg,
-            #42d9f0cc 0%,
-            #159bc9e8 22%,
-            #0874afeF 55%,
-            #03436ff7 100%
-        );
-    box-shadow:
-        0 -12px 35px #48dfff45,
-        inset 0 18px 35px #b9f8ff18;
-    will-change: transform;
-}
-#water::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background:
-        radial-gradient(
-            ellipse at 50% 0%,
-            #d9fbff2e 0%,
-            transparent 42%
-        ),
-        linear-gradient(
-            105deg,
-            transparent 0%,
-            #ffffff0b 35%,
-            transparent 52%,
-            #ffffff0a 72%,
-            transparent 100%
-        );
-    mix-blend-mode: screen;
-    pointer-events: none;
-}
-.surface {
-    position: absolute;
-    left: -8%;
-    top: -34px;
-    width: 116%;
-    height: 82px;
-    border-radius: 50%;
-    background:
-        radial-gradient(
-            ellipse at 50% 100%,
-            #d9fbff55 0%,
-            #7cecff38 42%,
-            transparent 72%
-        );
-    filter: blur(0.5px);
-    will-change: transform;
-}
-.surface::before,
-.surface::after {
-    content: "";
-    position: absolute;
-    border-radius: 50%;
-    pointer-events: none;
-}
-.surface::before {
-    left: 2%;
-    top: 31px;
-    width: 96%;
-    height: 34px;
-    border-top: 2px solid #d9fbff9c;
-    border-bottom: 1px solid #b9f7ff45;
-    transform:
-        rotate(-1deg)
-        scaleX(1.02);
-    filter: blur(0.35px);
-}
-.surface::after {
-    left: 8%;
-    top: 42px;
-    width: 84%;
-    height: 22px;
-    border-top: 1px solid #ffffff55;
-    transform:
-        rotate(1.2deg)
-        scaleX(0.98);
-    filter: blur(0.7px);
-}
-.surface-highlight {
-    position: absolute;
-    left: 12%;
-    top: 18px;
-    width: 76%;
-    height: 24px;
-    border-radius: 50%;
-    border-top: 2px solid #e8fdff66;
-    filter: blur(1px);
-}
-.wave-layer {
-    position: absolute;
-    left: -10%;
-    top: -18px;
-    width: 120%;
-    height: 100px;
-    opacity: 0.55;
-    background:
-        repeating-radial-gradient(
-            ellipse at 50% 100%,
-            transparent 0 12px,
-            #d5fbff18 13px 15px,
-            transparent 16px 27px
-        );
-    mix-blend-mode: screen;
-    filter: blur(1.2px);
-    will-change: transform;
-}
-.ripple {
-    position: absolute;
-    left: 50%;
-    top: 18px;
-    width: 100px;
-    height: 28px;
-    transform:
-        translateX(-50%)
-        scale(0.25);
-    border-radius: 50%;
-    border:
-        1px solid
-        #d9fbff88;
-    opacity: 0;
-    pointer-events: none;
-}
-.ripple.active {
-    animation:
-        ripple 1.8s
-        cubic-bezier(.15,.65,.35,1)
-        forwards;
-}
-@keyframes ripple {
-    0% {
-        opacity: 0.75;
-        transform:
-            translateX(-50%)
-            scale(0.25);
-    }
-    100% {
-        opacity: 0;
-        transform:
-            translateX(-50%)
-            scale(2.8);
-    }
-}
-.coin {
-    position: absolute;
-    z-index: 8;
-    border-radius: 50%;
-    display: grid;
-    place-items: center;
-    font-weight: bold;
-    color: #704a00;
-    background:
-        radial-gradient(
-            circle at 32% 25%,
-            #fffbd0 0%,
-            #fff0a0 12%,
-            #f6ca45 48%,
-            #b4770d 82%,
-            #704300 100%
-        );
-    border:
-        2px solid
-        #ffe993aa;
-    box-shadow:
-        0 7px 13px #00263f99,
-        inset 2px 2px 4px #fff8b866,
-        inset -3px -4px 5px #70430088;
-    transition:
-        transform 0.18s ease-out;
-}
-.coin::after {
-    content: "";
-    position: absolute;
-    inset: 5px;
-    border-radius: 50%;
-    border:
-        1px solid
-        #fff2a866;
-}
-.c1 {
-    width: 44px;
-    height: 44px;
-    left: 24%;
-    bottom: 26%;
-}
-.c2 {
-    width: 34px;
-    height: 34px;
-    left: 57%;
-    bottom: 20%;
-}
-.c3 {
-    width: 28px;
-    height: 28px;
-    left: 73%;
-    bottom: 37%;
-}
-.glass {
-    position: absolute;
-    z-index: 15;
-    inset: 0;
-    border-radius: 42px;
-    background:
-        linear-gradient(
-            115deg,
-            #ffffff0b 0%,
-            transparent 24%,
-            transparent 72%,
-            #ffffff05 100%
-        );
-    box-shadow:
-        inset 0 0 55px #9befff0a,
-        inset 0 1px 0 #ffffff12;
-    pointer-events: none;
-}
-button {
-    position: absolute;
-    z-index: 30;
-    bottom: 26px;
-    left: 50%;
-    transform:
-        translateX(-50%);
-    border: 0;
-    border-radius: 99px;
-    padding:
-        11px
-        17px;
-    color: white;
-    background: #0008;
-    backdrop-filter:
-        blur(10px);
-    font-size: 13px;
-}
-.small {
-    position: fixed;
-    bottom: 8px;
-    font-size: 11px;
-    opacity: 0.45;
-}
+      radial-gradient(60% 30% at 22% 8%, rgba(255,255,255,0.22), rgba(255,255,255,0) 70%),
+      linear-gradient(115deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 30%);
+    mix-blend-mode:screen;
+    z-index:3;
+  }
+  .glass::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    box-shadow: inset 0 0 40px rgba(0,0,0,0.5);
+    border-radius:34px;
+    z-index:3;
+  }
+  footer{
+    flex:0 0 auto;
+    margin-top:14px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .tilt-badge{
+    font-size:11px;
+    color:var(--ink-dim);
+    letter-spacing:0.03em;
+    min-width:120px;
+    text-align:center;
+    font-variant-numeric:tabular-nums;
+  }
+  button.reset{
+    appearance:none;
+    border:1px solid rgba(127,163,173,0.4);
+    background:rgba(255,255,255,0.03);
+    color:var(--ink-dim);
+    font-size:12px;
+    letter-spacing:0.03em;
+    padding:8px 16px;
+    border-radius:999px;
+    cursor:pointer;
+  }
+  button.reset:active{ background:rgba(255,255,255,0.09); }
+
+  .overlay{
+    position:fixed;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:rgba(4,10,16,0.72);
+    backdrop-filter:blur(6px);
+    z-index:10;
+    transition:opacity .5s ease;
+  }
+  .overlay.hidden{ opacity:0; pointer-events:none; }
+  .start-btn{
+    appearance:none;
+    border:none;
+    cursor:pointer;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:10px;
+    padding:26px 34px;
+    border-radius:22px;
+    background:linear-gradient(180deg, rgba(99,230,212,0.14), rgba(99,230,212,0.05));
+    border:1px solid rgba(99,230,212,0.4);
+    color:var(--ink);
+    box-shadow:0 0 40px rgba(99,230,212,0.12);
+  }
+  .start-btn .icon{
+    width:34px; height:34px;
+    border-radius:50%;
+    border:1.5px solid var(--accent);
+    display:flex;align-items:center;justify-content:center;
+    color:var(--accent);
+    font-size:16px;
+  }
+  .start-btn .label{
+    font-size:14px;
+    font-weight:600;
+    letter-spacing:0.03em;
+  }
+  .start-btn .desc{
+    font-size:11.5px;
+    color:var(--ink-dim);
+    max-width:220px;
+    text-align:center;
+    line-height:1.6;
+  }
 </style>
 </head>
 <body>
-<div class="phone" id="phone">
-<div class="info">
-    <div
-        class="time"
-        id="time">
+
+  <div class="stage">
+    <header>
+      <h1>Tilt Water</h1>
+      <p class="sub">スマホを傾けると、水面が本物のように揺れます</p>
+    </header>
+
+    <div class="glass-wrap">
+      <div class="glass">
+        <canvas id="water"></canvas>
+      </div>
     </div>
-    <div class="date">
-        9月25日 · Liquid Wallet
-    </div>
-    <div class="balance">
-        <div class="label">
-            BALANCE
-        </div>
-        <div class="money">
-            ¥12,480
-        </div>
-    </div>
-</div>
-<div id="water">
-    <div class="wave-layer"></div>
-    <div class="surface">
-        <div class="surface-highlight"></div>
-    </div>
-    <div
-        class="ripple"
-        id="ripple">
-    </div>
-</div>
-<div class="coin c1">
-    ¥
-</div>
-<div class="coin c2">
-    ¥
-</div>
-<div class="coin c3">
-    ¥
-</div>
-<div class="glass"></div>
-<div
-    class="status"
-    id="status">
-    傾き 0°
-</div>
-<button id="motion">
-    📱 傾きを有効にする
-</button>
-</div>
-<div class="small">
-    iPhone:
-    ボタンを押して
-    モーションセンサーを許可
-</div>
+
+    <footer>
+      <button class="reset" id="resetBtn">水面を静める</button>
+      <span class="tilt-badge" id="tiltBadge">tilt: 0.00, 0.00</span>
+    </footer>
+  </div>
+
+  <div class="overlay" id="overlay">
+    <button class="start-btn" id="startBtn">
+      <span class="icon">▶</span>
+      <span class="label" id="startLabel">タップして開始</span>
+      <span class="desc" id="startDesc">スマホを傾けると水が揺れます</span>
+    </button>
+  </div>
+
 <script>
-const water =
-    document.querySelector("#water");
-const surface =
-    document.querySelector(".surface");
-const waveLayer =
-    document.querySelector(".wave-layer");
-const ripple =
-    document.querySelector("#ripple");
-const status =
-    document.querySelector("#status");
-const motion =
-    document.querySelector("#motion");
-const phone =
-    document.querySelector("#phone");
-const coins =
-    [...document.querySelectorAll(".coin")];
-let target = 0;
-let angle = 0;
-let velocity = 0;
-let lastTime = performance.now();
-let lastRippleTime = 0;
-let dragging = false;
-let startX = 0;
-let lastPointerX = 0;
-function clock() {
-    const now = new Date();
-    document.querySelector("#time")
-        .textContent =
-        now.toLocaleTimeString(
-            "ja-JP",
-            {
-                hour: "2-digit",
-                minute: "2-digit"
-            }
-        );
-}
-clock();
-setInterval(clock, 1000);
-function triggerRipple() {
-    const now = performance.now();
-    if (now - lastRippleTime < 420) {
-        return;
+(function(){
+  "use strict";
+
+  // ---------------------------------------------------------------
+  // 1. Shallow Water Equations（浅水波方程式）による水面シミュレーション
+  //    スタッガード格子（MAC grid）で h（水位）, u, v（流速）を保持し、
+  //    傾き（重力の水平成分）を u,v の加速度項として与えることで
+  //    実際の「コップの水」のような慣性のあるスロッシングを再現する。
+  // ---------------------------------------------------------------
+
+  const canvas = document.getElementById('water');
+  const ctx = canvas.getContext('2d', { alpha: false });
+  const glassEl = document.querySelector('.glass');
+  const tiltBadge = document.getElementById('tiltBadge');
+  const overlay = document.getElementById('overlay');
+  const startBtn = document.getElementById('startBtn');
+  const startLabel = document.getElementById('startLabel');
+  const startDesc = document.getElementById('startDesc');
+  const resetBtn = document.getElementById('resetBtn');
+
+  // 物理定数
+  const GRAV = 2.6;        // 波の復元力（大きいほど波が速く伝わる）
+  const H0 = 1.0;          // 基準水深
+  const DAMPING = 0.9975;  // 減衰（1に近いほど揺れが長く続く）
+  const SUBSTEPS = 5;      // 1フレームあたりの物理サブステップ数
+  const DT = 0.045;        // サブステップの時間刻み（CFL条件を満たす値）
+  const TILT_GAIN = 3.4;   // 傾きが加速度に与える強さ
+  const CELL_BUDGET = 7000; // シミュレーション格子の総セル数上限（負荷調整用）
+
+  let W = 0, H = 0;        // グリッド解像度
+  let h, u, v;              // Float32Array: 水位 / x方向流速 / y方向流速
+  let offCanvas, offCtx, offImage, offData;
+
+  function initSim(){
+    const rect = glassEl.getBoundingClientRect();
+    const aspect = Math.max(0.3, Math.min(3, rect.width / rect.height));
+    let w = Math.round(Math.sqrt(CELL_BUDGET * aspect));
+    let hh = Math.round(Math.sqrt(CELL_BUDGET / aspect));
+    W = Math.max(24, Math.min(140, w));
+    H = Math.max(24, Math.min(140, hh));
+
+    h = new Float32Array(W * H);
+    u = new Float32Array((W + 1) * H);
+    v = new Float32Array(W * (H + 1));
+
+    offCanvas = document.createElement('canvas');
+    offCanvas.width = W;
+    offCanvas.height = H;
+    offCtx = offCanvas.getContext('2d');
+    offImage = offCtx.createImageData(W, H);
+    offData = offImage.data;
+
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.round(rect.width * dpr);
+    canvas.height = Math.round(rect.height * dpr);
+    ctx.imageSmoothingEnabled = true;
+    if ('imageSmoothingQuality' in ctx) ctx.imageSmoothingQuality = 'high';
+  }
+
+  function resizeAll(){
+    initSim();
+  }
+
+  // --- 物理ステップ -------------------------------------------------
+  function physicsStep(dt, tax, tay){
+    const Wp1 = W + 1;
+
+    // u（x方向流速）の更新：水位の勾配 + 傾きによる加速度
+    for (let j = 0; j < H; j++){
+      const rowU = j * Wp1;
+      const rowH = j * W;
+      for (let i = 1; i < W; i++){
+        const dh = h[rowH + i] - h[rowH + i - 1];
+        u[rowU + i] += (-GRAV * dh + tax) * dt;
+      }
     }
-    lastRippleTime = now;
-    ripple.classList.remove("active");
-    void ripple.offsetWidth;
-    ripple.classList.add("active");
-}
-function animate(now) {
-    const delta =
-        Math.min(
-            32,
-            now - lastTime
-        );
-    lastTime = now;
-    const dt =
-        delta / 16.6667;
-    const targetAngle =
-        target * 0.72;
-    const force =
-        (targetAngle - angle) * 0.045;
-    velocity += force * dt;
-    const damping =
-        Math.pow(0.86, dt);
-    velocity *= damping;
-    angle += velocity * dt;
-    const visual =
-        Math.max(
-            -22,
-            Math.min(
-                22,
-                angle
-            )
-        );
-    const speed =
-        Math.abs(velocity);
-    const acceleration =
-        Math.min(
-            1,
-            speed * 0.12
-        );
-    water.style.transform =
-        `rotate(${visual}deg)`;
-    surface.style.transform =
-        `translate3d(${velocity * -1.8}px, ${Math.abs(velocity) * 0.35}px, 0)
-         rotate(${velocity * -0.18}deg)
-         scaleY(${1 + acceleration * 0.18})`;
-    waveLayer.style.transform =
-        `translate3d(${velocity * -3.5}px, 0, 0)
-         rotate(${velocity * -0.12}deg)
-         scaleY(${1 + acceleration * 0.35})`;
-    coins.forEach((coin, index) => {
-        const factor =
-            0.35 +
-            index * 0.12;
-        coin.style.transform =
-            `translate3d(${velocity * factor}px, ${Math.abs(velocity) * factor * 0.35}px, 0)
-             rotate(${velocity * factor * 1.8}deg)`;
-    });
-    if (speed > 0.75) {
-        triggerRipple();
+
+    // v（y方向流速）の更新
+    for (let j = 1; j < H; j++){
+      const rowV = j * W;
+      const rowH0 = j * W;
+      const rowHm1 = (j - 1) * W;
+      for (let i = 0; i < W; i++){
+        const dh = h[rowH0 + i] - h[rowHm1 + i];
+        v[rowV + i] += (-GRAV * dh + tay) * dt;
+      }
     }
-    status.textContent =
-        `傾き ${Math.round(target)}°`;
-    requestAnimationFrame(animate);
-}
-requestAnimationFrame(animate);
-function onOrientation(event) {
-    if (
-        event.gamma === null ||
-        event.gamma === undefined
-    ) {
-        return;
+    // ※ 境界(i=0,W / j=0,H)の速度は更新されないため常に0 → 壁での反射条件を自然に満たす
+
+    // 減衰
+    for (let i = 0; i < u.length; i++) u[i] *= DAMPING;
+    for (let i = 0; i < v.length; i++) v[i] *= DAMPING;
+
+    // 水位 h の更新（連続の式：速度場の発散から水位変化を求める）
+    for (let j = 0; j < H; j++){
+      const rowH = j * W;
+      const rowU = j * Wp1;
+      const rowV0 = j * W;
+      const rowV1 = (j + 1) * W;
+      for (let i = 0; i < W; i++){
+        const divU = u[rowU + i + 1] - u[rowU + i];
+        const divV = v[rowV1 + i] - v[rowV0 + i];
+        h[rowH + i] += -H0 * (divU + divV) * dt;
+      }
     }
-    const raw =
-        Math.max(
-            -45,
-            Math.min(
-                45,
-                event.gamma
-            )
-        );
-    target =
-        target * 0.82 +
-        raw * 0.18;
-}
-async function enableMotion() {
-    try {
-        if (
-            typeof DeviceOrientationEvent
-            === "undefined"
-        ) {
-            motion.textContent =
-                "この端末ではセンサー非対応";
-            return;
+  }
+
+  // 波紋（タップ / ドラッグ）を追加
+  function addRipple(nx, ny, amp, radius){
+    const gi = Math.floor(nx * W);
+    const gj = Math.floor(ny * H);
+    const r = radius;
+    const sigma2 = (r * 0.5) * (r * 0.5);
+    for (let dj = -r; dj <= r; dj++){
+      const jj = gj + dj;
+      if (jj < 0 || jj >= H) continue;
+      for (let di = -r; di <= r; di++){
+        const ii = gi + di;
+        if (ii < 0 || ii >= W) continue;
+        const d2 = di * di + dj * dj;
+        if (d2 > r * r) continue;
+        h[jj * W + ii] += amp * Math.exp(-d2 / (2 * sigma2));
+      }
+    }
+  }
+
+  function resetWater(){
+    if (h) h.fill(0);
+    if (u) u.fill(0);
+    if (v) v.fill(0);
+  }
+
+  // --- 描画（法線ベクトルから疑似的な光の反射を計算し、水らしい質感を出す） ---
+  const LIGHT = normalize3(0.45, 0.55, 0.85);
+  const VIEW = [0, 0, 1];
+  const HALF = normalize3(LIGHT[0] + VIEW[0], LIGHT[1] + VIEW[1], LIGHT[2] + VIEW[2]);
+
+  function normalize3(x, y, z){
+    const len = Math.sqrt(x * x + y * y + z * z) || 1;
+    return [x / len, y / len, z / len];
+  }
+
+  const BASE = [22, 92, 138];     // 通常の水色
+  const CREST = [140, 226, 235];  // 波の頂点（明るい）
+  const TROUGH = [8, 30, 58];     // 波の谷（暗い）
+
+  function render(){
+    const normalScale = 6.0;
+    let p = 0;
+    for (let j = 0; j < H; j++){
+      const jm = j > 0 ? j - 1 : j;
+      const jp = j < H - 1 ? j + 1 : j;
+      const rowH = j * W, rowHm = jm * W, rowHp = jp * W;
+      for (let i = 0; i < W; i++){
+        const im = i > 0 ? i - 1 : i;
+        const ip = i < W - 1 ? i + 1 : i;
+        const hc = h[rowH + i];
+        const dhx = h[rowH + ip] - h[rowH + im];
+        const dhy = h[rowHp + i] - h[rowHm + i];
+
+        let nx = -dhx * normalScale;
+        let ny = -dhy * normalScale;
+        let nz = 1;
+        const len = Math.sqrt(nx * nx + ny * ny + nz * nz);
+        nx /= len; ny /= len; nz /= len;
+
+        const diffuse = Math.max(0, nx * LIGHT[0] + ny * LIGHT[1] + nz * LIGHT[2]);
+        const specDot = Math.max(0, nx * HALF[0] + ny * HALF[1] + nz * HALF[2]);
+        const spec = Math.pow(specDot, 42);
+
+        const crestMix = Math.max(0, Math.min(1, hc * 2.2));
+        const troughMix = Math.max(0, Math.min(1, -hc * 2.2));
+
+        let r = BASE[0] + (CREST[0] - BASE[0]) * crestMix + (TROUGH[0] - BASE[0]) * troughMix;
+        let g = BASE[1] + (CREST[1] - BASE[1]) * crestMix + (TROUGH[1] - BASE[1]) * troughMix;
+        let b = BASE[2] + (CREST[2] - BASE[2]) * crestMix + (TROUGH[2] - BASE[2]) * troughMix;
+
+        const shade = 0.45 + 0.65 * diffuse;
+        r = r * shade + spec * 255;
+        g = g * shade + spec * 235;
+        b = b * shade + spec * 255;
+
+        offData[p]     = r > 255 ? 255 : r;
+        offData[p + 1] = g > 255 ? 255 : g;
+        offData[p + 2] = b > 255 ? 255 : b;
+        offData[p + 3] = 255;
+        p += 4;
+      }
+    }
+    offCtx.putImageData(offImage, 0, 0);
+    ctx.drawImage(offCanvas, 0, 0, W, H, 0, 0, canvas.width, canvas.height);
+  }
+
+  // ---------------------------------------------------------------
+  // 2. 端末の傾き（DeviceOrientation）取得
+  // ---------------------------------------------------------------
+
+  let targetTiltX = 0, targetTiltY = 0;
+  let curTiltX = 0, curTiltY = 0;
+  let orientationActive = false;
+
+  function getScreenAngle(){
+    if (screen.orientation && typeof screen.orientation.angle === 'number') return screen.orientation.angle;
+    if (typeof window.orientation === 'number') return window.orientation;
+    return 0;
+  }
+
+  function onDeviceOrientation(e){
+    if (e.gamma === null || e.beta === null) return;
+    const angle = getScreenAngle();
+    let gx = e.gamma; // 左右の傾き（-90〜90）
+    let gy = e.beta;  // 前後の傾き（-180〜180）
+    let x, y;
+    if (angle === 90){        x = -gy; y = gx; }
+    else if (angle === -90 || angle === 270){ x = gy;  y = -gx; }
+    else if (angle === 180){  x = -gx; y = -gy; }
+    else {                    x = gx;  y = gy; }
+
+    const rad = Math.PI / 180;
+    targetTiltX = clamp(Math.sin(x * rad), -1, 1) * TILT_GAIN;
+    targetTiltY = clamp(Math.sin(y * rad), -1, 1) * TILT_GAIN;
+  }
+
+  function clamp(v, a, b){ return v < a ? a : (v > b ? b : v); }
+
+  // デスクトップ用フォールバック：マウス位置を傾きとして扱う
+  function onMouseMove(e){
+    if (orientationActive) return;
+    const rect = glassEl.getBoundingClientRect();
+    const nx = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+    const ny = ((e.clientY - rect.top) / rect.height) * 2 - 1;
+    targetTiltX = clamp(nx, -1, 1) * TILT_GAIN * 0.8;
+    targetTiltY = clamp(ny, -1, 1) * TILT_GAIN * 0.8;
+  }
+
+  // ---------------------------------------------------------------
+  // 3. 起動フロー（iOSはユーザー操作後に許可を要求する必要がある）
+  // ---------------------------------------------------------------
+
+  const needsPermission = typeof DeviceOrientationEvent !== 'undefined' &&
+                           typeof DeviceOrientationEvent.requestPermission === 'function';
+  const hasOrientation = typeof DeviceOrientationEvent !== 'undefined';
+
+  if (needsPermission){
+    startLabel.textContent = 'タップしてセンサーを許可';
+    startDesc.textContent = 'iOSではモーションセンサーの利用に許可が必要です';
+  } else if (hasOrientation){
+    startLabel.textContent = 'タップして開始';
+    startDesc.textContent = 'スマホを傾けると水面が揺れます';
+  } else {
+    startLabel.textContent = 'タップして開始';
+    startDesc.textContent = 'マウスを動かして傾きをシミュレートします（PC）';
+  }
+
+  startBtn.addEventListener('click', function(){
+    overlay.classList.add('hidden');
+    addRipple(0.5, 0.5, 0.9, Math.round(Math.min(W, H) * 0.12) || 6);
+
+    if (needsPermission){
+      DeviceOrientationEvent.requestPermission().then(function(res){
+        if (res === 'granted'){
+          orientationActive = true;
+          window.addEventListener('deviceorientation', onDeviceOrientation);
         }
-        if (
-            typeof DeviceOrientationEvent
-                .requestPermission
-            === "function"
-        ) {
-            const permission =
-                await
-                DeviceOrientationEvent
-                    .requestPermission();
-            if (
-                permission !== "granted"
-            ) {
-                motion.textContent =
-                    "センサー許可が必要です";
-                return;
-            }
-        }
-        window.addEventListener(
-            "deviceorientation",
-            onOrientation,
-            true
-        );
-        motion.textContent =
-            "✓ モーション有効";
+      }).catch(function(){ /* 許可されなかった場合はマウス操作にフォールバック */ });
+    } else if (hasOrientation){
+      orientationActive = true;
+      window.addEventListener('deviceorientation', onDeviceOrientation);
     }
-    catch (error) {
-        console.error(error);
-        motion.textContent =
-            "センサーを利用できません";
+  }, { once: true });
+
+  window.addEventListener('mousemove', onMouseMove);
+
+  // タップ / ドラッグで波紋を作る
+  let dragging = false;
+  function pointerToNorm(e){
+    const rect = glassEl.getBoundingClientRect();
+    const p = (e.touches && e.touches[0]) ? e.touches[0] : e;
+    return [
+      clamp((p.clientX - rect.left) / rect.width, 0, 1),
+      clamp((p.clientY - rect.top) / rect.height, 0, 1)
+    ];
+  }
+  glassEl.addEventListener('pointerdown', function(e){
+    dragging = true;
+    const [nx, ny] = pointerToNorm(e);
+    addRipple(nx, ny, 0.85, Math.round(Math.min(W, H) * 0.09) || 5);
+  });
+  glassEl.addEventListener('pointermove', function(e){
+    if (!dragging) return;
+    const [nx, ny] = pointerToNorm(e);
+    addRipple(nx, ny, 0.22, Math.round(Math.min(W, H) * 0.05) || 3);
+  });
+  window.addEventListener('pointerup', function(){ dragging = false; });
+
+  resetBtn.addEventListener('click', resetWater);
+
+  // ---------------------------------------------------------------
+  // 4. メインループ
+  // ---------------------------------------------------------------
+
+  function frame(){
+    curTiltX += (targetTiltX - curTiltX) * 0.12;
+    curTiltY += (targetTiltY - curTiltY) * 0.12;
+
+    for (let s = 0; s < SUBSTEPS; s++){
+      physicsStep(DT, curTiltX, curTiltY);
     }
-}
-motion.addEventListener(
-    "click",
-    enableMotion
-);
-window.addEventListener(
-    "keydown",
-    event => {
-        if (
-            event.key === "ArrowLeft"
-        ) {
-            target =
-                Math.max(
-                    -45,
-                    target - 5
-                );
-        }
-        if (
-            event.key === "ArrowRight"
-        ) {
-            target =
-                Math.min(
-                    45,
-                    target + 5
-                );
-        }
-        if (
-            event.key === "ArrowUp" ||
-            event.key === "ArrowDown"
-        ) {
-            target *= 0.88;
-        }
-    }
-);
-phone.addEventListener(
-    "pointerdown",
-    event => {
-        if (
-            event.target === motion
-        ) {
-            return;
-        }
-        dragging = true;
-        startX =
-            event.clientX;
-        lastPointerX =
-            event.clientX;
-        phone.setPointerCapture?.(
-            event.pointerId
-        );
-    }
-);
-phone.addEventListener(
-    "pointermove",
-    event => {
-        if (!dragging) {
-            return;
-        }
-        const movement =
-            event.clientX -
-            lastPointerX;
-        lastPointerX =
-            event.clientX;
-        target =
-            Math.max(
-                -45,
-                Math.min(
-                    45,
-                    target +
-                    movement * 0.42
-                )
-            );
-    }
-);
-phone.addEventListener(
-    "pointerup",
-    event => {
-        dragging = false;
-        phone.releasePointerCapture?.(
-            event.pointerId
-        );
-    }
-);
-phone.addEventListener(
-    "pointercancel",
-    () => {
-        dragging = false;
-    }
-);
+    render();
+
+    tiltBadge.textContent = 'tilt: ' + curTiltX.toFixed(2) + ', ' + curTiltY.toFixed(2);
+    requestAnimationFrame(frame);
+  }
+
+  let resizeTimer = null;
+  window.addEventListener('resize', function(){
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(resizeAll, 150);
+  });
+  window.addEventListener('orientationchange', function(){
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(resizeAll, 250);
+  });
+
+  initSim();
+  requestAnimationFrame(frame);
+})();
 </script>
 </body>
 </html>
